@@ -1,0 +1,870 @@
+{% extends "master.html" %}
+
+{% block content %}
+
+<style>
+    .event-manager-page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2.5rem 1.25rem 3rem;
+    }
+
+    .event-manager-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .event-manager-title {
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .event-manager-subtitle {
+        margin: .35rem 0 0;
+        color: #6c757d;
+        font-size: .95rem;
+    }
+
+    .event-count-badge {
+        display: inline-flex;
+        align-items: center;
+        margin-top: .65rem;
+        padding: .35rem .7rem;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #3446a8;
+        font-size: .82rem;
+        font-weight: 600;
+    }
+
+    .event-add-btn {
+        flex-shrink: 0;
+        padding: .65rem 1rem;
+        border-radius: .65rem;
+        font-weight: 600;
+        box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .08);
+    }
+
+    .event-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.5rem;
+    }
+
+    .event-card {
+        overflow: hidden;
+        border: 1px solid #e6e9ef;
+        border-radius: 1rem;
+        background: #fff;
+        box-shadow: 0 .5rem 1.25rem rgba(20, 31, 56, .07);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .event-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 .75rem 1.5rem rgba(20, 31, 56, .11);
+    }
+
+    .event-image {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        display: block;
+        background: #f4f6f8;
+    }
+
+    .event-card-body {
+        padding: 1.15rem;
+    }
+
+    .event-card-title {
+        margin-bottom: .4rem;
+        font-size: 1.08rem;
+        font-weight: 700;
+        line-height: 1.35;
+        color: #20242b;
+    }
+
+    .event-meta {
+        margin-bottom: .2rem;
+        font-size: .82rem;
+        line-height: 1.45;
+    }
+
+    .event-date {
+        margin: .65rem 0 1rem;
+        color: #5f6b7a;
+        font-size: .88rem;
+        font-weight: 600;
+    }
+
+    .event-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .55rem;
+    }
+
+    .event-actions .btn,
+    .event-thumbnail-btn {
+        border-radius: .55rem;
+        font-size: .8rem;
+        font-weight: 600;
+    }
+
+    .event-thumbnail-wrap {
+        margin-top: .7rem;
+    }
+
+    .event-empty {
+        padding: 3rem 1rem;
+        text-align: center;
+        border: 1px dashed #cfd5df;
+        border-radius: 1rem;
+        color: #6c757d;
+        background: #fafbfc;
+    }
+
+    @media (max-width: 991.98px) {
+        .event-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .event-manager-page {
+            padding: 1.5rem .9rem 2.5rem;
+        }
+
+        .event-manager-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .event-add-btn {
+            width: 100%;
+        }
+
+        .event-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (min-width: 992px) {
+        body {
+            overflow-x: hidden;
+        }
+    }
+</style>
+
+<div class="event-manager-page">
+
+    <div class="event-manager-header">
+        <div>
+            <h3 class="event-manager-title">
+                {% if current_lang == 'hi' %}
+                    इवेंट प्रबंधक
+                {% else %}
+                    Event Manager
+                {% endif %}
+            </h3>
+
+            <p class="event-manager-subtitle">
+                {% if current_lang == 'hi' %}
+                    वेबसाइट के इवेंट और मीडिया प्रबंधित करें
+                {% else %}
+                    Manage website events and their media
+                {% endif %}
+            </p>
+
+            <span class="event-count-badge">
+                {{ events|length }}
+                {% if current_lang == 'hi' %}
+                    इवेंट
+                {% else %}
+                    Event{{ events|length|pluralize }}
+                {% endif %}
+            </span>
+        </div>
+
+        {% if can_add_event %}
+        <a href="{% url 'admin_upload_new_event' %}"
+           class="btn btn-primary event-add-btn">
+            {% if current_lang == 'hi' %}
+                इवेंट जोड़ें
+            {% else %}
+                Add Event
+            {% endif %}
+        </a>
+        {% endif %}
+    </div>
+
+
+    {% if events %}
+
+    <div class="event-grid">
+
+        {% for event in events %}
+
+        <div class="event-card">
+
+            <img src="{{ event.thumbnail }}"
+                 class="event-image"
+                 alt="{{ event.title|default:'Event image'|escape }}">
+
+            <div class="event-card-body">
+
+                <h5 class="event-card-title">
+                    {% if current_lang == 'hi' and event.title_hi %}
+                        {{ event.title_hi }}
+                    {% else %}
+                        {{ event.title }}
+                    {% endif %}
+                </h5>
+
+                <p class="event-meta text-muted">
+                    EN: {{ event.title }}
+                </p>
+
+                <p class="event-meta text-muted">
+                    HI: {{ event.title_hi }}
+                </p>
+
+                <p class="event-date">
+                    {{ event.date }}
+                </p>
+
+
+                <div class="event-actions">
+
+                    <!-- Add Images -->
+                    <form method="post"
+                          action="{% url 'admin_select_upload_event' %}"
+                          class="d-inline">
+
+                        {% csrf_token %}
+
+                        <input type="hidden"
+                               name="folder"
+                               value="{{ event.folder }}">
+
+                        <button type="submit"
+                                class="btn btn-sm btn-info w-100">
+
+                            {% if current_lang == 'hi' %}
+                                चित्र जोड़ें
+                            {% else %}
+                                Add Images
+                            {% endif %}
+
+                        </button>
+
+                    </form>
+
+
+                    <!-- Edit Titles -->
+                    <button class="btn btn-sm btn-warning"
+                            onclick="openEditModal(
+                                '{{ event.folder }}',
+                                '{{ event.title }}',
+                                '{{ event.title_hi }}'
+                            )">
+
+                        {% if current_lang == 'hi' %}
+                            शीर्षक संपादित करें
+                        {% else %}
+                            Edit Titles
+                        {% endif %}
+
+                    </button>
+
+
+                    <!-- Delete -->
+                    <a href="{% url 'admin_delete_event' event.folder %}"
+                       class="btn btn-sm btn-danger"
+
+                       onclick="return confirm('Delete this event?')">
+
+                        {% if current_lang == 'hi' %}
+                            हटाएं
+                        {% else %}
+                            Delete
+                        {% endif %}
+
+                    </a>
+
+                </div>
+
+
+                <!-- Manage Thumbnail -->
+                <div class="event-thumbnail-wrap">
+
+                    <button class="btn btn-sm btn-secondary w-100 event-thumbnail-btn"
+                            onclick="openGalleryModal(
+                                '{{ event.folder }}',
+                                '{{ event.thumbnail }}'
+                            )">
+
+                        {% if current_lang == 'hi' %}
+                            थंबनेल प्रबंधित करें
+                        {% else %}
+                            Manage Thumbnail
+                        {% endif %}
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    {% else %}
+
+    <div class="event-empty">
+
+        {% if current_lang == 'hi' %}
+
+            <h5 class="mb-2">
+                कोई इवेंट उपलब्ध नहीं है
+            </h5>
+
+            <p class="mb-0">
+                अभी तक कोई इवेंट नहीं बनाया गया है।
+            </p>
+
+        {% else %}
+
+            <h5 class="mb-2">
+                No events available
+            </h5>
+
+            <p class="mb-0">
+                No events have been created yet.
+            </p>
+
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =========================================================
+     EDIT TITLES MODAL
+========================================================= -->
+
+<div class="modal fade"
+     id="editModal"
+     tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Edit Event Titles
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <input type="hidden"
+                       id="editFolder">
+
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-semibold">
+                        Title (English)
+                    </label>
+
+                    <input type="text"
+                           id="editTitleEn"
+                           class="form-control">
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label class="form-label fw-semibold">
+                        Title (Hindi)
+                    </label>
+
+                    <input type="text"
+                           id="editTitleHi"
+                           class="form-control"
+                           placeholder="हिंदी शीर्षक">
+
+                </div>
+
+
+                <div id="editError"
+                     class="alert alert-danger d-none">
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <button class="btn btn-success"
+                        onclick="saveTitles()">
+                    Save
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     THUMBNAIL GALLERY MODAL
+========================================================= -->
+
+<div class="modal fade"
+     id="galleryModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Select Thumbnail
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <input type="hidden"
+                       id="galleryFolder">
+
+                <input type="hidden"
+                       id="currentThumbnail">
+
+
+                <div id="galleryGrid"
+                     class="row g-3">
+                </div>
+
+
+                <div id="galleryError"
+                     class="alert alert-warning d-none mt-3">
+
+                    {% if current_lang == 'hi' %}
+                        कोई चित्र नहीं मिला
+                    {% else %}
+                        No images found
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   EDIT EVENT TITLES
+========================================================= */
+
+function openEditModal(folder, titleEn, titleHi) {
+
+    document.getElementById("editFolder").value = folder;
+
+    document.getElementById("editTitleEn").value = titleEn;
+
+    document.getElementById("editTitleHi").value = titleHi;
+
+    document
+        .getElementById("editError")
+        .classList
+        .add("d-none");
+
+    new bootstrap.Modal(
+        document.getElementById("editModal")
+    ).show();
+}
+
+
+function saveTitles() {
+
+    const folder =
+        document.getElementById("editFolder").value;
+
+    const titleEn =
+        document.getElementById("editTitleEn").value.trim();
+
+    const titleHi =
+        document.getElementById("editTitleHi").value.trim();
+
+    const errBox =
+        document.getElementById("editError");
+
+
+    if (!titleEn) {
+
+        errBox.innerText =
+            "English title is required.";
+
+        errBox.classList.remove("d-none");
+
+        return;
+    }
+
+
+    const form =
+        document.createElement("form");
+
+    form.method = "POST";
+
+    form.action =
+        "{% url 'admin_edit_event_titles' %}";
+
+
+    form.innerHTML = `
+        <input type="hidden"
+               name="csrfmiddlewaretoken"
+               value="{{ csrf_token }}">
+
+        <input type="hidden"
+               name="folder"
+               value="${folder}">
+
+        <input type="hidden"
+               name="title_en"
+               value="${titleEn}">
+
+        <input type="hidden"
+               name="title_hi"
+               value="${titleHi}">
+    `;
+
+
+    document.body.appendChild(form);
+
+    form.submit();
+}
+
+
+/* =========================================================
+   THUMBNAIL GALLERY
+========================================================= */
+
+function openGalleryModal(folder, currentThumbnail) {
+
+    document.getElementById(
+        "galleryFolder"
+    ).value = folder;
+
+    document.getElementById(
+        "currentThumbnail"
+    ).value = currentThumbnail;
+
+
+    document.getElementById(
+        "galleryGrid"
+    ).innerHTML = `
+        <div class="text-center w-100">
+
+            <div class="spinner-border spinner-border-sm"
+                 role="status">
+
+                <span class="visually-hidden">
+                    Loading...
+                </span>
+
+            </div>
+
+        </div>
+    `;
+
+
+    document.getElementById(
+        "galleryError"
+    ).classList.add("d-none");
+
+
+    new bootstrap.Modal(
+        document.getElementById("galleryModal")
+    ).show();
+
+
+    fetchGalleryImages(
+        folder,
+        currentThumbnail
+    );
+}
+
+
+function fetchGalleryImages(folder, currentThumbnail) {
+
+    fetch(
+        `/events-admin/get-images/${folder}/`,
+        {
+            method: "POST",
+
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        }
+    )
+
+    .then(r => r.json())
+
+    .then(data => {
+
+        const gallery =
+            document.getElementById("galleryGrid");
+
+        const errorBox =
+            document.getElementById("galleryError");
+
+
+        if (
+            !data.images ||
+            data.images.length === 0
+        ) {
+
+            gallery.innerHTML = "";
+
+            errorBox
+                .classList
+                .remove("d-none");
+
+            return;
+        }
+
+
+        gallery.innerHTML =
+            data.images.map(
+                (img, idx) => `
+
+                <div class="col-md-4 col-sm-6">
+
+                    <div class="position-relative"
+                         style="cursor:pointer;">
+
+                        <img src="${img}"
+                             class="img-fluid rounded gallery-img ${img === currentThumbnail ? 'border border-success border-3' : ''}"
+                             style="
+                                width:100%;
+                                height:150px;
+                                object-fit:cover;
+                                transition:.3s ease;
+                             ">
+
+
+                        ${
+                            img === currentThumbnail
+
+                            ? `
+                                <div class="position-absolute
+                                            top-0
+                                            end-0
+                                            p-2">
+
+                                    <span class="badge bg-success">
+                                        Current
+                                    </span>
+
+                                </div>
+                              `
+
+                            : ""
+                        }
+
+
+                        <button
+                            class="btn btn-sm btn-success
+                                   position-absolute
+                                   bottom-0
+                                   start-50
+                                   translate-middle-x
+                                   mb-2"
+
+                            onclick="setThumbnail(
+                                '${folder}',
+                                '${img}'
+                            )"
+
+                            style="
+                                display:
+                                ${img === currentThumbnail
+                                    ? "none"
+                                    : "block"};
+                            ">
+
+                            Set as Thumbnail
+
+                        </button>
+
+                    </div>
+
+                </div>
+            `
+            )
+            .join("");
+
+    })
+
+    .catch(err => {
+
+        console.error(
+            "Error loading images:",
+            err
+        );
+
+        document.getElementById(
+            "galleryError"
+        ).classList.remove("d-none");
+
+    });
+}
+
+
+/* =========================================================
+   SET THUMBNAIL
+========================================================= */
+
+function setThumbnail(folder, imagePath) {
+
+    const filename =
+        imagePath
+        .split("/")
+        .pop();
+
+
+    fetch(
+
+        "{% url 'set_thumbnail' 'FOLDER_PLACEHOLDER' %}"
+            .replace(
+                "FOLDER_PLACEHOLDER",
+                folder
+            ),
+
+        {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type":
+                    "application/json",
+
+                "X-CSRFToken":
+                    "{{ csrf_token }}"
+            },
+
+            body: JSON.stringify({
+                thumbnail: filename
+            })
+
+        }
+
+    )
+
+    .then(r => r.json())
+
+    .then(res => {
+
+        if (res.status === "success") {
+
+            bootstrap.Modal
+                .getInstance(
+                    document.getElementById(
+                        "galleryModal"
+                    )
+                )
+                .hide();
+
+
+            setTimeout(
+                () => location.reload(),
+                500
+            );
+
+        } else {
+
+            alert(
+                res.message ||
+                "Failed to set thumbnail."
+            );
+
+        }
+
+    })
+
+    .catch(err => {
+
+        console.error(
+            "Error:",
+            err
+        );
+
+        alert(
+            "An error occurred while setting thumbnail."
+        );
+
+    });
+
+}
+
+</script>
+
+{% endblock %}

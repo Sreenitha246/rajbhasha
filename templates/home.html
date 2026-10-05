@@ -1,0 +1,770 @@
+{% extends "master.html" %}
+{% load static %}
+{% load translate_tags %}
+
+{% block title %}{{ "Home"|t:current_lang }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root{
+  --rbh-accent:#0e2f4c;
+  --rbh-blue:#155b91;
+  --rbh-blue-deep:#0c3f66;
+  --rbh-gold:#a97a2f;
+  --rbh-gold-soft:#c99a4d;
+
+  --rbh-text:#0e2f4c;
+  --rbh-body:#1f2b38;
+  --rbh-muted:#5c6b7a;
+  --rbh-surface:#ffffff;
+  --rbh-tint:#f5f8fb;
+  --rbh-line:#e2e8f0;
+  --rbh-hero-bg:#eaf1f8;
+}
+
+[data-bs-theme="dark"]{
+  --rbh-text:#e9f0f7;
+  --rbh-body:#cdd8e3;
+  --rbh-muted:#9db0c2;
+  --rbh-surface:#132539;
+  --rbh-tint:#182c43;
+  --rbh-line:#2b435f;
+  --rbh-hero-bg:#0a1826;
+  --rbh-gold-soft:#d6ac6c;
+}
+
+body{ overflow-x:hidden; }
+main.container{ max-width:100% !important; padding-left:0 !important; padding-right:0 !important; }
+
+.content-container{ max-width:1200px; margin:0 auto; padding:0 20px; }
+
+/* ---------- Hero ---------- */
+.full-screen-banner{
+  width:100vw; position:relative; left:50%; margin-left:-50vw;
+  margin-top:-1.5rem; margin-bottom:0; background:var(--rbh-hero-bg);
+  transition:background-color .2s ease;
+}
+.main-carousel-shell{ overflow:hidden; }
+.carousel-item img{
+  width:100%; height:clamp(280px, 40vw, 480px);
+  object-fit:contain; background:var(--rbh-hero-bg);
+  transition:background-color .2s ease;
+}
+#mainCarousel .carousel-control-prev,
+#mainCarousel .carousel-control-next{ width:6%; opacity:0; transition:opacity .2s ease; }
+.full-screen-banner:hover .carousel-control-prev,
+.full-screen-banner:hover .carousel-control-next{ opacity:.85; }
+.carousel-control-prev-icon, .carousel-control-next-icon{
+  width:2rem; height:2rem; background-color:rgba(15,35,55,.35); border-radius:50%; padding:.5rem; background-size:50%;
+}
+.carousel-indicators{ bottom:16px; }
+.carousel-indicators button{
+  width:26px; height:3px; border:0; border-radius:2px; margin:0 4px;
+  background-color:rgba(255,255,255,.45); opacity:1; transition:background-color .2s ease, width .2s ease;
+}
+.carousel-indicators button.active{ background-color:var(--rbh-gold-soft); width:34px; }
+.hero-edge{ height:4px; background:linear-gradient(90deg,var(--rbh-blue-deep),var(--rbh-gold-soft) 50%,var(--rbh-blue-deep)); }
+
+/* ---------- Section heading ---------- */
+.rbh-section{ margin:3.25rem 0; }
+.rbh-heading{ display:flex; align-items:baseline; justify-content:space-between; gap:1.5rem; margin-bottom:1.6rem; flex-wrap:wrap; }
+.rbh-heading h2{ margin:0; font-weight:700; font-size:1.55rem; color:var(--rbh-text); letter-spacing:.1px; }
+.rbh-heading p{ margin:.3rem 0 0; color:var(--rbh-muted); font-size:.95rem; max-width:46ch; }
+
+/* ---------- Events ---------- */
+.event-card{
+  border:1px solid var(--rbh-line) !important; border-radius:10px !important;
+  overflow:hidden; background:var(--rbh-surface); height:100%; cursor:pointer;
+  transition:border-color .2s ease, transform .2s ease, background-color .2s ease;
+}
+.event-card:hover{ border-color:var(--rbh-blue) !important; transform:translateY(-3px); }
+.event-card .news-card-img-wrapper{ position:relative; }
+.event-card img{ width:100%; height:210px; object-fit:cover; display:block; }
+.event-card .news-date{
+  position:absolute; left:0; bottom:0; margin:.75rem;
+  background:var(--rbh-accent); color:#fff; font-size:.72rem; font-weight:600;
+  padding:.3rem .6rem; border-radius:5px; letter-spacing:.2px;
+}
+.event-card .news-title{
+  padding:.95rem 1.1rem 1.15rem; font-size:1rem; font-weight:600;
+  color:var(--rbh-text); line-height:1.45;
+}
+
+/* ---------- What's new / Links ---------- */
+.rbh-panel{ border:1px solid var(--rbh-line); border-radius:10px; background:var(--rbh-surface); height:100%; overflow:hidden; transition:background-color .2s ease; }
+.rbh-panel-hd{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:.95rem 1.25rem; background:var(--rbh-accent); color:#fff; font-weight:700; font-size:.95rem;
+}
+.rbh-panel-hd i{ color:var(--rbh-gold-soft); }
+.notice-list{ list-style:none; margin:0; padding:.4rem 0; }
+.notice-list li{ display:flex; gap:.85rem; align-items:flex-start; padding:.85rem 1.25rem; border-bottom:1px solid var(--rbh-line); }
+.notice-list li:last-child{ border-bottom:0; }
+.notice-mark{ flex:0 0 6px; width:6px; height:6px; border-radius:50%; background:var(--rbh-gold); margin-top:.5rem; }
+.notice-list span:last-child{ color:var(--rbh-body); font-size:.93rem; line-height:1.55; }
+.quick-links{ padding:.7rem; }
+.quick-links a{
+  display:flex; align-items:center; gap:.7rem; text-decoration:none;
+  padding:.85rem .9rem; margin:.25rem; border-radius:7px; color:var(--rbh-text);
+  font-size:.93rem; font-weight:600; border:1px solid transparent; transition:background .15s ease, border-color .15s ease;
+}
+.quick-links a i{ color:var(--rbh-blue); }
+.quick-links a:hover{ background:var(--rbh-tint); border-color:var(--rbh-line); }
+
+/* ---------- Mission / about strip ---------- */
+.mission-strip{
+  border-top:1px solid var(--rbh-line); padding-top:2.25rem; margin-top:3.25rem;
+  display:flex; gap:2.5rem; flex-wrap:wrap; align-items:flex-start;
+}
+.mission-strip h2{ flex:0 0 260px; margin:0; font-size:1.35rem; font-weight:700; color:var(--rbh-text); }
+.mission-strip p{ flex:1 1 380px; margin:0; color:var(--rbh-muted); line-height:1.75; font-size:.98rem; }
+
+/* ---------- Footer ---------- */
+.rbh-footer{
+  border-top:1px solid var(--rbh-line); margin-top:3.25rem; padding:1.75rem 0 2.25rem;
+  background:var(--rbh-tint); transition:background-color .2s ease;
+}
+.rbh-footer-inner{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+}
+.rbh-footer p{ margin:0; font-size:.85rem; color:var(--rbh-muted); line-height:1.6; }
+.rbh-footer strong{ color:var(--rbh-text); }
+.rbh-footer-inner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width:767.98px){
+  .content-container{ padding:0 14px; }
+  .event-card img{ height:190px; }
+  .rbh-section{ margin:2.25rem 0; }
+  .rbh-footer-inner{ flex-direction:column; align-items:flex-start; text-align:left; }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="full-screen-banner">
+    <div class="main-carousel-shell">
+    <div id="mainCarousel" class="carousel slide" data-bs-touch="true">
+        <div class="carousel-indicators" id="mainCarouselIndicators">
+            <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#mainCarousel" data-bs-slide-to="2"></button>
+        </div>
+
+        <div class="carousel-inner" id="mainCarouselInner">
+            <div class="carousel-item active" data-bs-interval="3000">
+                <img src="{% static 'images/mainCarousel/slide1.jpg' %}" alt="Slide 1">
+            </div>
+            <div class="carousel-item" data-bs-interval="3000">
+                <img src="{% static 'images/mainCarousel/slide2.jpg' %}" alt="Slide 2">
+            </div>
+            <div class="carousel-item" data-bs-interval="3000">
+                <img src="{% static 'images/mainCarousel/slide3.jpg' %}" alt="Slide 3">
+            </div>
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#mainCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#mainCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    </div>
+    </div>
+    <div class="hero-edge"></div>
+</div>
+
+<!-- <div class="content-container my-5">
+    <div id="newsSlider" class="carousel slide" data-bs-ride="false">
+        <div class="carousel-inner">
+            
+            <div class="carousel-item active">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card news-card event-trigger" 
+                             data-images="{% static 'images/Hindi Diwas/HD1.png' %},{% static 'images/Hindi Diwas/HD2.jpg' %},{% static 'images/Hindi Diwas/HD3.jpg' %},{% static 'images/Hindi Diwas/HD4.jpg' %}">
+                            <div class="news-card-img-wrapper">
+                                <img src="{% static 'images/Hindi Diwas/HD1.png' %}" alt="Hindi Diwas">
+                            </div>
+                            <div class="news-date">14 September 2025</div>
+                            <div class="news-title">{{ "Hindi Diwas"|t:current_lang }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card news-card event-trigger"
+                             data-images="{% static 'images/Rajbhasha Kirti Awards/RKA1.jpg' %},{% static 'images/Rajbhasha Kirti Awards/RKA2.jpg' %},{% static 'images/Rajbhasha Kirti Awards/RKA3.jpg' %},{% static 'images/Rajbhasha Kirti Awards/RKA4.jpg' %}">
+                            <div class="news-card-img-wrapper">
+                                <img src="{% static 'images/Rajbhasha Kirti Awards/RKA1.jpg' %}" alt="Kirti Awards">
+                            </div>
+                            <div class="news-date">14 September 2025</div>
+                            <div class="news-title">{{ "Rajbhasha Kirti Awards"|t:current_lang }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card news-card event-trigger"
+                             data-images="{% static 'images/Hindi Pakhwada/HP1.jpeg' %},{% static 'images/Hindi Pakhwada/HP2.jpg' %},{% static 'images/Hindi Pakhwada/HP3.jpg' %},{% static 'images/Hindi Pakhwada/HP4.jpg' %}">
+                            <div class="news-card-img-wrapper">
+                                <img src="{% static 'images/Hindi Pakhwada/HP1.jpeg' %}" alt="Hindi Pakhwada">
+                            </div>
+                            <div class="news-date">1–14 September 2025</div>
+                            <div class="news-title">{{ "Hindi Pakhwada"|t:current_lang }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card news-card event-trigger"
+                             data-images="{% static 'images/Rajbhasha Advisory Committee Meeting/RACM1.jpg' %},{% static 'images/Rajbhasha Advisory Committee Meeting/RACM2.jpg' %},{% static 'images/Rajbhasha Advisory Committee Meeting/RACM3.jpg' %},{% static 'images/Rajbhasha Advisory Committee Meeting/RACM4.jpg' %}">
+                            <div class="news-card-img-wrapper">
+                                <img src="{% static 'images/Rajbhasha Advisory Committee Meeting/RACM1.jpg' %}" alt="Workshop">
+                            </div>
+                            <div class="news-date">12 August 2025</div>
+                            <div class="news-title">{{ "Rajbhasha Advisory Committee Meeting"|t:current_lang }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card news-card event-trigger"
+                             data-images="{% static 'images/All India Official Language Conference/AIOLC1.jpeg' %},{% static 'images/All India Official Language Conference/AIOLC2.jpg' %},{% static 'images/All India Official Language Conference/AIOLC3.jpeg' %},{% static 'images/All India Official Language Conference/AIOLC4.avif' %}">
+                            <div class="news-card-img-wrapper">
+                                <img src="{% static 'images/All India Official Language Conference/AIOLC1.jpeg' %}" alt="All India Conference">
+                            </div>
+                            <div class="news-date">10–11 July 2025</div>
+                            <div class="news-title">{{ "All India Official Language Conference"|t:current_lang }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card news-card event-trigger"
+                             data-images="{% static 'images/Regional Official Language Conference – Hyderabad/ROLC1.jpg' %},{% static 'images/Regional Official Language Conference – Hyderabad/ROLC2.jpg' %},{% static 'images/Regional Official Language Conference – Hyderabad/ROLC3.jpg' %},{% static 'images/Regional Official Language Conference – Hyderabad/ROLC4.jpg' %}">
+                            <div class="news-card-img-wrapper">
+                                <img src="{% static 'images/Regional Official Language Conference – Hyderabad/ROLC1.jpg' %}" alt="Regional Conference">
+                            </div>
+                            <div class="news-date">21–22 February 2025</div>
+                            <div class="news-title">{{ "Regional Official Language Conference – Hyderabad"|t:current_lang }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <div class="news-controls-container">
+            <a class="news-control-btn" href="#newsSlider" data-bs-slide="prev">&lsaquo;</a>
+            <a class="news-control-btn" href="#newsSlider" data-bs-slide="next">&rsaquo;</a>
+        </div>
+    </div>
+</div> -->
+
+<div class="content-container rbh-section">
+    <div class="rbh-heading">
+        <div>
+            <h2>{{ "Events & Highlights"|t:current_lang }}</h2>
+        </div>
+    </div>
+
+    <div class="row g-4">
+    {% for event in events %}
+    <div class="col-md-4">
+
+    <div class="card event-card"
+        data-images="{% for img in event.images %}{{ img }}{% if not forloop.last %},{% endif %}{% endfor %}">
+
+        <div class="news-card-img-wrapper">
+            <img src="{{ event.thumbnail }}" alt="{{ event.title }}">
+            <div class="news-date">
+                {{ event.date }}
+            </div>
+        </div>
+
+        <div class="news-title">
+            {% if current_lang == 'hi' and event.title_hi %}
+                {{ event.title_hi }}
+            {% else %}
+                {{ event.title }}
+            {% endif %}
+        </div>
+    </div>
+
+    </div>
+    {% endfor %}
+    </div>
+
+</div>
+
+<div class="content-container rbh-section">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="rbh-panel">
+                <div class="rbh-panel-hd"><span>{{ "WHAT'S NEW"|t:current_lang }}</span><i class="fas fa-bullhorn"></i></div>
+                <ul class="notice-list">
+                    <li><span class="notice-mark"></span><span>{{ "Notice 1 / Circular 1"|t:current_lang }}</span></li>
+                    <li><span class="notice-mark"></span><span>{{ "Notice 2 / Circular 2"|t:current_lang }}</span></li>
+                    <li><span class="notice-mark"></span><span>{{ "Notice 3 / Circular 3"|t:current_lang }}</span></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="rbh-panel">
+                <div class="rbh-panel-hd"><span>{{ "Quick Links"|t:current_lang }}</span><i class="fas fa-link"></i></div>
+                <div class="quick-links">
+                    <a href="https://rajbhasha.gov.in/" target="_blank" rel="noopener noreferrer"><i class="fas fa-external-link-alt"></i>{{ "About Us"|t:current_lang }}</a>
+                    <a href="https://tg.nic.in/" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i>{{ "Downloads"|t:current_lang }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- =========================================================
+     EVENT GALLERY MODAL
+     ========================================================= -->
+
+<div class="modal fade" id="eventGalleryModal" tabindex="-1"
+     aria-labelledby="eventGalleryTitle" aria-hidden="true">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+
+        <div class="modal-content event-gallery-modal">
+
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title" id="eventGalleryTitle">
+                        Event Gallery
+                    </h5>
+                    <div class="event-gallery-subtitle">
+                        Rajbhasha
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="eventGalleryCarousel"
+                     class="carousel slide"
+                     data-bs-touch="true">
+
+                    <div class="carousel-indicators"
+                         id="eventGalleryIndicators">
+                    </div>
+
+                    <div class="carousel-inner"
+                         id="eventGalleryInner">
+                    </div>
+
+                <button class="carousel-control-prev"
+                        type="button"
+                        aria-label="Previous image">
+
+                    <span class="carousel-control-prev-icon"></span>
+
+                </button>
+
+
+                <button class="carousel-control-next"
+                        type="button"
+                        aria-label="Next image">
+
+                    <span class="carousel-control-next-icon"></span>
+
+                </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    /* =====================================================
+       MAIN HERO CAROUSEL
+       ===================================================== */
+
+    const mainCarouselElement =
+        document.getElementById("mainCarousel");
+
+    if (mainCarouselElement) {
+
+        new bootstrap.Carousel(
+            mainCarouselElement,
+            {
+                interval: 3000,
+                ride: "carousel",
+                pause: false,
+                wrap: true,
+                touch: true
+            }
+        );
+    }
+
+
+    /* =====================================================
+       EVENT GALLERY
+       ===================================================== */
+
+    const eventCards =
+        document.querySelectorAll(".event-card");
+
+    const modalElement =
+        document.getElementById("eventGalleryModal");
+
+    const galleryElement =
+        document.getElementById("eventGalleryCarousel");
+
+    const galleryInner =
+        document.getElementById("eventGalleryInner");
+
+    const galleryIndicators =
+        document.getElementById("eventGalleryIndicators");
+
+    const galleryTitle =
+        document.getElementById("eventGalleryTitle");
+
+    const nextButton =
+        galleryElement.querySelector(".carousel-control-next");
+
+    const prevButton =
+        galleryElement.querySelector(".carousel-control-prev");
+
+
+    if (
+        !modalElement ||
+        !galleryElement ||
+        !galleryInner ||
+        !galleryIndicators ||
+        !galleryTitle
+    ) {
+        console.error("Event Gallery elements missing.");
+        return;
+    }
+
+
+    const eventModal =
+        bootstrap.Modal.getOrCreateInstance(
+            modalElement
+        );
+
+
+    /* Current gallery position */
+
+    let currentImageIndex = 0;
+
+    let currentImages = [];
+
+
+    /* =====================================================
+       SHOW IMAGE
+       ===================================================== */
+
+    function showEventImage(index) {
+
+        if (currentImages.length === 0) {
+            return;
+        }
+
+
+        /* Wrap around */
+
+        if (index < 0) {
+            index = currentImages.length - 1;
+        }
+
+        if (index >= currentImages.length) {
+            index = 0;
+        }
+
+
+        currentImageIndex = index;
+
+
+        /* Remove active from all slides */
+
+        const slides =
+            galleryInner.querySelectorAll(
+                ".carousel-item"
+            );
+
+        slides.forEach(function (slide, i) {
+
+            slide.classList.toggle(
+                "active",
+                i === currentImageIndex
+            );
+
+        });
+
+
+        /* Update indicators */
+
+        const indicators =
+            galleryIndicators.querySelectorAll(
+                "button"
+            );
+
+        indicators.forEach(function (button, i) {
+
+            button.classList.toggle(
+                "active",
+                i === currentImageIndex
+            );
+
+        });
+
+    }
+
+
+    /* =====================================================
+       NEXT IMAGE
+       ===================================================== */
+
+    function showNextImage(event) {
+
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        showEventImage(
+            currentImageIndex + 1
+        );
+
+    }
+
+
+    /* =====================================================
+       PREVIOUS IMAGE
+       ===================================================== */
+
+    function showPreviousImage(event) {
+
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        showEventImage(
+            currentImageIndex - 1
+        );
+
+    }
+
+
+    /* =====================================================
+       ARROW BUTTONS
+       ===================================================== */
+
+    nextButton.addEventListener(
+        "click",
+        showNextImage
+    );
+
+    prevButton.addEventListener(
+        "click",
+        showPreviousImage
+    );
+
+
+    /* =====================================================
+       EVENT CARDS
+       ===================================================== */
+
+    eventCards.forEach(function (card) {
+
+        card.addEventListener(
+            "click",
+            function () {
+
+                const imageData =
+                    this.getAttribute(
+                        "data-images"
+                    ) || "";
+
+
+                currentImages =
+                    imageData
+                        .split(",")
+                        .map(function (image) {
+                            return image.trim();
+                        })
+                        .filter(function (image) {
+                            return image.length > 0;
+                        });
+
+
+                /* Event title */
+
+                const titleElement =
+                    this.querySelector(
+                        ".news-title"
+                    );
+
+                const title =
+                    titleElement
+                        ? titleElement.textContent.trim()
+                        : "Event Gallery";
+
+
+                galleryTitle.textContent =
+                    title;
+
+
+                /* Clear old gallery */
+
+                galleryInner.innerHTML = "";
+
+                galleryIndicators.innerHTML = "";
+
+
+                /* =================================================
+                   CREATE SLIDES
+                   ================================================= */
+
+                currentImages.forEach(
+                    function (image, index) {
+
+                        const active =
+                            index === 0
+                                ? "active"
+                                : "";
+
+
+                        galleryInner.insertAdjacentHTML(
+                            "beforeend",
+                            `
+                            <div class="carousel-item ${active}">
+                                <img
+                                    src="${image}"
+                                    alt="${title} - Image ${index + 1}">
+                            </div>
+                            `
+                        );
+
+
+                        /* Indicator */
+
+                        galleryIndicators.insertAdjacentHTML(
+                            "beforeend",
+                            `
+                            <button
+                                type="button"
+                                class="${active}"
+                                aria-label="Image ${index + 1}">
+                            </button>
+                            `
+                        );
+
+                    }
+                );
+
+
+                /* =================================================
+                   INDICATOR CLICK
+                   ================================================= */
+
+                const indicators =
+                    galleryIndicators.querySelectorAll(
+                        "button"
+                    );
+
+
+                indicators.forEach(
+                    function (button, index) {
+
+                        button.addEventListener(
+                            "click",
+                            function (event) {
+
+                                event.preventDefault();
+                                event.stopPropagation();
+
+                                showEventImage(index);
+
+                            }
+                        );
+
+                    }
+                );
+
+
+                /* Start at first image */
+
+                currentImageIndex = 0;
+
+                showEventImage(0);
+
+
+                /* Open modal */
+
+                eventModal.show();
+
+            }
+        );
+
+    });
+
+
+    /* =====================================================
+       KEYBOARD SUPPORT
+       ===================================================== */
+
+    modalElement.addEventListener(
+        "shown.bs.modal",
+        function () {
+
+            document.addEventListener(
+                "keydown",
+                handleGalleryKeyboard
+            );
+
+        }
+    );
+
+
+    modalElement.addEventListener(
+        "hidden.bs.modal",
+        function () {
+
+            document.removeEventListener(
+                "keydown",
+                handleGalleryKeyboard
+            );
+
+        }
+    );
+
+
+    function handleGalleryKeyboard(event) {
+
+        if (event.key === "ArrowRight") {
+            showNextImage();
+        }
+
+        if (event.key === "ArrowLeft") {
+            showPreviousImage();
+        }
+
+    }
+
+});
+</script>
+{% endblock %}

@@ -1,0 +1,4525 @@
+[data-bs-theme="dark"] .qpr-page,
+[data-bs-theme="dark"] .certificate,
+[data-bs-theme="dark"] .card-custom,
+[data-bs-theme="dark"] .print-container,
+[data-bs-theme="dark"] .certificate-loading,
+[data-bs-theme="dark"] .container-form {
+    background-color: #212529 !important; /* Matches Bootstrap dark mode */
+    color: #e9ecef !important;
+}
+
+/* 2. Fix the QPR Heading Border & Text */
+[data-bs-theme="dark"] .qpr-header {
+    border-color: #6edff6 !important; /* Changes the dark blue border to a bright, readable cyan */
+    background-color: #2b3035 !important; /* Gives the heading box a slightly lighter dark-gray fill */
+}
+
+[data-bs-theme="dark"] .qpr-header .title-hi,
+[data-bs-theme="dark"] .qpr-header .title-en {
+    color: #6edff6 !important; /* Ensures the heading text pops against the dark background */
+}
+
+/* 3. Fix the Signature Box at the bottom of the QPR */
+[data-bs-theme="dark"] .sig-box {
+    border-top-color: #495057 !important;
+}
+[data-bs-theme="dark"] .sig-line {
+    color: #e9ecef !important;
+}
+[data-bs-theme="dark"] .alert-danger {
+    --bs-alert-color: #ea868f !important;           
+    --bs-alert-bg: #2c0b0e !important;              
+    --bs-alert-border-color: #842029 !important;    
+    color: var(--bs-alert-color) !important;
+}
+
+[data-bs-theme="dark"] .alert-success {
+    --bs-alert-color: #75b798 !important;           
+    --bs-alert-bg: #051b11 !important;             
+    --bs-alert-border-color: #0f5132 !important;    
+    color: var(--bs-alert-color) !important;
+}
+
+[data-bs-theme="dark"] .alert-info {
+    --bs-alert-color: #6edff6 !important;           
+    --bs-alert-bg: #032830 !important;              
+    --bs-alert-border-color: #087990 !important;    
+    color: var(--bs-alert-color) !important;
+}
+
+[data-bs-theme="dark"] .alert-warning {
+    --bs-alert-color: #ffda6a !important;           
+    --bs-alert-bg: #332701 !important;              
+    --bs-alert-border-color: #997404 !important;
+    color: var(--bs-alert-color) !important;
+}
+[data-bs-theme="dark"] body,
+[data-bs-theme="dark"] .form-group label,
+[data-bs-theme="dark"] .form-label,
+[data-bs-theme="dark"] .qpr-form-container,
+[data-bs-theme="dark"] .qpr-page,
+[data-bs-theme="dark"] .certificate,
+[data-bs-theme="dark"] .stat-label,
+[data-bs-theme="dark"] .lbl-text,
+[data-bs-theme="dark"] .lbl-hindi,
+[data-bs-theme="dark"] .lbl-eng,
+[data-bs-theme="dark"] .text-muted {
+    color: #e9ecef !important; 
+}
+[data-bs-theme="dark"] header .col-auto, 
+[data-bs-theme="dark"] .navbar-brand {
+    background-color: #f8f9fa !important;
+    padding: 8px 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+[data-bs-theme="dark"] .qpr-table th,
+[data-bs-theme="dark"] .qpr-table td,
+[data-bs-theme="dark"] .meta-tbl td {
+    border-color: #495057 !important;
+    color: #e9ecef !important;
+}
+[data-bs-theme="dark"] .qpr-table th,
+[data-bs-theme="dark"] .meta-tbl .lh {
+    background-color: #343a40 !important; /* Dark header background */
+}
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background-color: #2b3035 !important;
+    color: #ffffff !important;
+    border-color: #6edff6 !important;
+}
+[data-bs-theme="dark"] .status-draft,
+[data-bs-theme="dark"] .status-submitted,
+[data-bs-theme="dark"] .badge.bg-light {
+    background-color: #343a40 !important;
+    color: #e9ecef !important;
+    border: 1px solid #495057 !important;
+}
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] input[type="text"],
+[data-bs-theme="dark"] input[type="number"],
+[data-bs-theme="dark"] input[type="url"],
+[data-bs-theme="dark"] textarea {
+    background-color: #212529 !important;
+    color: #e9ecef !important;
+    border-color: #495057 !important;
+}
+
+[data-bs-theme="dark"] .section-title,
+[data-bs-theme="dark"] .card-title,
+[data-bs-theme="dark"] .form-header,
+[data-bs-theme="dark"] .qpr-header .title-hi,
+[data-bs-theme="dark"] .qpr-header .title-en {
+    color: #6edff6 !important; 
+}
+
+[data-bs-theme="dark"] .section-box,
+[data-bs-theme="dark"] .meta,
+[data-bs-theme="dark"] .info-box,
+[data-bs-theme="dark"] .snapshot-composition,
+[data-bs-theme="dark"] .bg-light,
+[data-bs-theme="dark"] .table-light,
+[data-bs-theme="dark"] .print-toolbar {
+    background-color: #2b3035 !important; 
+    border-color: #495057 !important;
+    color: #e9ecef !important;
+}
+[data-bs-theme="dark"] .certificate {
+    background-color: #212529 !important; /* Dark background instead of pure white */
+    border-color: #495057 !important;
+    color: #e9ecef !important;
+}
+[data-bs-theme="dark"] .certificate h2,
+[data-bs-theme="dark"] .certificate h3,
+[data-bs-theme="dark"] .certificate h4,
+[data-bs-theme="dark"] .print-heading h2,
+[data-bs-theme="dark"] .print-heading h4 {
+    color: #6edff6 !important; 
+}
+[data-bs-theme="dark"] .certificate .meta {
+    background-color: #2b3035 !important; /* Slightly contrasting dark box */
+    border-left-color: #6edff6 !important; /* Cyan accent border */
+    color: #e9ecef !important;
+}
+[data-bs-theme="dark"] .certificate p,
+[data-bs-theme="dark"] .certificate strong,
+[data-bs-theme="dark"] .certificate .signature p,
+[data-bs-theme="dark"] .certificate .note {
+    color: #e9ecef !important;
+}
+/* ==========================================
+   Dark Mode Fixes: Stubborn Utility Classes & Menus
+   ========================================== */
+
+/* 1. Force .bg-light and .table-light to go dark */
+[data-bs-theme="dark"] .bg-light,
+[data-bs-theme="dark"] .table-light,
+[data-bs-theme="dark"] .table-light th,
+[data-bs-theme="dark"] .table-light td {
+    background-color: #2b3035 !important; /* Soft dark gray */
+    color: #f8f9fa !important;            /* Crisp white text */
+    border-color: #495057 !important;
+}
+
+/* 2. Fix Custom Floating Menus (HOD Menu) & Dropdowns */
+[data-bs-theme="dark"] .menu-items,
+[data-bs-theme="dark"] .pure-hover-menu,
+[data-bs-theme="dark"] .custom-dropdown-menu {
+    background-color: #212529 !important;
+    border: 1px solid #495057 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+}
+
+[data-bs-theme="dark"] .menu-item,
+[data-bs-theme="dark"] .pure-hover-menu a,
+[data-bs-theme="dark"] .custom-dropdown-menu a {
+    color: #e9ecef !important;
+}
+
+[data-bs-theme="dark"] .menu-item:hover,
+[data-bs-theme="dark"] .pure-hover-menu a:hover,
+[data-bs-theme="dark"] .custom-dropdown-menu a:hover {
+    background-color: #343a40 !important; /* Lighter hover state */
+    color: #6edff6 !important;            /* Cyan highlight on hover */
+}
+
+/* 3. Fix Table Hover and Striped States */
+[data-bs-theme="dark"] .table-hover > tbody > tr:hover > * {
+    background-color: #343a40 !important;
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+    background-color: #262a2e !important; 
+    color: #e9ecef !important;
+}
+
+/* 4. Fix any remaining text-muted elements becoming invisible */
+[data-bs-theme="dark"] .text-muted {
+    color: #adb5bd !important; /* A lighter gray that is actually readable on dark backgrounds */
+}
+/* ==========================================
+   Dark Mode Fixes: Standard Dashboards & Tables
+   ========================================== */
+[data-bs-theme="dark"] .table th,
+[data-bs-theme="dark"] .table td {
+    color: #e9ecef !important;         /* Crisp light gray text */
+    border-color: #495057 !important;  /* Dark gray borders */
+}
+
+/* Give the table headers a distinct, readable style */
+[data-bs-theme="dark"] .table thead th {
+    background-color: #343a40 !important; 
+    color: #f8f9fa !important;            
+    border-bottom: 2px solid #6edff6 !important; /* Subtle cyan accent line */
+}
+
+/* Ensure links inside standard tables remain readable */
+[data-bs-theme="dark"] .table td a {
+    color: #6edff6 !important;
+}
+[data-bs-theme="dark"] .table td a:hover {
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .dashboard-card h4,
+[data-bs-theme="dark"] .dashboard-card h5,
+[data-bs-theme="dark"] .dashboard-card h6,
+[data-bs-theme="dark"] .card-body > h4,
+[data-bs-theme="dark"] .card-body > h5,
+[data-bs-theme="dark"] .card-body > h6 {
+    color: #6edff6 !important; /* Bright cyan for visibility */
+    margin-bottom: 15px !important;
+}
+
+/* Fallback just in case you are using HTML table captions */
+[data-bs-theme="dark"] caption {
+    color: #adb5bd !important;
+}
+
+[data-bs-theme="dark"] table th,
+[data-bs-theme="dark"] .table th,
+[data-bs-theme="dark"] .table thead th,
+[data-bs-theme="dark"] thead th {
+    background-color: #343a40 !important; /* Dark gray background */
+    color: #ffffff !important;            /* Pure white text */
+    border-color: #495057 !important;     /* Subtle border */
+    border-bottom: 2px solid #6edff6 !important; /* Cyan accent line */
+}
+
+/* Ensure the text inside the card-header (the HOD's name above the table) is also white */
+[data-bs-theme="dark"] .card-header.bg-light strong {
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .bg-white,
+[data-bs-theme="dark"] .card-header,
+[data-bs-theme="dark"] .card-header.bg-white {
+    background-color: #2b3035 !important; /* Soft dark gray background */
+    color: #6edff6 !important;            /* Bright cyan text for the heading */
+    border-bottom: 1px solid #495057 !important; /* Subtle dark border */
+}
+
+/* Ensure any spans or icons inside these headers also turn cyan */
+[data-bs-theme="dark"] .card-header.bg-white * {
+    color: #6edff6 !important;
+}
+
+[data-bs-theme="dark"] .header-section,
+[data-bs-theme="dark"] .hod-section,
+[data-bs-theme="dark"] .page-header,
+[data-bs-theme="dark"] .form-card,
+[data-bs-theme="dark"] .report-container {
+    background-color: #2b3035 !important; /* Soft dark gray */
+    border: 1px solid #495057 !important; /* Subtle dark border */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important; /* Darker shadow */
+}
+
+/* Ensure headings inside these specific sections turn cyan */
+[data-bs-theme="dark"] .header-section h3,
+[data-bs-theme="dark"] .header-section h4,
+[data-bs-theme="dark"] .page-header h3,
+[data-bs-theme="dark"] .report-container .report-heading {
+    color: #6edff6 !important;
+}
+
+/* Ensure the HOD section gradient headers stay readable */
+[data-bs-theme="dark"] .hod-header {
+    background: linear-gradient(135deg, #1f3f5c 0%, #122a44 100%) !important;
+    border-bottom: 1px solid #495057 !important;
+    color: #f8f9fa !important;
+}
+
+[data-bs-theme="dark"] .carousel-item img,
+[data-bs-theme="dark"] .card-img-top,
+[data-bs-theme="dark"] .gallery-img {
+    background-color: #2b3035 !important; /* Soft dark gray to blend with the card/background */
+    border-color: #495057 !important;
+}
+
+/* If the carousel controls (arrows) look invisible, this makes them pop */
+[data-bs-theme="dark"] .carousel-control-prev-icon,
+[data-bs-theme="dark"] .carousel-control-next-icon {
+    filter: invert(1) grayscale(100) brightness(200) !important;
+}
+
+/* Darken the carousel indicators at the bottom */
+[data-bs-theme="dark"] .carousel-indicators [data-bs-target] {
+    background-color: #6edff6 !important; /* Cyan indicators to match your theme */
+}
+
+[data-bs-theme="dark"] .carousel-item img,
+[data-bs-theme="dark"] .card-img-top {
+    background-color: #212529 !important; 
+}
+
+/* 2. Fix Custom News/Event Cards (Home Page & Event Manager) */
+/* Forces the hardcoded white news cards to turn dark gray */
+[data-bs-theme="dark"] .news-card,
+[data-bs-theme="dark"] .card.shadow-sm {
+    background-color: #2b3035 !important;
+    border: 1px solid #495057 !important;
+}
+
+/* 3. Fix Event Card Text & Titles */
+[data-bs-theme="dark"] .card-title {
+    color: #6edff6 !important; /* Restores the bright cyan specifically to card titles */
+}
+
+/* Ensures the text details (like EN/HI translations and dates) are readable */
+[data-bs-theme="dark"] .news-card p,
+[data-bs-theme="dark"] .card-body p,
+[data-bs-theme="dark"] .card-body .text-muted {
+    color: #adb5bd !important; /* A light, readable gray */
+}
+.carousel-img {
+  height: 380px;
+  object-fit: cover;
+}
+
+.banner-img {
+  height: 420px;
+  object-fit: cover;
+}
+
+/* Google Translate hide */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-gadget-icon,
+.goog-logo-link,
+.goog-te-gadget {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  /*overflow-wrap: break-word;*/
+}
+
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+.skiptranslate {
+  display: none !important;
+}
+
+/* ================================================================= */
+/* ================= NEW DRAFT UI (RECTANGULAR BOX) ================= */
+/* ================================================================= */
+
+.draft-box {
+  position: fixed;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 96%;
+  max-width: 1300px;
+  background: #ffffff;
+  border: 2px solid #0b4f7a;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  z-index: 1100;
+  padding: 10px 14px;
+}
+
+.draft-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: #0b4f7a;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #d0d0d0;
+}
+
+.draft-expand-btn {
+  background: #0b4f7a;
+  color: #fff;
+  border: none;
+  padding: 5px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.draft-expand-btn:hover {
+  background: #083a59;
+}
+
+.draft-box-content {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-top: 10px;
+  padding-bottom: 4px;
+}
+
+.draft-card {
+  min-width: 1100px;
+  background: #f8f9fa;
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+  color: #000;
+}
+
+.draft-box-content::-webkit-scrollbar {
+  height: 8px;
+}
+
+.draft-box-content::-webkit-scrollbar-thumb {
+  background: #0b4f7a;
+  border-radius: 4px;
+}
+
+/* ================================================================= */
+/* ================= FULL SCREEN DRAFT MODAL ENHANCE ================= */
+/* ================================================================= */
+
+.draft-modal-content h4 {
+  color: #0b4f7a;
+  font-weight: 600;
+}
+
+.draft-modal-content table th {
+  background: #0b4f7a;
+  color: white;
+  text-align: center;
+}
+
+.draft-modal-content table td {
+  vertical-align: middle;
+}
+
+.draft-modal-content input[type="checkbox"] {
+  transform: scale(1.1);
+}
+
+.draft-modal-content .btn-success {
+  float: right;
+  margin-top: 10px;
+}
+
+/* ==============================
+    GLOBAL LAYOUT & LOGOS
+============================== */
+
+.gov-logo, .logo-img {
+    max-height: 80px;
+    width: auto;
+}
+
+.navbar-custom, .main-navbar {
+    background-color: #0b4f7a !important;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255,255,255,0.9);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #fff;
+}
+
+/* ==============================
+    FONT SIZE CONTROL
+============================== */
+
+:root { --main-font-size: 16px; }
+
+html, body { 
+    font-size: var(--main-font-size) !important; 
+}
+
+/* Force sizing on all children when classes are present */
+.font-medium { --main-font-size: 18px !important; }
+.font-large  { --main-font-size: 20px !important; }
+
+.font-medium body *, .font-large body * {
+    font-size: var(--main-font-size) !important;
+}
+
+/* ==============================
+    HEADER TITLES
+============================== */
+
+.hindi-title {
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.5px;
+}
+
+.english-title {
+    font-size: 1rem !important;
+    font-weight: 500;
+}
+
+.header-title {
+    flex-wrap: nowrap;
+}
+
+/* ==============================
+    NAVBAR SINGLE LINE LOGIC (NORMAL MODE)
+============================== */
+
+/* Only applies when NOT in medium or large font modes */
+body:not(.font-normal):not(.font-medium):not(.font-large) .navbar-custom .container-fluid,
+body:not(.font-normal):not(.font-medium):not(.font-large) .navbar-custom .container {
+    flex-wrap: nowrap !important;
+    overflow: visible  !important;
+}
+
+body:not(.font-medium):not(.font-large) .navbar-nav {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+}
+
+body:not(.font-medium):not(.font-large) .navbar-nav .nav-item {
+    flex: 0 0 auto !important;
+}
+
+body:not(.font-medium):not(.font-large) .navbar-nav .nav-link {
+    white-space: nowrap !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    font-size: 15px !important; 
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+}
+
+/* Right side controls compact logic */
+body:not(.font-medium):not(.font-large) .navbar-right-controls {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    align-items: center !important;
+    margin-left: auto !important;
+    gap: 6px !important;
+}
+
+body:not(.font-medium):not(.font-large) .navbar-right-controls .form-select,
+body:not(.font-medium):not(.font-large) #fontSelector {
+    width: 95px !important;
+    height: 32px !important;
+    font-size: 12.5px !important;
+    padding: 4px 6px !important;
+}
+
+body:not(.font-medium):not(.font-large) .navbar-right-controls .btn {
+    padding: 4px 8px !important;
+    font-size: 12.5px !important;
+    min-height: 32px !important;
+    white-space: nowrap !important;
+}
+
+/* ==============================
+    UI ELEMENTS (ALERTS, BUTTONS, ICONS)
+============================== */
+
+.btn {
+    white-space: normal;
+    height: auto;
+    min-height: 38px;
+}
+
+.alert-dismissible {
+    z-index: 9999;
+    position: relative;
+}
+
+.message-wrapper {
+    z-index: 1055;
+    width: 90%;
+    max-width: 800px;
+}
+
+.auto-alert {
+    transition: opacity 0.5s ease;
+}
+
+.bi-person-circle {
+    font-size: 30px !important;
+}
+
+.login-icon i {
+    font-size: 2rem !important;
+}
+
+/* ==============================
+    DARK MODE
+============================== */
+
+[data-bs-theme="dark"] body {
+    background-color: #121212 !important;
+    color: #e0e0e0;
+}
+
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .navbar {
+    background-color: #1e1e1e !important;
+    border-color: #333 !important;
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: #1e293b;
+    color: #f8fafc;
+    border-color: #475569;
+}
+:root {
+    --theme-color: #2c5a86;  /* NIC/Govt Blue */
+    --bg-gray: #f5f7fa;
+    --border-color: #dee2e6;
+}
+
+body {
+    background-color: var(--bg-gray) !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- 1. Header & General Info --- */
+.bg-header { 
+    background-color: var(--theme-color); 
+    color: white; 
+}
+
+.general-info {
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 25px;
+}
+
+/* --- 2. Typography (Hindi/English Labels) --- */
+.lbl-hindi {
+    display: block;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.2;
+}
+
+.lbl-eng {
+    display: block;
+    font-size: 0.75rem; /* Smaller for English */
+    color: #6c757d;     /* Muted gray */
+}
+
+/* --- 3. Form Sections (Boxes) --- */
+.section-box {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    height: 100%; /* Ensures equal height in grid */
+}
+
+.section-title {
+    color: var(--theme-color);
+    font-weight: 700;
+    font-size: 1rem;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+/* Row inside boxes: Label on left, Input on right */
+.lbl-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #f0f0f0;
+}
+
+.lbl-text {
+    flex: 1; /* Takes available space */
+    padding-right: 10px;
+}
+
+.lbl-input {
+    width: 100px; /* Fixed width for number inputs */
+    flex-shrink: 0;
+}
+
+.lbl-input input, 
+.lbl-input select {
+    text-align: center;
+}
+
+/* Slightly darker borders for text and numeric inputs without changing layout */
+.form-control, .form-control-sm, textarea {
+    border: 1px solid #6e7b85; /* noticeably darker border */
+    box-shadow: none; /* remove default focus shadow */
+}
+
+.form-control:focus, .form-control-sm:focus, textarea:focus {
+    border: 1px solid #445a6a; /* darker on focus but still subtle */
+    box-shadow: 0 0 0 0.15rem rgba(44,90,134,0.10);
+}
+
+/* Make date inputs slightly wider */
+.lbl-input input[type="date"] {
+    min-width: 115px;
+}
+
+/* Utilities */
+.d-none { display: none !important; }
+
+/* --- 4. THE IMPRESSIVE TABLE STYLING --- */
+
+/* The Card Container */
+.table,
+.table {
+    color: #212529;
+}
+.custom-table-card {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* Soft Shadow */
+    border-radius: 12px;
+    background: white;
+    border: 1px solid #eee;
+    overflow: hidden; /* Keeps corners rounded */
+    margin-bottom: 50px;
+}
+
+/* The Wrapper (Scroll Logic) */
+.table-responsive {
+    overflow-x: auto;   /* Horizontal Scroll: YES */
+    overflow-y: visible; /* Vertical Scroll: NO (It grows infinitely) */
+    height: auto; 
+    max-height: none; 
+}
+
+/* Table Header */
+.table thead {
+    background: linear-gradient(135deg, #0d6efd, #0a58ca); /* Blue Gradient */
+}
+
+/* Header text ONLY */
+.table thead th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    padding: 16px;
+    border: none;
+    white-space: nowrap; /* Header text won't wrap */
+    color: var(--bs-table-color, #212529) !important;
+}
+
+/*FORCE body text visibility */
+.table tbody td {
+    white-space: nowrap; /* Forces horizontal slide */
+    vertical-align: middle;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.95rem;
+    color: #212529 !important;
+}
+
+/* Table Row Hover Effect */
+.table tbody tr:hover {
+    background-color: #f8f9fa; 
+    transform: scale(1.005);
+    transition: transform 0.2s ease;
+    position: relative;
+    z-index: 5;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+
+/* Action Buttons Width */
+.btn-sm {
+    min-width: 80px;
+}
+
+/* Custom Scrollbar for the Table */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+/* Small badge used for showing part-1 / part-2 in header */
+.part-badge {
+    display: inline-block;
+    background-color: rgba(255,255,255,0.12);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 18px;
+    font-weight: 600;
+    margin-left: 12px;
+    font-size: 0.95rem;
+}
+
+/* --- Hindi Keyboard Styling --- */
+#hindiToggle {
+    position: fixed;
+    right: 18px;
+    bottom: 100px;
+    z-index: 9999;
+}
+
+#hindiKeyboard {
+    position: fixed;
+    right: 18px;
+    bottom: 150px;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    max-width: 380px;
+    display: none;
+}
+
+#hindiKeyboard .hk-row {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+    flex-wrap: wrap;
+}
+
+#hindiKeyboard button {
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #f8f9fa;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#hindiKeyboard button:hover {
+    background: #e9ecef;
+}
+
+/* User Display Inline Styling */
+#userDisplay {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* ========== LOGIN PAGE STYLING ========== */
+body.login-page {
+    background: linear-gradient(135deg, #2c5a86 0%, #1f4788 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-header h2 {
+    color: #2c5a86;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.login-header p {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.btn-login {
+    background-color: #2c5a86;
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-login:hover {
+    background-color: #1f4788;
+    color: white;
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.register-link a {
+    color: #2c5a86;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #f5c6cb;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #c3e6cb;
+}
+
+/* ========== REGISTER PAGE STYLING ========== */
+body.register-page {
+    background: linear-gradient(135deg, #2c5a86 0%, #1f4788 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.register-container {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 500px;
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.register-header h2 {
+    color: #2c5a86;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.register-header p {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.btn-register {
+    background-color: #2c5a86;
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-register:hover {
+    background-color: #1f4788;
+    color: white;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.login-link a {
+    color: #2c5a86;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* ========== DASHBOARD STYLING ========== */
+body.dashboard-body {
+    background-color: #f8f9fa;
+}
+
+.navbar-custom {
+    background: linear-gradient(135deg, #2c5a86 0%, #1f4788 100%);
+}
+
+.dashboard-container {
+    margin-top: 30px;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-alert {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.status-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.menu-toggle {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background-color: #2c5a86;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 999;
+    border: none;
+}
+
+.menu-toggle:hover {
+    background-color: #1f4788;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.quick-menu {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 998;
+    display: none;
+    overflow: hidden;
+}
+
+.quick-menu.active {
+    display: block;
+}
+
+.quick-menu-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    color: #333;
+    text-decoration: none;
+    display: block;
+}
+
+.quick-menu-item:last-child {
+    border-bottom: none;
+}
+
+.quick-menu-item:hover {
+    background-color: #f8f9fa;
+    color: #2c5a86;
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-card-title {
+    color: #2c5a86;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* ========== CHANGE PASSWORD STYLING ========== */
+.change-password-container {
+    max-width: 600px;
+    margin: 50px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.change-password-header {
+    text-align: center;
+    color: #2c5a86;
+    margin-bottom: 30px;
+}
+
+.change-password-header h2 {
+    font-weight: bold;
+}
+
+/* ========== USER PROFILE STYLING ========== */
+.profile-container {
+    max-width: 800px;
+    margin: 30px auto;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+    background: linear-gradient(135deg, #2c5a86 0%, #1f4788 100%);
+    color: white;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.profile-header h2 {
+    margin: 0;
+    font-weight: bold;
+}
+
+.profile-content {
+    padding: 30px;
+}
+
+.profile-field {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.profile-field label {
+    font-weight: bold;
+    color: #2c5a86;
+}
+
+.profile-field-value {
+    color: #666;
+}
+
+/* ========== USER OFFICE FORM STYLING ========== */
+.office-form-container {
+    max-width: 600px;
+    margin: 30px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.office-form-header {
+    text-align: center;
+    color: #2c5a86;
+    margin-bottom: 30px;
+}
+
+.office-form-header h2 {
+    font-weight: bold;
+}
+
+.form-section {
+    margin-bottom: 25px;
+}
+
+.form-section-title {
+    font-weight: bold;
+    color: #2c5a86;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #2c5a86;
+}
+
+/* ========== HOD DASHBOARD STYLING ========== */
+.hod-dashboard-body {
+    background-color: #f8f9fa;
+}
+
+.hod-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== ADMIN DASHBOARD STYLING ========== */
+.admin-dashboard-body {
+    background-color: #f8f9fa;
+}
+
+.admin-header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ========== REPORT DETAIL STYLING ========== */
+.report-detail-container {
+    max-width: 1000px;
+    margin: 30px auto;
+}
+
+.report-header {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.report-data {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+/* Normalize all QPR form fields */
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+    border: 1.5px solid #ced4da !important;
+    border-radius: 6px !important;
+    padding: 8px 12px;
+    box-shadow: none !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #0d6efd !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(13,110,253,0.15);
+}
+
+/* Style for the new image icons */
+  .download-icon-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: transform 0.2s;
+  }
+  .download-icon-btn:hover {
+      transform: scale(1.1);
+  }
+  .download-icon-btn img {
+      width: 35px; /* Adjust size to match your UI */
+      height: auto;
+      display: block;
+  }
+  /* === Top right action buttons (View / PDF / Excel) === */
+.custom-btn-group{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Button shell */
+.rect-slanted-btn{
+  --bg: #1f73b7;          /* main blue */
+  --bg-hover: #1a65a3;    /* hover blue */
+  --icon-bg: rgba(255,255,255,.14);
+
+  display: inline-flex;
+  align-items: stretch;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg);
+  cursor: pointer;
+  user-select: none;
+
+  box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  transition: transform .08s ease, background .15s ease, box-shadow .15s ease;
+}
+
+.rect-slanted-btn:hover{
+  background: var(--bg-hover);
+  box-shadow: 0 4px 14px rgba(0,0,0,.16);
+}
+
+.rect-slanted-btn:active{
+  transform: translateY(1px);
+}
+
+.rect-slanted-btn:focus-visible{
+  outline: 3px solid rgba(13,110,253,.35);
+  outline-offset: 2px;
+}
+
+/* Left text part */
+.rect-slanted-btn .btn-text{
+  display: flex;
+  align-items: center;
+  padding: 10px 18px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: .2px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Right icon part */
+.rect-slanted-btn .btn-icon{
+  width: 52px;
+  display: grid;
+  place-items: center;
+  background: var(--icon-bg);
+  position: relative;
+}
+
+/* Creates the slanted divider */
+.rect-slanted-btn .btn-icon::before{
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 0;
+  height: 100%;
+  width: 28px;
+  background: inherit;
+  transform: skewX(-22deg);
+}
+
+/* Icon styling */
+.rect-slanted-btn .btn-icon img{
+  width: 18px;
+  height: 18px;
+  z-index: 1;
+
+  /* Makes most icons look white like the sample */
+  filter: brightness(0) invert(1);
+  opacity: .95;
+}
+
+/* Optional: compact size on small screens */
+@media (max-width: 576px){
+  .rect-slanted-btn .btn-text{ padding: 9px 14px; font-size: 15px; }
+  .rect-slanted-btn .btn-icon{ width: 46px; }
+}
+/* Force the classic PDF document icon */
+.download-icon-btn img.pdf-doc-icon{
+  width: 35px !important;
+  height: auto !important;
+  filter: none !important;
+  background: transparent !important;
+}
+
+  .custom-btn-group{
+    display:flex !important;
+    gap:10px !important;
+    align-items:center !important;
+  }
+
+  button.rect-slanted-btn{
+    --bg:#1f73b7;
+    --bg-hover:#1a65a3;
+    --icon-bg:rgba(255,255,255,.14);
+
+    display:inline-flex !important;
+    align-items:stretch !important;
+    padding:0 !important;
+    border:0 !important;
+    border-radius:8px !important;
+    overflow:hidden !important;
+    background:var(--bg) !important;
+    cursor:pointer !important;
+    box-shadow:0 2px 8px rgba(0,0,0,.12) !important;
+  }
+
+  button.rect-slanted-btn:hover{ background:var(--bg-hover) !important; }
+
+  button.rect-slanted-btn .btn-text{
+    display:flex !important;
+    align-items:center !important;
+    padding:10px 18px !important;
+    color:#fff !important;
+    font-weight:700 !important;
+    font-size:16px !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+  }
+
+  button.rect-slanted-btn .btn-icon{
+    width:52px !important;
+    display:grid !important;
+    place-items:center !important;
+    background:var(--icon-bg) !important;
+    position:relative !important;
+  }
+
+  button.rect-slanted-btn .btn-icon::before{
+    content:"";
+    position:absolute;
+    left:-14px;
+    top:0;
+    height:100%;
+    width:28px;
+    background:inherit;
+    transform:skewX(-22deg);
+  }
+
+  /* keep these top icons white */
+  button.rect-slanted-btn .btn-icon img{
+    width:18px !important;
+    height:18px !important;
+    z-index:1;
+    filter:brightness(0) invert(1) !important;
+    opacity:.95 !important;
+  }
+  [data-bs-theme="dark"] .captcha {
+        filter: grayscale(10%) contrast(1.2) brightness(0.8);
+        border: 1px solid #444;
+        background-color: #eee;
+        border-radius: 4px;
+    }
+    
+    [data-bs-theme="dark"] .logo-img {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 5px;
+    }
+
+    html[data-font-size="medium"] { font-size: 110%; }
+    html[data-font-size="large"] { font-size: 120%; }
+    
+    .accessibility-menu {
+        min-width: 260px;
+    }
+.no-js-dropdown {
+    position: relative;
+}
+.no-js-dropdown summary {
+    list-style: none; 
+    cursor: pointer;
+}
+.no-js-dropdown summary::-webkit-details-marker {
+    display: none; 
+}
+.no-js-dropdown[open] summary:before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 99;
+}
+.no-js-menu {
+    position: absolute;
+    right: 0;
+    top: 120%;
+    z-index: 100;
+    min-width: 250px;
+}
+.pure-hover-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    .pure-hover-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        min-width: 250px;
+        z-index: 1050;
+        background-color: var(--bs-body-bg);
+        border: var(--bs-border-width) solid var(--bs-border-color);
+        border-radius: var(--bs-border-radius);
+    }
+    .pure-hover-dropdown::after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 0;
+        width: 100%;
+        height: 15px;
+    }
+    .pure-hover-dropdown:hover .pure-hover-menu {
+        display: block;
+    }
+    .custom-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    .custom-dropdown-menu {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        min-width: 250px;
+        z-index: 1050;
+        background-color: var(--bs-body-bg);
+        border: var(--bs-border-width) solid var(--bs-border-color);
+        border-radius: var(--bs-border-radius);
+        margin-top: 0.5rem;
+    }
+    .custom-dropdown-menu.show-menu {
+        display: block;
+    }
+    [data-bs-theme="dark"] .text-dark:not(.badge) {
+        color: #f8f9fa !important; 
+    }
+    
+    [data-bs-theme="dark"] th,
+    [data-bs-theme="dark"] .table-heading {
+        color: #f8f9fa !important;
+    }
+    body {
+    padding-bottom: 120px; 
+}
+
+.stat-number { font-size: 2.25rem !important; } /* Replaces 36px */
+.stat-label { font-size: 0.875rem !important; } /* Replaces 14px */
+.stat-icon { font-size: 2rem !important; }      /* Replaces 32px */
+
+.qpr-page,
+.sections-wrap { font-size: 0.75rem !important; } /* Replaces 11px/12px */
+.qpr-header .title-hi { font-size: 1rem !important; } /* Replaces 14px */
+.qpr-header .title-en { font-size: 0.75rem !important; } /* Replaces 11px */
+.meta-tbl { font-size: 0.65rem !important; } /* Replaces 10px */
+.section-title { font-size: 1.1rem !important; } 
+
+.form-group select,
+.form-control,
+.qpr-table th, 
+.qpr-table td {
+    font-size: 1rem !important; /* Forces standard scaling instead of fixed 14px */
+}
+
+
+@media print {
+    .qpr-page, .sections-wrap { font-size: 11px !important; }
+    .meta-tbl { font-size: 10px !important; }
+    .qpr-header .title-hi { font-size: 14px !important; }
+    .qpr-header .title-en { font-size: 11px !important; }
+}
+
+
+:root {
+    --rb-primary: #4f46a5;
+    --rb-primary-dark: #37306f;
+    --rb-primary-light: #eeecff;
+
+    --rb-secondary: #0f766e;
+    --rb-secondary-light: #e6f7f4;
+
+    --rb-accent: #e09f3e;
+    --rb-accent-light: #fff4df;
+
+    --rb-coral: #e76f51;
+    --rb-coral-light: #fff0ec;
+
+    --rb-background: #f7f8fc;
+    --rb-surface: #ffffff;
+
+    --rb-text: #20243a;
+    --rb-text-muted: #667085;
+
+    --rb-border: #e1e4ec;
+
+    --rb-success: #16805c;
+    --rb-warning: #d89024;
+    --rb-danger: #d94b4b;
+    --rb-info: #267ca3;
+
+    --rb-radius: 12px;
+    --rb-radius-sm: 8px;
+
+    --rb-shadow-sm: 0 2px 8px rgba(45, 42, 90, 0.07);
+    --rb-shadow: 0 8px 24px rgba(45, 42, 90, 0.11);
+
+    --rb-pink: #e879a9;
+    --rb-pink-light: #fce7f3;
+}
+
+/* =========================================================
+   RAJBHASHA UI REDESIGN — DARK PALETTE
+   ========================================================= */
+
+[data-bs-theme="dark"] {
+    --rb-primary: #8b82f5;
+    --rb-primary-dark: #6f67d9;
+    --rb-primary-light: #252344;
+
+    --rb-secondary: #2dd4bf;
+    --rb-secondary-light: #123b39;
+
+    --rb-accent: #f4b860;
+    --rb-accent-light: #3b2d16;
+
+    --rb-coral: #ff8a70;
+    --rb-coral-light: #40231e;
+
+    --rb-pink: #f3a6c7;
+    --rb-pink-light: #3b2633;
+
+    --rb-background: #111827;
+    --rb-surface: #1b2433;
+
+    --rb-text: #e8ecf4;
+    --rb-text-muted: #a7b0c0;
+
+    --rb-border: #303b4d;
+
+    --rb-success: #38c995;
+    --rb-warning: #f4b860;
+    --rb-danger: #ff7474;
+    --rb-info: #54b4df;
+
+    --rb-shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.25);
+    --rb-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+/* =========================================================
+   RAJBHASHA UI REDESIGN — GLOBAL SURFACE
+   ========================================================= */
+
+body {
+    background-color: var(--rb-background) !important;
+    color: var(--rb-text);
+}
+
+main {
+    color: var(--rb-text);
+}
+
+/* =========================================================
+   RAJBHASHA UI REDESIGN — HEADER & NAVBAR
+   ========================================================= */
+
+/* Main header */
+#topHeader {
+    background: var(--rb-surface) !important;
+    border-bottom: 1px solid var(--rb-border) !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+}
+
+/* Header logos */
+#topHeader .logo-img {
+    object-fit: contain;
+    max-height: 58px;
+    width: auto;
+    transition: transform 0.2s ease;
+}
+
+#topHeader .logo-img:hover {
+    transform: scale(1.03);
+}
+
+/* Hindi title */
+#topHeader .hindi-title {
+    color: var(--rb-primary) !important;
+    font-size: 1.35rem !important;
+    letter-spacing: 0.2px;
+}
+
+/* English title */
+#topHeader .english-title {
+    color: var(--rb-text-muted) !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 0.8px;
+}
+
+/* Header title separator */
+#topHeader .border-start {
+    border-color: var(--rb-border) !important;
+}
+
+/* Main navbar */
+.navbar-custom {
+    background:
+        linear-gradient(
+            135deg,
+            var(--rb-primary-dark) 0%,
+            var(--rb-primary) 55%,
+            var(--rb-secondary) 100%
+        ) !important;
+
+    border-bottom: 3px solid var(--rb-accent);
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+/* Navbar links */
+.navbar-custom .nav-link {
+    color: rgba(255, 255, 255, 0.92) !important;
+    font-weight: 500;
+    font-size: 0.93rem;
+    padding: 9px 13px !important;
+    border-radius: var(--rb-radius-sm);
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+/* Navbar hover */
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link:focus {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Active-looking navbar item */
+.navbar-custom .nav-item > .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.16);
+    color: #ffffff !important;
+}
+
+/* Navbar dropdown */
+.navbar-custom .dropdown-menu {
+    background: var(--rb-surface);
+    border: 1px solid var(--rb-border) !important;
+    border-radius: var(--rb-radius);
+    box-shadow: var(--rb-shadow);
+    padding: 7px;
+}
+
+/* Dropdown items */
+.navbar-custom .dropdown-item {
+    color: var(--rb-text);
+    border-radius: var(--rb-radius-sm);
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.navbar-custom .dropdown-item:hover,
+.navbar-custom .dropdown-item:focus {
+    background-color: var(--rb-primary-light);
+    color: var(--rb-primary-dark);
+}
+
+/* Language / accessibility controls */
+.navbar-custom .btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.55);
+    color: #ffffff;
+    border-radius: var(--rb-radius-sm);
+}
+
+.navbar-custom .btn-outline-light:hover {
+    background-color: #ffffff;
+    color: var(--rb-primary-dark);
+}
+
+/* Font selector */
+.navbar-custom #fontSelector {
+    min-width: 92px;
+    border-radius: var(--rb-radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Theme toggle */
+.navbar-custom #themeToggle {
+    min-width: 40px;v
+    border-radius: var(--rb-radius-sm);
+}
+
+/* Logout button */
+.navbar-custom .btn-danger {
+    border-radius: var(--rb-radius-sm);
+    font-weight: 600;
+}
+
+/* Navbar mobile button */
+.navbar-custom .navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.45);
+    border-radius: var(--rb-radius-sm);
+}
+
+.navbar-custom .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(216, 155, 43, 0.25);
+}
+
+
+/* =========================================================
+   RAJBHASHA UI REDESIGN — HOMEPAGE CARDS
+   ========================================================= */
+
+/* Homepage section headings */
+main h2,
+main h3 {
+    color: var(--rb-primary-dark);
+}
+
+/* Event cards */
+.card {
+    border: 1px solid var(--rb-border);
+    border-radius: var(--rb-radius);
+    box-shadow: var(--rb-shadow-sm);
+}
+
+.card:hover {
+    box-shadow: var(--rb-shadow);
+}
+
+/* Homepage event card */
+.card .card-body {
+    background: var(--rb-surface);
+}
+
+/* What's New / Quick Links panels */
+main .card-header {
+    background: var(--rb-primary) !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-weight: 600;
+}
+
+/* Quick links */
+main .card a {
+    color: var(--rb-primary);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.dashboard-page .card a.btn-primary {
+    color: #fff;
+}
+
+main .card a:hover {
+    color: var(--rb-primary-dark);
+}
+
+/* List items inside homepage cards */
+main .list-group-item {
+    border-color: var(--rb-border);
+    padding: 14px 18px;
+    transition: background-color 0.2s ease;
+}
+
+main .list-group-item:hover {
+    background-color: var(--rb-primary-light);
+}
+
+/* Notice bullet */
+main .list-group-item::before {
+    color: var(--rb-accent);
+}
+
+/* General card image */
+.card-img-top {
+    border-top-left-radius: var(--rb-radius);
+    border-top-right-radius: var(--rb-radius);
+}
+
+/* Homepage spacing */
+main > .row {
+    margin-bottom: 28px;
+}
+
+
+/* =========================================================
+   RAJBHASHA UI REDESIGN — HOMEPAGE COLOR BRIDGE
+   ========================================================= */
+
+/* Connect homepage components to the global theme */
+:root {
+    --rbh-accent: var(--rb-primary-dark);
+    --rbh-blue: var(--rb-primary);
+    --rbh-blue-deep: var(--rb-secondary);
+    --rbh-gold: var(--rb-accent);
+    --rbh-gold-soft: var(--rb-accent);
+
+    --rbh-text: var(--rb-text);
+    --rbh-body: var(--rb-text);
+    --rbh-muted: var(--rb-text-muted);
+    --rbh-surface: var(--rb-surface);
+    --rbh-tint: var(--rb-background);
+    --rbh-line: var(--rb-border);
+    --rbh-hero-bg: var(--rb-background);
+}
+
+/* Dark mode bridge */
+[data-bs-theme="dark"] {
+    --rbh-accent: var(--rb-primary-dark);
+    --rbh-blue: var(--rb-primary);
+    --rbh-blue-deep: var(--rb-secondary);
+    --rbh-gold: var(--rb-accent);
+    --rbh-gold-soft: var(--rb-accent);
+
+    --rbh-text: var(--rb-text);
+    --rbh-body: var(--rb-text);
+    --rbh-muted: var(--rb-text-muted);
+    --rbh-surface: var(--rb-surface);
+    --rbh-tint: var(--rb-background);
+    --rbh-line: var(--rb-border);
+    --rbh-hero-bg: var(--rb-background);
+}
+
+
+/* =========================================================
+   HOMEPAGE — COLOR OVERRIDES
+   ========================================================= */
+
+.full-screen-banner {
+    background: var(--rb-background) !important;
+}
+
+.hero-edge {
+    background: linear-gradient(
+        90deg,
+        var(--rb-primary),
+        var(--rb-accent) 50%,
+        var(--rb-secondary)
+    ) !important;
+}
+
+.rbh-heading h2 {
+    color: var(--rb-primary-dark) !important;
+}
+
+.event-card {
+    background: var(--rb-surface) !important;
+    border-color: var(--rb-border) !important;
+    box-shadow: var(--rb-shadow-sm);
+}
+
+.event-card:hover {
+    border-color: var(--rb-primary) !important;
+    box-shadow: var(--rb-shadow);
+}
+
+.event-card .news-date {
+    background: linear-gradient(
+        135deg,
+        var(--rb-primary),
+        var(--rb-secondary)
+    ) !important;
+
+    border-left: 3px solid var(--rb-accent);
+}
+
+.event-card .news-title {
+    color: var(--rb-text) !important;
+}
+
+.rbh-panel {
+    background: var(--rb-surface) !important;
+    border-color: var(--rb-border) !important;
+    box-shadow: var(--rb-shadow-sm);
+}
+
+.rbh-panel-hd {
+    background: linear-gradient(
+        135deg,
+        var(--rb-primary-dark),
+        var(--rb-primary)
+    ) !important;
+}
+
+.notice-mark {
+    background: var(--rb-accent) !important;
+}
+
+.quick-links a {
+    color: var(--rb-text) !important;
+}
+
+.quick-links a i {
+    color: var(--rb-secondary) !important;
+}
+
+.quick-links a:hover {
+    background: var(--rb-primary-light) !important;
+    border-color: var(--rb-primary) !important;
+}
+
+
+/* =========================================================
+   RAJBHASHA UI REDESIGN — WHAT'S NEW + QUICK LINKS
+   ========================================================= */
+
+/* Main panels */
+.rbh-panel {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--rb-border) !important;
+    border-radius: 16px !important;
+    background: var(--rb-surface) !important;
+    box-shadow: var(--rb-shadow-sm);
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.rbh-panel:hover {
+    border-color: var(--rb-primary) !important;
+    box-shadow: var(--rb-shadow);
+}
+
+/* Color strip at the top */
+.rbh-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+
+    background: linear-gradient(
+        90deg,
+        var(--rb-primary),
+        var(--rb-secondary),
+        var(--rb-accent)
+    );
+
+    z-index: 2;
+}
+
+/* Panel heading */
+.rbh-panel-hd {
+    position: relative;
+    padding: 1rem 1.25rem !important;
+
+    background: linear-gradient(
+        135deg,
+        var(--rb-primary-dark),
+        var(--rb-primary)
+    ) !important;
+
+    color: #ffffff !important;
+
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+/* Heading icon */
+.rbh-panel-hd i {
+    color: var(--rb-accent) !important;
+}
+
+/* =========================
+   WHAT'S NEW
+   ========================= */
+
+.notice-list {
+    padding: 0.35rem 0 !important;
+}
+
+.notice-list li {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    gap: 0.9rem;
+
+    padding: 1rem 1.25rem !important;
+
+    border-bottom: 1px solid var(--rb-border) !important;
+
+    transition:
+        background-color 0.2s ease,
+        padding-left 0.2s ease;
+}
+
+.notice-list li:last-child {
+    border-bottom: none !important;
+}
+
+/* Notice hover */
+.notice-list li:hover {
+    background: var(--rb-primary-light);
+    padding-left: 1.45rem !important;
+}
+
+/* Notice dot */
+.notice-mark {
+    flex: 0 0 9px !important;
+
+    width: 9px !important;
+    height: 9px !important;
+
+    margin-top: 0 !important;
+
+    border-radius: 50%;
+
+    background: var(--rb-accent) !important;
+
+    box-shadow:
+        0 0 0 4px var(--rb-accent-light);
+}
+
+/* Notice text */
+.notice-list span:last-child {
+    color: var(--rb-text) !important;
+
+    font-size: 0.94rem;
+
+    font-weight: 500;
+
+    line-height: 1.5;
+}
+
+/* =========================
+   QUICK LINKS
+   ========================= */
+
+.quick-links {
+    padding: 0.75rem !important;
+}
+
+/* Individual link */
+.quick-links a {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    gap: 0.8rem;
+
+    margin: 0.35rem 0 !important;
+    padding: 0.85rem 0.95rem !important;
+
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+
+    color: var(--rb-text) !important;
+
+    font-size: 0.94rem;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+/* Link icon */
+.quick-links a i {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    border-radius: 9px;
+
+    background: var(--rb-primary-light);
+
+    color: var(--rb-primary) !important;
+
+    font-size: 1rem;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+/* Arrow */
+.quick-links a::after {
+    content: "→";
+
+    margin-left: auto;
+
+    color: var(--rb-text-muted);
+
+    font-size: 1.1rem;
+
+    transition:
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+/* Hover */
+.quick-links a:hover {
+    background: var(--rb-primary-light) !important;
+
+    border-color: var(--rb-primary) !important;
+
+    color: var(--rb-primary-dark) !important;
+
+    transform: translateX(4px);
+}
+
+.quick-links a:hover i {
+    background: var(--rb-primary);
+    color: #ffffff !important;
+
+    transform: rotate(-4deg);
+}
+
+.quick-links a:hover::after {
+    color: var(--rb-secondary);
+    transform: translateX(4px);
+}
+
+/* =========================
+   DARK MODE
+   ========================= */
+
+[data-bs-theme="dark"] .rbh-panel {
+    background: var(--rb-surface) !important;
+}
+
+[data-bs-theme="dark"] .notice-list li:hover {
+    background: var(--rb-primary-light);
+}
+
+[data-bs-theme="dark"] .quick-links a:hover {
+    background: var(--rb-primary-light) !important;
+}
+
+[data-bs-theme="dark"] .quick-links a i {
+    background: var(--rb-primary-light);
+    color: var(--rb-primary) !important;
+}
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 767.98px) {
+
+    .rbh-panel {
+        border-radius: 13px !important;
+    }
+
+    .rbh-panel-hd {
+        padding: 0.9rem 1rem !important;
+    }
+
+    .notice-list li {
+        padding: 0.85rem 1rem !important;
+    }
+
+    .quick-links a {
+        padding: 0.8rem !important;
+    }
+}
+
+/* =========================================================
+   RAJBHASHA UI REDESIGN — EVENT GALLERY
+   ========================================================= */
+
+.event-gallery-modal {
+    background: var(--rb-surface);
+    color: var(--rb-text);
+    border: 1px solid var(--rb-border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--rb-shadow);
+}
+
+
+/* =========================================================
+   EVENT GALLERY HEADER
+   ========================================================= */
+
+.event-gallery-modal .modal-header {
+    background: linear-gradient(
+        135deg,
+        var(--rb-primary-dark),
+        var(--rb-primary),
+        var(--rb-secondary)
+    );
+
+    color: #ffffff;
+
+    border-bottom: 3px solid var(--rb-accent);
+
+    padding: 1rem 1.25rem;
+}
+
+.event-gallery-modal .modal-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.15rem;
+}
+
+.event-gallery-subtitle {
+    font-size: .78rem;
+    opacity: .8;
+    margin-top: 2px;
+}
+
+.event-gallery-modal .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+
+/* =========================================================
+   EVENT GALLERY PHOTO STAGE
+   ========================================================= */
+
+.event-gallery-modal .modal-body {
+    padding: 0;
+    background: #17152b;
+}
+
+#eventGalleryCarousel {
+    position: relative;
+
+    min-height: 500px;
+
+    background:
+        radial-gradient(
+            circle at 50% 45%,
+            #f4f2ff 0%,
+            #eeecfa 55%,
+            #e6e4f2 100%
+        );
+
+    overflow: hidden;
+}
+
+
+/* Subtle pink glow */
+
+#eventGalleryCarousel::before {
+    content: "";
+
+    position: absolute;
+
+    width: 260px;
+    height: 260px;
+
+    top: -120px;
+    right: -80px;
+
+    background: rgba(232, 121, 169, .12);
+
+    border-radius: 50%;
+
+    filter: blur(30px);
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   EVENT GALLERY SLIDES
+   ========================================================= */
+
+#eventGalleryCarousel .carousel-item {
+    height: 500px;
+    background: transparent;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 90px;
+}
+
+#eventGalleryCarousel .carousel-item.active {
+    display: flex;
+}
+
+/* Event image */
+
+#eventGalleryCarousel .carousel-item img {
+    width: auto;
+    max-width: 100%;
+
+    height: 460px;
+
+    object-fit: contain;
+
+    display: block;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, .38),
+        0 0 0 1px rgba(255, 255, 255, .08);
+
+    transition:
+        transform .3s ease,
+        box-shadow .3s ease;
+}
+
+
+/* =========================================================
+   PREVIOUS / NEXT BUTTONS
+   ========================================================= */
+
+#eventGalleryCarousel .carousel-control-prev,
+#eventGalleryCarousel .carousel-control-next {
+    position: absolute;
+
+    top: 50%;
+    bottom: auto;
+
+    width: 52px;
+    height: 52px;
+
+    transform: translateY(-50%);
+
+    opacity: 1 !important;
+
+    z-index: 100;
+
+    border-radius: 50%;
+
+    background: rgba(79, 70, 165, .95);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition:
+        background-color .2s ease,
+        transform .2s ease,
+        box-shadow .2s ease;
+}
+
+#eventGalleryCarousel .carousel-control-prev {
+    left: 20px;
+}
+
+#eventGalleryCarousel .carousel-control-next {
+    right: 20px;
+
+    border: 2px solid var(--rb-pink);
+}
+
+
+/* Hover */
+
+#eventGalleryCarousel .carousel-control-prev:hover,
+#eventGalleryCarousel .carousel-control-next:hover {
+    background: var(--rb-secondary);
+
+    transform: translateY(-50%) scale(1.08);
+
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, .3);
+}
+
+
+/* Arrow icons */
+
+#eventGalleryCarousel .carousel-control-prev-icon,
+#eventGalleryCarousel .carousel-control-next-icon {
+    width: 23px;
+    height: 23px;
+
+    background-color: transparent;
+
+    background-size: 100% 100%;
+}
+
+
+/* =========================================================
+   GALLERY INDICATORS
+   ========================================================= */
+
+#eventGalleryCarousel .carousel-indicators {
+    bottom: 12px;
+
+    z-index: 101;
+}
+
+#eventGalleryCarousel .carousel-indicators button {
+    width: 25px;
+    height: 5px;
+
+    border: 0;
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    opacity: .35;
+
+    transition:
+        width .2s ease,
+        opacity .2s ease,
+        background-color .2s ease;
+}
+
+#eventGalleryCarousel .carousel-indicators button.active {
+    width: 38px;
+
+    background: var(--rb-pink);
+
+    opacity: 1;
+}
+
+
+/* =========================================================
+   DARK THEME
+   ========================================================= */
+
+[data-bs-theme="dark"] .event-gallery-modal {
+    background: var(--rb-surface);
+}
+
+[data-bs-theme="dark"] #eventGalleryCarousel {
+    background:
+        radial-gradient(
+            circle at 50% 45%,
+            #302b5f 0%,
+            #18162d 55%,
+            #0d0c18 100%
+        );
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+
+    #eventGalleryCarousel {
+        min-height: 330px;
+    }
+
+    #eventGalleryCarousel .carousel-item {
+        height: 330px;
+        padding: 15px 65px;
+    }
+
+    #eventGalleryCarousel .carousel-item img {
+        height: 300px;
+    }
+
+    #eventGalleryCarousel .carousel-control-prev,
+    #eventGalleryCarousel .carousel-control-next {
+        width: 44px;
+        height: 44px;
+    }
+
+    #eventGalleryCarousel .carousel-control-prev {
+        left: 10px;
+    }
+
+    #eventGalleryCarousel .carousel-control-next {
+        right: 10px;
+    }
+
+    .event-gallery-modal {
+        margin: .5rem;
+        border-radius: 14px;
+    }
+}
+
+/* =========================================================
+   HOMEPAGE HERO CAROUSEL — FINAL POLISH
+   ========================================================= */
+
+.full-screen-banner {
+    background: var(--rb-background) !important;
+    padding: 14px 0 0;
+}
+
+.main-carousel-shell {
+    width: min(94%, 1400px);
+    margin: 0 auto;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--rb-surface);
+    border: 1px solid var(--rb-border);
+    box-shadow: var(--rb-shadow);
+}
+
+/* Keep the banner compact without cropping the artwork */
+.main-carousel-shell .carousel-item img {
+    width: 100%;
+    height: clamp(250px, 31vw, 390px);
+    object-fit: contain;
+    display: block;
+    background: var(--rb-surface);
+}
+
+/* Smooth image transition */
+.main-carousel-shell .carousel-item {
+    transition: transform 0.6s ease-in-out;
+}
+
+/* Carousel controls */
+.main-carousel-shell .carousel-control-prev,
+.main-carousel-shell .carousel-control-next {
+    width: 8%;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.main-carousel-shell:hover .carousel-control-prev,
+.main-carousel-shell:hover .carousel-control-next {
+    opacity: 1;
+}
+
+.main-carousel-shell .carousel-control-prev-icon,
+.main-carousel-shell .carousel-control-next-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: var(--rb-primary) !important;
+    background-size: 55%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+/* Indicators */
+.main-carousel-shell .carousel-indicators {
+    margin-bottom: 12px;
+    gap: 5px;
+}
+
+.main-carousel-shell .carousel-indicators [data-bs-target] {
+    width: 8px;
+    height: 8px;
+    margin: 0;
+    border: 0;
+    border-radius: 50%;
+    background-color: var(--rb-text-muted);
+    opacity: 0.45;
+    transition: all 0.25s ease;
+}
+
+.main-carousel-shell .carousel-indicators .active {
+    width: 24px;
+    border-radius: 8px;
+    background: linear-gradient(
+        90deg,
+        var(--rb-primary),
+        var(--rb-pink, #e879a9)
+    );
+    opacity: 1;
+}
+
+/* Color strip below the hero */
+.hero-edge {
+    height: 5px;
+    margin-top: 10px;
+    border-radius: 0 0 6px 6px;
+    background: linear-gradient(
+        90deg,
+        var(--rb-primary),
+        var(--rb-pink, #e879a9) 35%,
+        var(--rb-accent) 55%,
+        var(--rb-secondary)
+    ) !important;
+}
+
+/* Dark theme */
+[data-bs-theme="dark"] .main-carousel-shell {
+    background: var(--rb-surface);
+    border-color: var(--rb-border);
+}
+
+[data-bs-theme="dark"] .main-carousel-shell .carousel-item img {
+    background: var(--rb-surface) !important;
+}
+
+[data-bs-theme="dark"] .main-carousel-shell .carousel-control-prev-icon,
+[data-bs-theme="dark"] .main-carousel-shell .carousel-control-next-icon {
+    filter: none !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+
+    .full-screen-banner {
+        padding-top: 8px;
+    }
+
+    .main-carousel-shell {
+        width: 96%;
+        border-radius: 14px;
+    }
+
+    .main-carousel-shell .carousel-item img {
+        height: clamp(210px, 48vw, 300px);
+    }
+
+    .main-carousel-shell .carousel-control-prev,
+    .main-carousel-shell .carousel-control-next {
+        opacity: 1;
+        width: 12%;
+    }
+
+    .main-carousel-shell .carousel-control-prev-icon,
+    .main-carousel-shell .carousel-control-next-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .main-carousel-shell .carousel-indicators {
+        margin-bottom: 8px;
+    }
+}
+
+/* =========================================================
+   RAJBHASHA FOOTER — DECORATIVE DESIGN
+   ========================================================= */
+
+.rb-footer {
+    position: relative;
+    width: 100%;
+    margin-top: 55px;
+    overflow: hidden;
+
+    background: var(--rb-surface);
+    color: var(--rb-text);
+
+    border-top: 1px solid var(--rb-border);
+}
+
+/* Color ribbon */
+.rb-footer::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 4px;
+
+    background: linear-gradient(
+        90deg,
+        var(--rb-primary),
+        var(--rb-pink, #e879a9),
+        var(--rb-accent),
+        var(--rb-secondary)
+    );
+}
+
+/* Decorative background circles */
+.rb-footer::after {
+    content: "";
+    position: absolute;
+
+    width: 280px;
+    height: 120px;
+
+    right: -80px;
+    bottom: -75px;
+
+    border-radius: 50%;
+
+    background: linear-gradient(
+        135deg,
+        var(--rb-primary),
+        var(--rb-secondary)
+    );
+
+    opacity: 0.08;
+
+    pointer-events: none;
+}
+
+.rb-footer-content {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+    max-width: 1100px;
+
+    margin: 0 auto;
+
+    padding: 30px 20px 18px;
+
+    text-align: center;
+}
+
+/* Rajbhasha heading */
+.rb-footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    margin-bottom: 16px;
+}
+
+.rb-footer-title {
+    color: var(--rb-primary);
+
+    font-size: 1.2rem;
+    font-weight: 700;
+
+    letter-spacing: 0.2px;
+}
+
+.rb-footer-accent {
+    position: relative;
+
+    width: 58px;
+    height: 3px;
+
+    margin-top: 8px;
+
+    border-radius: 10px;
+
+    background: linear-gradient(
+        90deg,
+        var(--rb-primary),
+        var(--rb-pink, #e879a9),
+        var(--rb-secondary)
+    );
+}
+
+/* Small decorative dots */
+.rb-footer-brand::before,
+.rb-footer-brand::after {
+    content: "•";
+
+    position: absolute;
+
+    color: var(--rb-pink, #e879a9);
+
+    font-size: 1.2rem;
+}
+
+.rb-footer-brand::before {
+    transform: translateX(-75px);
+}
+
+.rb-footer-brand::after {
+    transform: translateX(75px);
+}
+
+/* NIC details */
+.rb-footer-nic {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 4px;
+
+    color: var(--rb-text-muted);
+
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.rb-footer-nic strong {
+    color: var(--rb-text);
+
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+/* Copyright area */
+.rb-footer-bottom {
+    position: relative;
+
+    margin-top: 19px;
+    padding-top: 12px;
+
+    border-top: 1px solid var(--rb-border);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    gap: 9px;
+
+    color: var(--rb-text-muted);
+
+    font-size: 0.72rem;
+}
+
+.rb-footer-divider {
+    color: var(--rb-pink, #e879a9);
+}
+
+/* Second decorative circle */
+.rb-footer-bottom::after {
+    content: "";
+
+    position: absolute;
+
+    width: 160px;
+    height: 160px;
+
+    left: -100px;
+    bottom: -110px;
+
+    border-radius: 50%;
+
+    background: var(--rb-accent);
+
+    opacity: 0.16;
+
+    pointer-events: none;
+}
+
+/* Dark mode */
+[data-bs-theme="dark"] .rb-footer {
+    background: var(--rb-surface);
+}
+
+[data-bs-theme="dark"] .rb-footer::after {
+    opacity: 0.16;
+}
+
+[data-bs-theme="dark"] .rb-footer-bottom::after {
+    opacity: 0.08;
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+
+    .rb-footer {
+        margin-top: 35px;
+    }
+
+    .rb-footer-content {
+        padding: 26px 16px 16px;
+    }
+
+    .rb-footer-title {
+        font-size: 1.05rem;
+    }
+
+    .rb-footer-brand::before {
+        transform: translateX(-60px);
+    }
+
+    .rb-footer-brand::after {
+        transform: translateX(60px);
+    }
+
+    .rb-footer-bottom {
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .rb-footer-divider {
+        display: none;
+    }
+}
+
+/* =========================================================
+   RAJBHASHA DASHBOARD — UI/UX FOUNDATION
+   ========================================================= */
+
+.dashboard-page {
+    padding-bottom: 40px;
+    overflow-x: hidden;
+}
+
+/* Dashboard main container */
+.dashboard-page > .container-fluid {
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+/* ---------------------------------------------------------
+   Dashboard Header
+   --------------------------------------------------------- */
+
+.dashboard-page .d-flex.justify-content-between.align-items-center.mb-4 {
+    position: relative;
+    padding: 24px 28px;
+    margin-bottom: 24px !important;
+    border-radius: 18px;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--rb-primary-dark),
+            var(--rb-primary) 58%,
+            var(--rb-secondary)
+        );
+
+    color: #fff;
+    box-shadow: var(--rb-shadow);
+}
+
+/* Decorative circle */
+.dashboard-page .d-flex.justify-content-between.align-items-center.mb-4::after {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    right: -55px;
+    top: -75px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+}
+
+/* Keep header content above decoration */
+.dashboard-page .d-flex.justify-content-between.align-items-center.mb-4 > div {
+    position: relative;
+    z-index: 2;
+}
+
+/* Dashboard title */
+.dashboard-page .d-flex.justify-content-between.align-items-center.mb-4 h2 {
+    margin-bottom: 6px !important;
+    color: #fff !important;
+    font-size: clamp(1.45rem, 2vw, 2rem);
+    letter-spacing: -0.3px;
+}
+
+/* Header icon */
+.dashboard-page .d-flex.justify-content-between.align-items-center.mb-4 h2 i {
+    margin-right: 8px;
+    opacity: 0.9;
+}
+
+/* Welcome text */
+.dashboard-page .d-flex.justify-content-between.align-items-center.mb-4 p {
+    margin-bottom: 0;
+    color: rgba(255, 255, 255, 0.82) !important;
+    font-size: 0.92rem;
+}
+
+/* Username */
+.dashboard-page .d-flex.justify-content-between.align-items-center.mb-4 p strong {
+    color: #fff;
+}
+
+/* Role badges */
+.dashboard-page .d-flex.justify-content-between.align-items-center.mb-4 .badge {
+    position: relative;
+    z-index: 2;
+    border-radius: 999px !important;
+    padding: 9px 15px !important;
+    font-size: 0.72rem;
+    letter-spacing: 0.6px;
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(6px);
+}
+
+/* HOD name badge */
+.dashboard-page .d-flex.justify-content-between.align-items-center.mb-4
+.badge.bg-info {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #fff !important;
+}
+
+
+/* ---------------------------------------------------------
+   Common Dashboard Cards
+   --------------------------------------------------------- */
+
+.dashboard-page .card {
+    border: 1px solid var(--rb-border) !important;
+    border-radius: 16px !important;
+    background: var(--rb-surface);
+    color: var(--rb-text);
+    box-shadow: var(--rb-shadow-sm);
+    overflow: hidden;
+}
+
+.dashboard-page .card:hover {
+    box-shadow: var(--rb-shadow);
+}
+
+.dashboard-page .card a.btn-secondary {
+    background-color: #168578;
+    border-color: #168578;
+    color: #fff;
+}
+
+.dashboard-page .card-header {
+    border-bottom: 1px solid var(--rb-border);
+    background: var(--rb-surface);
+    color: var(--rb-text);
+}
+
+.dashboard-page .card-body {
+    color: var(--rb-text);
+}
+
+
+/* ---------------------------------------------------------
+   Section Headings
+   --------------------------------------------------------- */
+
+.dashboard-page .card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dashboard-page .card-title i {
+    color: var(--rb-primary);
+}
+
+
+/* ---------------------------------------------------------
+   Tables
+   --------------------------------------------------------- */
+
+.dashboard-page .table {
+    margin-bottom: 0;
+    color: var(--rb-text);
+}
+
+.dashboard-page .table thead th {
+    padding: 13px 14px;
+    background: var(--rb-background);
+    color: var(--rb-text-muted);
+    border-bottom: 1px solid var(--rb-border);
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.35px;
+    white-space: nowrap;
+}
+
+.dashboard-page .table tbody td {
+    padding: 13px 14px;
+    border-color: var(--rb-border);
+    vertical-align: middle;
+}
+
+.dashboard-page .table-hover tbody tr {
+    transition: background-color 0.18s ease;
+}
+
+.dashboard-page .table-hover tbody tr:hover {
+    background: var(--rb-primary-light);
+}
+
+
+/* ---------------------------------------------------------
+   Status Badges
+   --------------------------------------------------------- */
+
+.dashboard-page .badge {
+    border-radius: 7px;
+    font-weight: 600;
+}
+
+.dashboard-page .bg-success {
+    background-color: var(--rb-success) !important;
+}
+
+.dashboard-page .bg-warning {
+    background-color: var(--rb-warning) !important;
+}
+
+.dashboard-page .bg-danger {
+    background-color: var(--rb-danger) !important;
+}
+
+
+/* ---------------------------------------------------------
+   Buttons
+   --------------------------------------------------------- */
+
+.dashboard-page .btn {
+    border-radius: 9px;
+    font-weight: 600;
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        background-color 0.18s ease;
+}
+
+.dashboard-page .btn:hover {
+    transform: translateY(-1px);
+}
+
+.dashboard-page .btn-primary {
+    background-color: var(--rb-primary);
+    border-color: var(--rb-primary);
+}
+
+.dashboard-page .btn-primary:hover {
+    background-color: var(--rb-primary-dark);
+    border-color: var(--rb-primary-dark);
+}
+
+.dashboard-page .btn-outline-primary {
+    color: var(--rb-primary);
+    border-color: var(--rb-primary);
+}
+
+.dashboard-page .btn-outline-primary:hover {
+    background-color: var(--rb-primary);
+    border-color: var(--rb-primary);
+}
+
+
+/* ---------------------------------------------------------
+   Progress Bars
+   --------------------------------------------------------- */
+
+.dashboard-page .progress {
+    background: var(--rb-background);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.dashboard-page .progress-bar {
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+
+    .dashboard-page {
+        padding-bottom: 25px;
+    }
+
+    .dashboard-page .d-flex.justify-content-between.align-items-center.mb-4 {
+        padding: 20px;
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 14px;
+    }
+
+    .dashboard-page .d-flex.justify-content-between.align-items-center.mb-4 > div:last-child {
+        align-self: flex-start;
+    }
+
+    .dashboard-page .table thead th,
+    .dashboard-page .table tbody td {
+        padding: 10px;
+        font-size: 0.82rem;
+    }
+}
+
+
+/* ---------------------------------------------------------
+   Dark Theme
+   --------------------------------------------------------- */
+
+[data-bs-theme="dark"] .dashboard-page .table thead th {
+    background: var(--rb-background);
+}
+
+[data-bs-theme="dark"] .dashboard-page .table-hover tbody tr:hover {
+    background: var(--rb-primary-light);
+}
+
+[data-bs-theme="dark"] .dashboard-page .card-header {
+    background: var(--rb-surface) !important;
+}
+
+[data-bs-theme="dark"] .dashboard-page .form-control,
+[data-bs-theme="dark"] .dashboard-page .form-select {
+    background: var(--rb-background);
+    color: var(--rb-text);
+    border-color: var(--rb-border);
+}
+
+/* =========================================================
+   ADMIN DASHBOARD
+   ========================================================= */
+
+/* HOD statistics section */
+.dashboard-page .card:has(.fa-chart-bar) {
+    border-top: 3px solid var(--rb-primary) !important;
+}
+
+.dashboard-page .card:has(.fa-chart-bar) .card-title {
+    font-size: 1rem;
+    margin-bottom: 18px !important;
+}
+
+.dashboard-page .card:has(.fa-chart-bar) .card-title i {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: var(--rb-primary-light);
+    color: var(--rb-primary);
+}
+
+/* Statistics table */
+.dashboard-page .card:has(.fa-chart-bar) .table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.dashboard-page .card:has(.fa-chart-bar) .table thead th:first-child {
+    border-radius: 8px 0 0 8px;
+}
+
+.dashboard-page .card:has(.fa-chart-bar) .table thead th:last-child {
+    border-radius: 0 8px 8px 0;
+}
+
+.dashboard-page .card:has(.fa-chart-bar) .table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+/* Percentage progress */
+.dashboard-page .card:has(.fa-chart-bar) .progress {
+    min-width: 110px;
+}
+
+
+/* ---------------------------------------------------------
+   ADMIN QUICK ACTIONS
+   --------------------------------------------------------- */
+
+.dashboard-page .card:has(.fa-calendar-alt) {
+    border-top: 3px solid var(--rb-secondary) !important;
+}
+
+.dashboard-page .card:has(.fa-calendar-alt) .card-body {
+    padding: 22px;
+}
+
+.dashboard-page .card:has(.fa-calendar-alt) .card-title {
+    margin-bottom: 16px !important;
+    font-size: 1rem;
+}
+
+.dashboard-page .card:has(.fa-calendar-alt) .d-flex {
+    gap: 10px !important;
+}
+
+
+/* Quick action buttons */
+.dashboard-page .card:has(.fa-calendar-alt) .btn {
+    min-height: 42px;
+    padding: 9px 15px;
+    border: 0;
+    box-shadow: none;
+}
+
+/* Events */
+.dashboard-page .card:has(.fa-calendar-alt) .btn-success {
+    background: var(--rb-secondary) !important;
+}
+
+/* Create HOD */
+.dashboard-page .card:has(.fa-calendar-alt) .btn[style*="#0d6efd"] {
+    background: var(--rb-primary) !important;
+}
+
+/* Create Manager */
+.dashboard-page .card:has(.fa-calendar-alt) .btn[style*="#6f42c1"] {
+    background: var(--rb-primary-dark) !important;
+}
+
+/* Employee details */
+.dashboard-page .card:has(.fa-calendar-alt) .btn-info {
+    background: var(--rb-info) !important;
+}
+
+/* Office */
+.dashboard-page .card:has(.fa-calendar-alt) .btn-warning {
+    background: var(--rb-accent) !important;
+}
+
+
+/* ---------------------------------------------------------
+   ADMIN APPROVAL REQUESTS
+   --------------------------------------------------------- */
+
+.dashboard-page .card:has(.fa-user-check) {
+    border-top: 3px solid var(--rb-accent) !important;
+}
+
+.dashboard-page .card:has(.fa-user-check) .card-header {
+    padding: 16px 20px;
+    font-size: 0.95rem;
+}
+
+.dashboard-page .card:has(.fa-user-check) .card-header i {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 7px;
+    border-radius: 8px;
+    background: var(--rb-primary-light);
+}
+
+.dashboard-page .card:has(.fa-user-check) .table tbody td {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+.dashboard-page .card:has(.fa-user-check) .btn-group {
+    gap: 5px;
+}
+
+.dashboard-page .card:has(.fa-user-check) .btn-group .btn {
+    border-radius: 8px !important;
+}
+
+
+/* ---------------------------------------------------------
+   ACTIVE USERS
+   --------------------------------------------------------- */
+
+.dashboard-page .card:has(.fa-archive) {
+    border-top: 3px solid var(--rb-info) !important;
+}
+
+
+/* ---------------------------------------------------------
+   ARCHIVED USERS
+   --------------------------------------------------------- */
+
+.dashboard-page .card:has(.fa-trash-restore) {
+    border-top: 3px solid var(--rb-danger) !important;
+}
+
+.dashboard-page .card:has(.fa-trash-restore) .card-header {
+    background: var(--rb-coral-light) !important;
+    color: var(--rb-danger) !important;
+    border-bottom: 1px solid var(--rb-border);
+}
+
+
+/* ---------------------------------------------------------
+   ADMIN MOBILE
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+
+    .dashboard-page .card:has(.fa-calendar-alt) .d-flex {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .dashboard-page .card:has(.fa-calendar-alt) .btn {
+        width: 100%;
+    }
+
+    .dashboard-page .card:has(.fa-chart-bar) .table {
+        min-width: 850px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .dashboard-page .card:has(.fa-calendar-alt) .d-flex {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =========================================================
+   MANAGER DASHBOARD — UI/UX
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   Manager Header
+   --------------------------------------------------------- */
+
+.manager-dashboard-header {
+    position: relative;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    border-radius: 18px;
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--rb-primary-dark),
+            var(--rb-primary) 58%,
+            var(--rb-secondary)
+        );
+
+    color: #fff;
+    box-shadow: var(--rb-shadow);
+}
+
+.manager-dashboard-header::after {
+    content: "";
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    right: -65px;
+    top: -100px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+}
+
+.manager-dashboard-header > * {
+    position: relative;
+    z-index: 2;
+}
+
+.manager-dashboard-header h2 {
+    margin: 0;
+    color: #fff !important;
+    font-size: clamp(1.45rem, 2vw, 2rem);
+    letter-spacing: -0.3px;
+}
+
+.manager-dashboard-header .badge {
+    padding: 10px 16px !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.14) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(6px);
+}
+
+
+/* ---------------------------------------------------------
+   Quick Actions
+   --------------------------------------------------------- */
+
+.manager-quick-actions {
+    border-top: 3px solid var(--rb-secondary) !important;
+}
+
+.manager-quick-actions .card-body {
+    padding: 22px;
+}
+
+.manager-quick-actions-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 18px;
+    color: var(--rb-primary);
+}
+
+.manager-quick-actions-title::before {
+    content: "";
+    width: 4px;
+    height: 22px;
+    border-radius: 4px;
+    background: linear-gradient(
+        180deg,
+        var(--rb-primary),
+        var(--rb-pink, #e879a9)
+    );
+}
+
+.manager-action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.manager-action-buttons .btn {
+    min-height: 42px;
+    padding: 9px 15px;
+}
+
+
+/* ---------------------------------------------------------
+   Pending Profile Requests
+   --------------------------------------------------------- */
+
+.manager-pending-requests {
+    margin-bottom: 20px;
+    border: 1px solid var(--rb-border);
+    border-left: 4px solid var(--rb-accent);
+    border-radius: 12px;
+    background: var(--rb-accent-light);
+    overflow: hidden;
+}
+
+.manager-pending-requests-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 13px 16px;
+    color: var(--rb-text);
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.manager-pending-requests-title i {
+    color: var(--rb-accent);
+}
+
+.manager-pending-requests ul {
+    margin: 0;
+    padding: 0 16px 12px;
+    list-style: none;
+}
+
+.manager-pending-requests li {
+    padding: 10px 0;
+    border-top: 1px solid var(--rb-border);
+}
+
+.manager-pending-requests li > div:first-child {
+    color: var(--rb-text);
+    font-size: 0.86rem;
+}
+
+
+/* ---------------------------------------------------------
+   Manager Tabs
+   --------------------------------------------------------- */
+
+#managerTabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 18px !important;
+    padding: 5px;
+    border: 1px solid var(--rb-border);
+    border-radius: 12px;
+    background: var(--rb-surface);
+    box-shadow: var(--rb-shadow-sm);
+}
+
+#managerTabs .nav-item {
+    flex: 1;
+}
+
+#managerTabs .nav-link {
+    width: 100%;
+    border: 0 !important;
+    border-radius: 8px !important;
+    padding: 11px 15px;
+    color: var(--rb-text-muted);
+    background: transparent;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+#managerTabs .nav-link:hover {
+    color: var(--rb-primary);
+    background: var(--rb-primary-light);
+}
+
+#managerTabs .nav-link.active {
+    color: #fff !important;
+    background: linear-gradient(
+        135deg,
+        var(--rb-primary-dark),
+        var(--rb-primary)
+    ) !important;
+    box-shadow: var(--rb-shadow-sm);
+}
+
+#managerTabs .nav-link i {
+    margin-right: 5px;
+}
+
+
+/* ---------------------------------------------------------
+   Manager Workspace Cards
+   --------------------------------------------------------- */
+
+#managerTabsContent > .tab-pane > .card {
+    border-top: 3px solid var(--rb-primary) !important;
+}
+
+#managerTabsContent .card-body {
+    padding: 22px;
+}
+
+
+/* ---------------------------------------------------------
+   Manager Tables
+   --------------------------------------------------------- */
+
+#managerTabsContent .table {
+    min-width: 650px;
+}
+
+#managerTabsContent .table thead th {
+    background: var(--rb-background);
+    color: var(--rb-text-muted);
+}
+
+#managerTabsContent .table tbody td {
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+#managerTabsContent .table tbody tr {
+    transition: background-color 0.18s ease;
+}
+
+#managerTabsContent .table tbody tr:hover {
+    background: var(--rb-primary-light);
+}
+
+
+/* Employee code */
+#managerTabsContent .font-monospace {
+    letter-spacing: 0.3px;
+}
+
+
+/* Designation badges */
+#managerTabsContent .badge.bg-info {
+    background: var(--rb-secondary-light) !important;
+    color: var(--rb-secondary) !important;
+    border: 1px solid rgba(15, 118, 110, 0.15);
+}
+
+
+/* Unlock button */
+#managerTabsContent .btn-warning {
+    background: var(--rb-accent);
+    border-color: var(--rb-accent);
+    color: #fff;
+}
+
+
+/* ---------------------------------------------------------
+   Search / Filter Panel
+   --------------------------------------------------------- */
+
+#users-pane form {
+    padding: 16px;
+    margin-bottom: 20px !important;
+    border: 1px solid var(--rb-border);
+    border-radius: 12px;
+    background: var(--rb-background);
+}
+
+#users-pane .form-label {
+    margin-bottom: 6px;
+    color: var(--rb-text);
+    font-size: 0.82rem;
+}
+
+#users-pane .form-control,
+#users-pane .form-select {
+    min-height: 42px;
+    border-radius: 9px;
+    border-color: var(--rb-border);
+    background: var(--rb-surface);
+    color: var(--rb-text);
+}
+
+#users-pane .form-control:focus,
+#users-pane .form-select:focus {
+    border-color: var(--rb-primary);
+    box-shadow: 0 0 0 3px var(--rb-primary-light);
+}
+
+
+/* ---------------------------------------------------------
+   QPR Actions
+   --------------------------------------------------------- */
+
+#qpr-pane .btn-success,
+#qpr-pane .btn-danger {
+    border-radius: 8px;
+}
+
+#qpr-pane .btn-success {
+    background: var(--rb-success);
+    border-color: var(--rb-success);
+}
+
+#qpr-pane .btn-danger {
+    background: var(--rb-danger);
+    border-color: var(--rb-danger);
+}
+
+
+/* ---------------------------------------------------------
+   Empty States
+   --------------------------------------------------------- */
+
+#managerTabsContent td.text-muted.text-center {
+    padding: 45px 20px !important;
+    font-size: 0.9rem;
+}
+
+
+/* ---------------------------------------------------------
+   Dark Theme
+   --------------------------------------------------------- */
+
+[data-bs-theme="dark"] .manager-pending-requests {
+    background: var(--rb-accent-light);
+}
+
+[data-bs-theme="dark"] #managerTabs {
+    background: var(--rb-surface);
+}
+
+[data-bs-theme="dark"] #users-pane form {
+    background: var(--rb-background);
+}
+
+
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+
+    .manager-dashboard-header {
+        padding: 20px;
+    }
+
+    .manager-dashboard-header .d-flex {
+        align-items: flex-start !important;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    #managerTabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    #managerTabs .nav-item {
+        min-width: 150px;
+    }
+
+    .manager-action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .manager-action-buttons .btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .manager-action-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    #managerTabs .nav-link {
+        font-size: 0.82rem;
+        padding: 10px;
+    }
+}
+
+
+/* =========================================================
+   USER DASHBOARD — COMPLETE VISUAL STYLING
+   ========================================================= */
+
+/* ---------- Main User Dashboard Cards ---------- */
+
+.dashboard-page .row.g-4 > .col-md-6 > .card {
+    border-top: 3px solid var(--rb-primary) !important;
+    border-radius: var(--rb-radius) !important;
+    background: var(--rb-surface) !important;
+    box-shadow: var(--rb-shadow-sm);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.dashboard-page .row.g-4 > .col-md-6:first-child > .card {
+    border-top-color: var(--rb-secondary) !important;
+}
+
+.dashboard-page .row.g-4 > .col-md-6:nth-child(2) > .card {
+    border-top-color: var(--rb-primary) !important;
+}
+
+.dashboard-page .row.g-4 > .col-md-6 > .card .card-body {
+    padding: 24px;
+}
+
+.dashboard-page .row.g-4 > .col-md-6 > .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--rb-shadow);
+}
+
+
+/* ---------- Card Titles ---------- */
+
+.dashboard-page .row.g-4 > .col-md-6 > .card .card-title,
+.dashboard-page .row.mt-3 > .col-md-12 > .card .card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--rb-text);
+}
+
+.dashboard-page .row.g-4 > .col-md-6 > .card .card-title i,
+.dashboard-page .row.mt-3 > .col-md-12 > .card .card-title i {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background: var(--rb-primary-light);
+    color: var(--rb-primary);
+}
+
+
+/* ---------- Role-Based QPR Card ---------- */
+
+.dashboard-page .row.mt-3 > .col-md-12 > .card {
+    border-top: 3px solid var(--rb-accent) !important;
+    border-radius: var(--rb-radius) !important;
+    background: var(--rb-surface) !important;
+    box-shadow: var(--rb-shadow-sm);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.dashboard-page .row.mt-3 > .col-md-12 > .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--rb-shadow);
+}
+
+.dashboard-page .row.mt-3 > .col-md-12 > .card .card-body {
+    padding: 24px;
+}
+
+.dashboard-page .row.mt-3 > .col-md-12 > .card .card-title i {
+    background: var(--rb-accent-light);
+    color: var(--rb-accent);
+}
+
+
+/* ---------- QPR / Dashboard Buttons ---------- */
+
+.dashboard-page .row.g-4 .btn,
+.dashboard-page .row.mt-3 .btn {
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-page .row.g-4 .btn:hover,
+.dashboard-page .row.mt-3 .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--rb-shadow-sm);
+}
+
+
+/* ---------- Button Icons ---------- */
+
+.dashboard-page .row.g-4 .btn i,
+.dashboard-page .row.mt-3 .btn i {
+    margin-right: 5px;
+}
+
+
+/* ---------- Small Text / Descriptions ---------- */
+
+.dashboard-page .row.g-4 .text-muted,
+.dashboard-page .row.mt-3 .text-muted {
+    color: var(--rb-text-muted) !important;
+}
+
+
+/* ---------- Status Badges ---------- */
+
+.dashboard-page .badge {
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+
+/* ---------- Links ---------- */
+
+.dashboard-page .row.g-4 a:not(.btn),
+.dashboard-page .row.mt-3 a:not(.btn) {
+    color: var(--rb-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.dashboard-page .row.g-4 a:not(.btn):hover,
+.dashboard-page .row.mt-3 a:not(.btn):hover {
+    text-decoration: underline;
+}
+
+
+/* ---------- Card Dividers ---------- */
+
+.dashboard-page .row.g-4 hr,
+.dashboard-page .row.mt-3 hr {
+    border-color: var(--rb-border);
+    opacity: 1;
+}
+
+
+/* ---------- Dark Mode ---------- */
+
+[data-bs-theme="dark"] .dashboard-page .row.g-4 > .col-md-6 > .card,
+[data-bs-theme="dark"] .dashboard-page .row.mt-3 > .col-md-12 > .card {
+    background: var(--rb-surface) !important;
+    border-color: var(--rb-border) !important;
+}
+
+[data-bs-theme="dark"] .dashboard-page .row.g-4 > .col-md-6:first-child > .card {
+    border-top-color: var(--rb-secondary) !important;
+}
+
+[data-bs-theme="dark"] .dashboard-page .row.g-4 > .col-md-6:nth-child(2) > .card {
+    border-top-color: var(--rb-primary) !important;
+}
+
+[data-bs-theme="dark"] .dashboard-page .row.mt-3 > .col-md-12 > .card {
+    border-top-color: var(--rb-accent) !important;
+}
+
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 767.98px) {
+
+    .dashboard-page .row.g-4 > .col-md-6 > .card .card-body,
+    .dashboard-page .row.mt-3 > .col-md-12 > .card .card-body {
+        padding: 18px;
+    }
+
+    .dashboard-page .row.g-4 > .col-md-6 > .card .card-title,
+    .dashboard-page .row.mt-3 > .col-md-12 > .card .card-title {
+        font-size: 0.95rem;
+    }
+
+    .dashboard-page .row.g-4 .btn,
+    .dashboard-page .row.mt-3 .btn {
+        width: 100%;
+        margin-bottom: 6px;
+    }
+}
+
+/* Remove square icon boxes from dashboard card headings */
+
+.dashboard-page .card-title > i,
+.dashboard-page .card-header > i {
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin-right: 8px !important;
+    display: inline !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    color: inherit !important;
+}
+
+/* =========================================================
+   HOD DASHBOARD — STATISTICS
+   ========================================================= */
+
+.hod-statistics {
+    margin-top: 20px;
+    margin-bottom: 24px;
+}
+
+.hod-statistics .stat-card {
+    position: relative;
+
+    min-height: 150px;
+    padding: 22px 18px !important;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--rb-surface) !important;
+    color: var(--rb-text) !important;
+
+    border: 1px solid var(--rb-border) !important;
+    border-top: 4px solid var(--rb-primary) !important;
+    border-left: 1px solid var(--rb-border) !important;
+
+    border-radius: 14px !important;
+
+    box-shadow: var(--rb-shadow-sm) !important;
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hod-statistics .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--rb-shadow) !important;
+}
+
+
+/* Icons */
+
+.hod-statistics .stat-icon {
+    font-size: 1.15rem;
+    margin-bottom: 10px;
+}
+
+
+/* Numbers */
+
+.hod-statistics .stat-number {
+    margin-bottom: 5px;
+
+    color: var(--rb-text) !important;
+
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: 700;
+}
+
+
+/* Labels */
+
+.hod-statistics .stat-label {
+    color: var(--rb-text-muted) !important;
+
+    font-size: 0.76rem;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+
+/* ---------------------------------------------------------
+   Individual HOD Statistics
+   --------------------------------------------------------- */
+
+/* Total Employees — purple */
+
+.hod-statistics .col-md-3:nth-child(1) .stat-card {
+    border-top-color: var(--rb-primary) !important;
+}
+
+.hod-statistics .col-md-3:nth-child(1) .stat-icon {
+    color: var(--rb-primary);
+}
+
+
+/* QPR Submitted — green */
+
+.hod-statistics .col-md-3:nth-child(2) .stat-card {
+    border-top-color: var(--rb-success) !important;
+}
+
+.hod-statistics .col-md-3:nth-child(2) .stat-icon,
+.hod-statistics .col-md-3:nth-child(2) .stat-number {
+    color: var(--rb-success) !important;
+}
+
+
+/* QPR Pending — amber */
+
+.hod-statistics .col-md-3:nth-child(3) .stat-card {
+    border-top-color: var(--rb-warning) !important;
+}
+
+.hod-statistics .col-md-3:nth-child(3) .stat-icon,
+.hod-statistics .col-md-3:nth-child(3) .stat-number {
+    color: var(--rb-warning) !important;
+}
+
+
+/* Profile Updated — teal */
+
+.hod-statistics .col-md-3:nth-child(4) .stat-card {
+    border-top-color: var(--rb-secondary) !important;
+}
+
+.hod-statistics .col-md-3:nth-child(4) .stat-icon,
+.hod-statistics .col-md-3:nth-child(4) .stat-number {
+    color: var(--rb-secondary) !important;
+}
+
+
+/* =========================================================
+   HOD DASHBOARD — QUICK ACTIONS
+   ========================================================= */
+
+.hod-quick-actions {
+    margin-top: 0 !important;
+    margin-bottom: 24px;
+
+    border: 1px solid var(--rb-border) !important;
+    border-top: 4px solid var(--rb-primary) !important;
+
+    border-radius: 16px !important;
+
+    background: var(--rb-surface) !important;
+
+    box-shadow: var(--rb-shadow-sm) !important;
+
+    overflow: hidden;
+}
+
+.hod-quick-actions .card-body {
+    padding: 22px 24px !important;
+}
+
+.hod-quick-actions h5 {
+    margin: 0 0 16px !important;
+
+    color: var(--rb-primary) !important;
+
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.hod-quick-actions .btn {
+    margin-right: 8px !important;
+    margin-bottom: 0 !important;
+
+    border-radius: 9px;
+
+    padding: 9px 17px;
+
+    font-size: 0.86rem;
+    font-weight: 600;
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hod-quick-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--rb-shadow-sm);
+}
+
+
+/* =========================================================
+   HOD DASHBOARD — PENDING PROFILE REQUESTS
+   ========================================================= */
+
+.hod-profile-requests {
+    margin-top: 24px !important;
+
+    border: 1px solid var(--rb-border) !important;
+    border-top: 4px solid var(--rb-accent) !important;
+
+    border-radius: 16px !important;
+
+    background: var(--rb-surface) !important;
+
+    box-shadow: var(--rb-shadow-sm) !important;
+
+    overflow: hidden;
+}
+
+.hod-profile-requests .card-header {
+    padding: 16px 20px !important;
+
+    background: var(--rb-surface) !important;
+
+    color: var(--rb-text) !important;
+
+    border-bottom: 1px solid var(--rb-border) !important;
+}
+
+.hod-profile-requests .card-header h6 {
+    color: var(--rb-text) !important;
+}
+
+.hod-profile-requests .card-header i {
+    color: var(--rb-accent);
+    margin-right: 7px;
+}
+
+.hod-profile-requests .badge {
+    background: var(--rb-accent) !important;
+    color: #fff !important;
+
+    border-radius: 20px;
+    padding: 5px 9px;
+}
+
+.hod-profile-requests .table {
+    color: var(--rb-text);
+}
+
+.hod-profile-requests .table thead th {
+    background: var(--rb-background) !important;
+
+    color: var(--rb-text-muted) !important;
+
+    border-bottom: 1px solid var(--rb-border) !important;
+
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.hod-profile-requests .table td {
+    color: var(--rb-text) !important;
+
+    border-color: var(--rb-border) !important;
+}
+
+.hod-profile-requests .table tbody tr:hover {
+    background: var(--rb-primary-light) !important;
+}
+
+.hod-profile-requests .btn {
+    border-radius: 7px !important;
+}
+
+
+/* Fix Admin Dashboard — Manage Employees button text */
+a[href*="manager_employee_master_list"] {
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   HOMEPAGE HERO CAROUSEL — POLISHED
+   ========================================================= */
+
+.full-screen-banner {
+    background: var(--rb-background) !important;
+    padding: 14px 0 0;
+}
+
+.main-carousel-shell {
+    width: min(94%, 1400px);
+    margin: 0 auto;
+
+    border-radius: 18px;
+    overflow: hidden;
+
+    background: var(--rb-surface);
+    border: 1px solid var(--rb-border);
+
+    box-shadow: var(--rb-shadow);
+}
+
+.main-carousel-shell .carousel-item img {
+    width: 100%;
+    height: clamp(250px, 31vw, 390px);
+
+    object-fit: contain;
+    display: block;
+
+    background: var(--rb-surface);
+}
+
+.main-carousel-shell .carousel-control-prev,
+.main-carousel-shell .carousel-control-next {
+    width: 8%;
+    opacity: 0;
+
+    transition: opacity 0.25s ease;
+}
+
+.main-carousel-shell:hover .carousel-control-prev,
+.main-carousel-shell:hover .carousel-control-next {
+    opacity: 1;
+}
+
+.main-carousel-shell .carousel-control-prev-icon,
+.main-carousel-shell .carousel-control-next-icon {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 50%;
+
+    background-color: var(--rb-primary) !important;
+    background-size: 55%;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+/* Carousel indicators */
+.main-carousel-shell .carousel-indicators {
+    margin-bottom: 12px;
+    gap: 5px;
+}
+
+.main-carousel-shell .carousel-indicators [data-bs-target] {
+    width: 8px;
+    height: 8px;
+
+    margin: 0;
+    border: 0;
+    border-radius: 50%;
+
+    background-color: var(--rb-text-muted);
+    opacity: 0.45;
+
+    transition: all 0.25s ease;
+}
+
+.main-carousel-shell .carousel-indicators .active {
+    width: 24px;
+
+    border-radius: 8px;
+
+    background: linear-gradient(
+        90deg,
+        var(--rb-primary),
+        var(--rb-pink, #e879a9)
+    );
+
+    opacity: 1;
+}
+
+/* Gradient strip under hero */
+.hero-edge {
+    height: 5px;
+    margin-top: 10px;
+
+    border-radius: 0 0 6px 6px;
+
+    background: linear-gradient(
+        90deg,
+        var(--rb-primary),
+        var(--rb-pink, #e879a9) 35%,
+        var(--rb-accent) 55%,
+        var(--rb-secondary)
+    ) !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+
+    .full-screen-banner {
+        padding-top: 8px;
+    }
+
+    .main-carousel-shell {
+        width: 96%;
+        border-radius: 14px;
+    }
+
+    .main-carousel-shell .carousel-item img {
+        height: clamp(210px, 48vw, 300px);
+    }
+
+    .main-carousel-shell .carousel-control-prev,
+    .main-carousel-shell .carousel-control-next {
+        opacity: 1;
+        width: 12%;
+    }
+
+    .main-carousel-shell .carousel-control-prev-icon,
+    .main-carousel-shell .carousel-control-next-icon {
+        width: 32px;
+        height: 32px;
+    }
+}
+

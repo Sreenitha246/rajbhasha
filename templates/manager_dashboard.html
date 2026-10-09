@@ -11,6 +11,13 @@
     {% else %}
         {{ "Manager Dashboard"|t:current_lang }}
     {% endif %}
+    {% if manager_office and manager_office.name_hindi %}
+        <span class="d-block mt-2 fs-5 fw-semibold"
+            dir="auto"
+            lang="hi">
+            {{ manager_office.name_hindi }}
+        </span>
+    {% endif %}
 </h2>
         <div class="d-flex gap-2">
             <span class="badge bg-primary p-3 rounded-pill shadow-sm">
@@ -69,6 +76,184 @@
         </div>
     </div>
 
+    <!-- Office Management Section -->
+    {% if manager_office %}
+    <div class="card shadow-sm border-0 mb-4 manager-office-management">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-building me-2"></i>
+                    {{"Office Management"|t:current_lang}}
+                </h5>
+
+                {% if manager_office.is_frozen %}
+                    <span class="badge bg-secondary">
+                        <i class="fas fa-lock me-1"></i>
+                        {{"Frozen"|t:current_lang}}
+                    </span>
+                {% else %}
+                    <span class="badge bg-success">
+                        <i class="fas fa-unlock me-1"></i>
+                        {{"Editable"|t:current_lang}
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <small class="text-muted d-block mb-1">Office Code</small>
+                        <div class="fw-semibold font-monospace">
+                            {{ manager_office.code }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <small class="text-muted d-block mb-1">State</small>
+                        <div class="fw-semibold">
+                            {{ manager_office.state|default:"-" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <small class="text-muted d-block mb-1">Office Name</small>
+                        <div class="fw-semibold">
+                            {{ manager_office.name|default:"-" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <small class="text-muted d-block mb-1">Office Name (Hindi)</small>
+                        <div class="fw-semibold">
+                            {{ manager_office.name_hindi|default:"-" }}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+
+                {% if manager_office.is_frozen %}
+
+                    {% if office_edit_request and office_edit_request.status == 'pending' %}
+
+                        <button type="button"
+                                class="btn btn-warning"
+                                disabled>
+                            <i class="fas fa-hourglass-half me-1"></i>
+                            {{"Request Pending"|t:current_lang}}
+                        </button>
+
+                    {% elif office_edit_request and office_edit_request.status == 'approved' %}
+
+                        <button type="button"
+                                class="btn btn-success"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editOfficeModal">
+
+                            <i class="fas fa-pen me-1"></i>
+                            {{"Edit"|t:current_lang}}
+
+                        </button>
+
+                        <span class="badge bg-success align-self-center px-3 py-2">
+
+                            <i class="fas fa-check-circle me-1"></i>
+                            {{"Edit Permission Approved"|t:current_lang}}
+
+                        </span>
+
+                    
+
+                    {% elif office_edit_request and office_edit_request.status == 'rejected' %}
+
+                        <span class="badge bg-danger align-self-center px-3 py-2">
+                            <i class="fas fa-times-circle me-1"></i>
+                            {{ "Edit Request Rejected"|t:current_lang }}
+                        </span>
+
+                        <button type="button"
+                                class="btn btn-warning"
+                                data-bs-toggle="modal"
+                                data-bs-target="#requestOfficeEditModal">
+
+                            <i class="fas fa-key me-1"></i>
+                            {{ "Request Edit Permission"|t:current_lang }}
+
+                        </button>
+                    
+                    {% elif office_edit_request and office_edit_request.status == 'completed' %}
+
+                        <span class="badge bg-success align-self-center px-3 py-2">
+
+                            <i class="fas fa-check-circle me-1"></i>
+                            {{ "Edit Completed"|t:current_lang }}
+
+                        </span>
+
+                        <button type="button"
+                                class="btn btn-warning"
+                                data-bs-toggle="modal"
+                                data-bs-target="#requestOfficeEditModal">
+
+                            <i class="fas fa-key me-1"></i>
+                            {{ "Request Edit Permission"|t:current_lang }}
+
+                        </button>
+                    {% else %}
+
+                        <button type="button"
+                                class="btn btn-warning"
+                                data-bs-toggle="modal"
+                                data-bs-target="#requestOfficeEditModal">
+                            <i class="fas fa-key me-1"></i>
+                            {{"Request Edit Permission"|t:current_lang}}
+                        </button>
+
+                    {% endif %}
+
+                {% else %}
+
+                    <button type="button"
+                            class="btn btn-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editOfficeModal">
+                        <i class="fas fa-pen me-1"></i>
+                        {{"Edit"|t:current_lang}}
+                    </button>
+
+                    <form method="POST"
+                        action="{% url 'manager_freeze_office' %}"
+                        class="d-inline"
+                        onsubmit="return confirm('Are you sure you want to freeze this office?');">
+
+                        {% csrf_token %}
+
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-lock me-1"></i>
+                            {{"Freeze"|t:current_lang}}
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+    </div>
+    {% endif %}
+
+
     <ul class="nav nav-tabs mb-3" id="managerTabs" role="tablist">
         <li class="nav-item"><button class="nav-link {% if not user_search and not hindi_exam_filter %}active{% endif %} fw-bold" id="employees-tab" data-bs-toggle="tab" data-bs-target="#employees-pane" type="button"><i class="fas fa-id-card me-2"></i>{{ "Profile Management"|t:current_lang }}</button></li>
         <li class="nav-item"><button class="nav-link {% if user_search or hindi_exam_filter %}active{% endif %} fw-bold" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button"><i class="fas fa-user-lock me-2"></i>{{ "Application Users"|t:current_lang }}</button></li>
@@ -83,7 +268,7 @@
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Emp Code</th>
+                                <th>{{"Emp Code"|t:current_lang}}</th>
                                 <th>Name</th>
                                 <th>Designation</th>
                                 <th class="text-center">Actions</th>
@@ -208,7 +393,480 @@
         </div>
 
     </div>
+    {% if manager_office %}
+    <div class="modal fade" id="editOfficeModal" tabindex="-1"
+        aria-labelledby="editOfficeModalLabel" aria-hidden="true">
 
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+
+                <div class="modal-header"
+                    style="background: linear-gradient(135deg, #37306f, #4f46a5); color: white;">
+                    <div>
+                        <h5 class="modal-title mb-1" id="editOfficeModalLabel">
+                            <i class="fas fa-building me-2"></i>
+                            {{"Edit Office"|t:current_lang}}
+                        </h5>
+                        <small class="opacity-75">
+                            {{"Update office names"|t:current_lang}}
+                        </small>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <form method="POST" action="{% url 'manager_edit_office' %}">
+                    {% csrf_token %}
+
+                    <div class="modal-body">
+
+                        <div class="alert alert-light border mb-4">
+                            <div class="small text-muted mb-1">
+                                Office Code
+                            </div>
+                            <div class="fw-semibold font-monospace">
+                                {{ manager_office.code }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                {{"English Office Name"|t:current_lang}}
+                            </label>
+
+                            <input
+                                type="text"
+                                name="office_name"
+                                class="form-control"
+                                value="{{ manager_office.name }}"
+                                maxlength="255"
+                                required
+                            >
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                {{ "Hindi Office Name"|t:current_lang }}
+                            </label>
+
+                            <input
+                                type="text"
+                                name="office_name_hindi"
+                                id="manager_office_name_hindi"
+                                class="form-control"
+                                value="{{ manager_office.name_hindi|default:'' }}"
+                                maxlength="255"
+                                required
+                                autocomplete="off"
+                            >
+
+                            <div class="mt-2">
+
+                                <button type="button"
+                                        id="managerOfficeHindiToggle"
+                                        class="btn btn-outline-primary btn-sm">
+
+                                    <i class="fas fa-keyboard me-1"></i>
+                                    {{ "Hindi Keyboard"|t:current_lang }}
+
+                                </button>
+
+                            </div>
+
+                            <div id="managerOfficeHindiKeyboard"
+                                class="office-hindi-keyboard mt-2"
+                                style="display: none;">
+                            </div>
+
+                        </div>
+
+                        <div class="small text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            {{"Office Code and State cannot be changed by the Manager."|t:current_lang}}
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button"
+                                class="btn btn-light border"
+                                data-bs-dismiss="modal">
+                            {{"Cancel"|t:current_lang}}
+                        </button>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            {{"Save Changes"|t:current_lang}}
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    {% if manager_office %}
+    <div class="modal fade"
+        id="requestOfficeEditModal"
+        tabindex="-1"
+        aria-labelledby="requestOfficeEditModalLabel"
+        aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+
+                <!-- Header -->
+                <div class="modal-header"
+                    style="background: linear-gradient(135deg, #d89024, #e09f3e); color: white;">
+
+                    <div>
+                        <h5 class="modal-title fw-bold mb-1"
+                            id="requestOfficeEditModalLabel">
+                            <i class="fas fa-key me-2"></i>
+                            {{"Request Edit Permission"|t:current_lang}}
+                        </h5>
+
+                        <small class="opacity-75">
+                            {{"Request temporary permission to update this frozen office"|t:current_lang}}
+                        </small>
+                    </div>
+
+                    <button type="button"
+                            class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+                </div>
+
+                <!-- Form -->
+                <form method="POST"
+                    action="{% url 'manager_request_office_edit' %}">
+
+                    {% csrf_token %}
+
+                    <div class="modal-body">
+
+                        <!-- Office Information -->
+                        <div class="alert alert-light border mb-4">
+
+                            <div class="d-flex align-items-start">
+
+                                <div class="me-3 text-warning fs-4">
+                                    <i class="fas fa-building"></i>
+                                </div>
+
+                                <div>
+                                    <div class="small text-muted mb-1">
+                                        Office
+                                    </div>
+
+                                    <div class="fw-semibold">
+                                        {{ manager_office.code }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        {{ manager_office.name }}
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Frozen warning -->
+                        <div class="alert alert-warning border-0 mb-4">
+
+                            <div class="d-flex align-items-start">
+
+                                <i class="fas fa-lock mt-1 me-2"></i>
+
+                                <div class="small">
+                                    <strong>{{"This office is currently frozen."|t:current_lang}}</strong>
+                                    <br>
+                                    {{"You need Admin approval before you can edit the office names."|t:current_lang}}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Reason -->
+                        <div class="mb-3">
+
+                            <label for="office_edit_reason"
+                                class="form-label fw-semibold">
+
+                                {{"Reason for Edit Request"|t:current_lang}}
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <textarea
+                                class="form-control"
+                                id="office_edit_reason"
+                                name="reason"
+                                rows="5"
+                                maxlength="1000"
+                                required
+                                placeholder="Please explain why the office details need to be changed."></textarea>
+
+                            <div class="form-text">
+                                {{"Please provide enough detail for the Admin to review your request."|t:current_lang}}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-light border"
+                                data-bs-dismiss="modal">
+                            {{"Cancel"|t:current_lang}}
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-warning text-white">
+
+                            <i class="fas fa-paper-plane me-1"></i>
+                            {{"Submit Request"|t:current_lang}}
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const toggle = document.getElementById("managerOfficeHindiToggle");
+            const keyboard = document.getElementById("managerOfficeHindiKeyboard");
+            const input = document.getElementById("manager_office_name_hindi");
+
+            if (!toggle || !keyboard || !input) {
+                return;
+            }
+
+            const rows = [
+                ["अ", "आ", "इ", "ई", "उ", "ऊ", "ऋ", "ए", "ऐ", "ओ", "औ", "अं", "अः"],
+                ["क", "ख", "ग", "घ", "ङ", "च", "छ", "ज", "झ", "ञ"],
+                ["ट", "ठ", "ड", "ढ", "ण", "त", "थ", "द", "ध", "न"],
+                ["प", "फ", "ब", "भ", "म", "य", "र", "ल", "व"],
+                ["श", "ष", "स", "ह", "क्ष", "त्र", "ज्ञ"],
+                ["ा", "ि", "ी", "ु", "ू", "ृ", "े", "ै", "ो", "ौ", "ं", "ः", "्"]
+            ];
+
+            keyboard.innerHTML = "";
+
+            rows.forEach(function (row) {
+
+                const rowDiv = document.createElement("div");
+                rowDiv.className = "office-hindi-keyboard-row";
+
+                row.forEach(function (character) {
+
+                    const button = document.createElement("button");
+
+                    button.type = "button";
+                    button.className = "office-hindi-key";
+                    button.textContent = character;
+
+                    /*
+                    * Prevent the input from losing focus when
+                    * clicking a keyboard key.
+                    */
+                    button.addEventListener("mousedown", function (event) {
+                        event.preventDefault();
+                    });
+
+                    button.addEventListener("click", function () {
+                        insertHindiText(input, character);
+                    });
+
+                    rowDiv.appendChild(button);
+                });
+
+                keyboard.appendChild(rowDiv);
+            });
+
+
+            /* Action buttons */
+            const actionRow = document.createElement("div");
+
+            actionRow.className =
+                "office-hindi-keyboard-row office-hindi-actions";
+
+
+            /* Space */
+            const spaceButton = document.createElement("button");
+
+            spaceButton.type = "button";
+            spaceButton.className =
+                "office-hindi-action office-hindi-space";
+
+            spaceButton.textContent = "Space / स्पेस";
+
+            spaceButton.addEventListener("mousedown", function (event) {
+                event.preventDefault();
+            });
+
+            spaceButton.addEventListener("click", function () {
+                insertHindiText(input, " ");
+            });
+
+            actionRow.appendChild(spaceButton);
+
+
+            /* Backspace */
+            const backspaceButton = document.createElement("button");
+
+            backspaceButton.type = "button";
+            backspaceButton.className = "office-hindi-action";
+
+            backspaceButton.textContent = "⌫ Backspace";
+
+            backspaceButton.addEventListener("mousedown", function (event) {
+                event.preventDefault();
+            });
+
+            backspaceButton.addEventListener("click", function () {
+                deleteHindiCharacter(input);
+            });
+
+            actionRow.appendChild(backspaceButton);
+
+
+            /* Clear */
+            const clearButton = document.createElement("button");
+
+            clearButton.type = "button";
+            clearButton.className =
+                "office-hindi-action office-hindi-clear";
+
+            clearButton.textContent = "Clear / साफ़ करें";
+
+            clearButton.addEventListener("mousedown", function (event) {
+                event.preventDefault();
+            });
+
+            clearButton.addEventListener("click", function () {
+
+                input.value = "";
+
+                input.focus();
+            });
+
+            actionRow.appendChild(clearButton);
+
+            keyboard.appendChild(actionRow);
+
+
+            /* Toggle keyboard */
+            toggle.addEventListener("click", function () {
+
+                const isVisible =
+                    keyboard.style.display === "block";
+
+                keyboard.style.display =
+                    isVisible ? "none" : "block";
+
+                if (!isVisible) {
+                    input.focus();
+                }
+            });
+
+
+            /* Insert character at cursor position */
+            function insertHindiText(element, text) {
+
+                const start =
+                    element.selectionStart ?? element.value.length;
+
+                const end =
+                    element.selectionEnd ?? element.value.length;
+
+                element.value =
+                    element.value.substring(0, start) +
+                    text +
+                    element.value.substring(end);
+
+                const newPosition =
+                    start + text.length;
+
+                element.focus();
+
+                element.setSelectionRange(
+                    newPosition,
+                    newPosition
+                );
+            }
+
+
+            /* Delete character */
+            function deleteHindiCharacter(element) {
+
+                const start =
+                    element.selectionStart ?? element.value.length;
+
+                const end =
+                    element.selectionEnd ?? element.value.length;
+
+
+                /* Delete selected text */
+                if (start !== end) {
+
+                    element.value =
+                        element.value.substring(0, start) +
+                        element.value.substring(end);
+
+                    element.focus();
+
+                    element.setSelectionRange(
+                        start,
+                        start
+                    );
+
+                    return;
+                }
+
+
+                /* Nothing to delete */
+                if (start === 0) {
+                    return;
+                }
+
+
+                /* Delete previous character */
+                element.value =
+                    element.value.substring(0, start - 1) +
+                    element.value.substring(start);
+
+                element.focus();
+
+                element.setSelectionRange(
+                    start - 1,
+                    start - 1
+                );
+            }
+
+        });
+    </script>
     <script id="user-lookup" type="application/json">
     {
     {% for u in users %}

@@ -126,11 +126,59 @@ class Office(models.Model):
     code = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=255)
     state = models.CharField(max_length=100, blank=True, null=True)
+    name_hindi = models.CharField(max_length=255, blank=True, null=True)
+    is_frozen = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.code} - {self.name}"
 
+class OfficeEditRequest(models.Model):
+    """Stores Manager requests for permission to edit a frozen Office."""
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('completed', 'Completed'),
+    ]
+
+    office = models.ForeignKey(
+        Office,
+        on_delete=models.CASCADE,
+        related_name='edit_requests'
+    )
+    manager = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='office_edit_requests'
+    )
+    reason = models.TextField(blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_office_edit_requests'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return (
+            f"{self.manager.username} - "
+            f"{self.office.code} - "
+            f"{self.status}"
+        )
 
 class EmployeeMaster(models.Model):
     """Imported employee registry used for empcode validation and autofill."""

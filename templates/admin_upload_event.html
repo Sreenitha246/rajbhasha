@@ -79,7 +79,10 @@
             {% endif %}
         </button>
 
-        <a href="/events-admin/" class="btn btn-outline-secondary ms-2">Cancel</a>
+        <a href="{{ events_dashboard_url }}"
+            class="btn btn-outline-secondary ms-2">
+                Cancel
+        </a>
 
     </form>
 
@@ -139,7 +142,7 @@ document.getElementById("uploadForm").addEventListener("submit", function(e) {
 
             if (res.status === "success") {
                 alert("Upload successful!")
-                window.location = "/events-admin/"
+                window.location = "{{ events_dashboard_url|escapejs }}"
             } else {
                 // Show the exact error message from the view
                 errorBox.innerText = "Upload failed: " + (res.message || "Unknown error")

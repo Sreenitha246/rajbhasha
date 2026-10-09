@@ -184,6 +184,49 @@ HINDI_TRANSLATIONS = {
     "This section is currently under development. Rajbhasha activities, programmes and related information will be available here soon.": "यह अनुभाग वर्तमान में विकासाधीन है। राजभाषा गतिविधियाँ, कार्यक्रम और संबंधित जानकारी जल्द ही यहाँ उपलब्ध होंगी।",
 
     "Back to Home": "मुखपृष्ठ पर वापस जाएँ",
+
+    "Hindi Keyboard": "हिंदी कीबोर्ड",
+    # Office Management
+    "Office Management": "कार्यालय प्रबंधन",
+    "Office Code": "कार्यालय कोड",
+    "State": "राज्य",
+    "Office Name": "कार्यालय का नाम",
+    "Office Name (Hindi)": "कार्यालय का नाम (हिंदी)",
+    "English Office Name": "अंग्रेज़ी कार्यालय का नाम",
+    "Hindi Office Name": "हिंदी कार्यालय का नाम",
+    # Office status
+    "Frozen": "लॉक",
+    "Editable": "संपादन योग्य",
+    "Request Pending": "अनुरोध लंबित",
+    "Edit Permission Approved": "संपादन अनुमति स्वीकृत",
+     # Office actions
+    "Freeze": "लॉक करें",
+    "Request Edit Permission": "संपादन अनुमति का अनुरोध करें",
+    "Save Changes": "परिवर्तन सहेजें",
+     # Office edit request
+    "Edit Office": "कार्यालय संपादित करें",
+    "Update office names": "कार्यालय के नाम अपडेट करें",
+    "Request permission to update this frozen office":"इस लॉक किए गए कार्यालय को अपडेट करने की अनुमति का अनुरोध करें",
+    "Office": "कार्यालय",
+    "This office is currently frozen.":"यह कार्यालय वर्तमान में लॉक है।",
+    "You need Admin approval before you can edit the office names.":"कार्यालय के नाम संपादित करने से पहले Admin की अनुमति आवश्यक है।",
+    "Reason for Edit Request": "संपादन अनुरोध का कारण",
+    "Submit Request": "अनुरोध भेजें",
+    "Edit Request Rejected": "संपादन अनुरोध अस्वीकृत",
+    # Admin office edit requests
+    "Office Edit Requests": "कार्यालय संपादन अनुरोध",
+    "Review Manager requests for editing frozen offices":"लॉक किए गए कार्यालयों के संपादन के लिए Manager के अनुरोधों की समीक्षा करें",
+    "Pending": "लंबित",
+    "Manager": "प्रबंधक",
+    "Reason": "कारण",
+    "Requested On": "अनुरोध दिनांक",
+    "Actions": "कार्रवाइयाँ",
+    "Approve": "स्वीकृत करें",
+    "Reject": "अस्वीकार करें",
+    "No Pending Office Edit Requests":"कोई लंबित कार्यालय संपादन अनुरोध नहीं है",
+    "All Office edit permission requests have been reviewed.":"सभी कार्यालय संपादन अनुमति अनुरोधों की समीक्षा की जा चुकी है।",
+    "Edit Completed": "संपादन पूर्ण",
+
 }
 
 NORMALIZED_HINDI_TRANSLATIONS = {

@@ -143,6 +143,195 @@
  </div>
  </div>
 
+    <!-- Office Edit Permission Requests -->
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header border-0 py-3 office-edit-requests-header">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+                    <h5 class="fw-bold mb-1 text-white">
+                        <i class="fas fa-building me-2"></i>
+                        {{ "Office Edit Requests"|t:current_lang }}
+                    </h5>
+
+                    <small class="text-white">
+                        {{ "Review Manager requests for editing frozen offices"|t:current_lang }}
+                    </small>
+                </div>
+
+                {% if pending_office_edit_requests %}
+                    <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                        <i class="fas fa-clock me-1"></i>
+                        {{ pending_office_edit_requests|length }}
+                        {{ "Pending"|t:current_lang }}
+                    </span>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            {% if pending_office_edit_requests %}
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0 office-edit-requests-table">
+
+                        <thead class="table-light">
+
+                            <tr>
+                                <th>{{"Office"|t:current_lang}}</th>
+                                <th>{{"Manager"|t:current_lang}}</th>
+                                <th>{{"Reason"|t:current_lang}}</th>
+                                <th>{{"Requested On"|t:current_lang}}</th>
+                                <th class="text-center">{{"Actions"|t:current_lang}}</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for req in pending_office_edit_requests %}
+
+                            <tr>
+
+                                <!-- Office -->
+                                <td class="office-edit-office-cell">
+
+                                    <div class="fw-bold text-primary office-edit-office-code">
+                                        {{ req.office.code }}
+                                    </div>
+
+                                    <div class="small text-muted office-edit-office-name">
+                                        {{ req.office.name|default:"-" }}
+                                    </div>
+
+                                    <div class="small text-muted office-edit-office-state">
+                                        {{ req.office.state|default:"-" }}
+                                    </div>
+
+                                </td>
+
+                                <!-- Manager -->
+                                <td>
+
+                                    <div class="fw-semibold">
+                                        {% if req.manager.profile.name %}
+                                            {{ req.manager.profile.name }}
+                                        {% else %}
+                                            {{ req.manager.username }}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        {{ req.manager.username }}
+                                    </div>
+
+                                </td>
+
+                                <!-- Reason -->
+                                <td class="office-edit-reason-cell">
+
+                                    <div class="office-edit-reason">
+                                        {{ req.reason|default:"No reason provided." }}
+                                    </div>
+
+                                </td>
+
+                                <!-- Date -->
+                                <td>
+
+                                    <div class="small">
+                                        {{ req.created_at|date:"d M Y" }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        {{ req.created_at|date:"h:i A" }}
+                                    </div>
+
+                                </td>
+
+                                <!-- Actions -->
+                                <td class="text-center office-edit-actions-cell">
+
+                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+
+                                        <form method="POST"
+                                            action="{% url 'admin_approve_office_edit' req.id %}"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Approve edit permission for office {{ req.office.code }}?');">
+
+                                            {% csrf_token %}
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-success">
+
+                                                <i class="fas fa-check me-1"></i>
+                                                Approve
+
+                                            </button>
+
+                                        </form>
+
+                                        <form method="POST"
+                                            action="{% url 'admin_reject_office_edit' req.id %}"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Reject the edit permission request for office {{ req.office.code }}?');">
+
+                                            {% csrf_token %}
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+
+                                                <i class="fas fa-times me-1"></i>
+                                                {{ "Reject"|t:current_lang }}
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="text-center py-4">
+
+                    <div class="mb-3 text-muted">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+
+                    <h6 class="fw-semibold mb-1">
+                        {{"No Pending Office Edit Requests"|t:current_lang}}
+                    </h6>
+
+                    <p class="text-muted small mb-0">
+                        {{"All Office edit permission requests have been reviewed."|t:current_lang}}
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
     <div class="card shadow-sm border-0 mb-4">
     <div class="card-header bg-white fw-bold">
      <i class="fas fa-user-check text-primary"></i> {{ "Admin Approval Requests"|t:current_lang }}
@@ -295,7 +484,7 @@
  <li class="nav-item"><button class="nav-link fw-bold" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button"><i class="fas fa-user-lock me-2"></i>{{ "System Users"|t:current_lang }}</button></li>
  <li class="nav-item"><button class="nav-link fw-bold" id="qpr-tab" data-bs-toggle="tab" data-bs-target="#qpr-pane" type="button"><i class="fas fa-clipboard-check me-2"></i>{{ "QPR Status"|t:current_lang }}</button></li>
  </ul>
-
+ 
  <div class="tab-content" id="managerTabsContent">
  
  <div class="tab-pane fade show active" id="employees-pane">
@@ -909,39 +1098,332 @@
 
  {% endif %}
 
- <div class="modal fade" id="officeDetailsModal" tabindex="-1" aria-labelledby="officeDetailsModalLabel" aria-hidden="true">
- <div class="modal-dialog">
- <div class="modal-content">
- <div class="modal-header bg-warning">
- <h5 class="modal-title" id="officeDetailsModalLabel">
- <i class="fas fa-building"></i> {{ "Office Details"|t:current_lang }}
- </h5>
- <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
- </div>
- <div class="modal-body">
- <form id="officeDetailsForm" method="POST" action="{% url 'api_create_office' %}">
- {% csrf_token %}
- <div class="mb-3">
- <label for="office_code" class="form-label">{{ "Office Code"|t:current_lang }} <span class="text-danger">*</span></label>
- <input type="text" class="form-control" id="office_code" name="office_code" required placeholder="{{ 'Enter office code'|t:current_lang }}">
- </div>
- <div class="mb-3">
- <label for="office_name" class="form-label">{{ "Office Name"|t:current_lang }} <span class="text-danger">*</span></label>
- <input type="text" class="form-control" id="office_name" name="office_name" required placeholder="{{ 'Enter office name'|t:current_lang }}">
- </div>
- </form>
- </div>
- <div class="modal-footer">
- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
- {{ "Cancel"|t:current_lang }}
- </button>
- <button type="submit" form="officeDetailsForm" class="btn btn-warning text-white">
- <i class="fas fa-check"></i> {{ "Submit"|t:current_lang }}
- </button>
- </div>
- </div>
- </div>
+<!-- Admin: Create Office Modal -->
+<div class="modal fade"
+     id="officeDetailsModal"
+     tabindex="-1"
+     aria-labelledby="officeDetailsModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+
+            <!-- Header -->
+            <div class="modal-header bg-warning">
+                <div>
+                    <h5 class="modal-title fw-bold" id="officeDetailsModalLabel">
+                        <i class="fas fa-building me-2"></i>
+                        {{ "Office Details"|t:current_lang }}
+                    </h5>
+                    <small class="text-dark">
+                        Create a new office
+                    </small>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+
+                <form id="officeDetailsForm"
+                      method="POST"
+                      action="{% url 'api_create_office' %}">
+
+                    {% csrf_token %}
+
+                    <!-- Office Code -->
+                    <div class="mb-3">
+                        <label for="office_code" class="form-label fw-semibold">
+                            {{ "Office Code"|t:current_lang }}
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="office_code"
+                            name="office_code"
+                            maxlength="50"
+                            required
+                            placeholder="{{ 'Enter office code'|t:current_lang }}"
+                        >
+
+                        <div class="form-text">
+                            Enter the unique code assigned to this office.
+                        </div>
+                    </div>
+
+                    <!-- English Office Name -->
+                    <div class="mb-3">
+                        <label for="office_name" class="form-label fw-semibold">
+                            {{ "Office Name"|t:current_lang }}
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="office_name"
+                            name="office_name"
+                            maxlength="255"
+                            required
+                            placeholder="{{ 'Enter office name'|t:current_lang }}"
+                        >
+                    </div>
+
+                    <!-- Hindi Office Name -->
+                    <div class="mb-3">
+
+                        <label for="office_name_hindi" class="form-label fw-semibold">
+                            {{ "Office Name (Hindi)"|t:current_lang }}
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <input type="text"
+                            class="form-control"
+                            id="office_name_hindi"
+                            name="office_name_hindi"
+                            required
+                            autocomplete="off"
+                            placeholder="हिंदी में कार्यालय का नाम दर्ज करें">
+
+                        <div class="mt-2">
+                            <button type="button"
+                                    id="officeHindiToggle"
+                                    class="btn btn-outline-primary btn-sm">
+
+                                <i class="fas fa-keyboard me-1"></i>
+                                {{ "Hindi Keyboard"|t:current_lang }}
+
+                            </button>
+                        </div>
+
+                        <div id="officeHindiKeyboard"
+                            class="office-hindi-keyboard mt-2"
+                            style="display:none;">
+                        </div>
+
+                    </div>
+
+                    <div class="alert alert-light border small mb-0">
+                        <i class="fas fa-info-circle text-primary me-1"></i>
+                        The office state will be assigned from the logged-in
+                        Admin's profile.
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-light border"
+                        data-bs-dismiss="modal">
+                    {{ "Cancel"|t:current_lang }}
+                </button>
+
+                <button type="submit"
+                        form="officeDetailsForm"
+                        class="btn btn-warning text-white">
+                    <i class="fas fa-check me-1"></i>
+                    {{ "Create Office"|t:current_lang }}
+                </button>
+            </div>
+
+        </div>
+    </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const toggle = document.getElementById("officeHindiToggle");
+    const keyboard = document.getElementById("officeHindiKeyboard");
+    const input = document.getElementById("office_name_hindi");
+
+    if (!toggle || !keyboard || !input) {
+        return;
+    }
+
+    const rows = [
+        [
+            "अ", "आ", "इ", "ई", "उ", "ऊ", "ऋ",
+            "ए", "ऐ", "ओ", "औ", "अं", "अः"
+        ],
+        [
+            "क", "ख", "ग", "घ", "ङ",
+            "च", "छ", "ज", "झ", "ञ"
+        ],
+        [
+            "ट", "ठ", "ड", "ढ", "ण",
+            "त", "थ", "द", "ध", "न"
+        ],
+        [
+            "प", "फ", "ब", "भ", "म",
+            "य", "र", "ल", "व"
+        ],
+        [
+            "श", "ष", "स", "ह",
+            "क्ष", "त्र", "ज्ञ"
+        ],
+        [
+            "ा", "ि", "ी", "ु", "ू", "ृ",
+            "े", "ै", "ो", "ौ", "ं", "ः", "्"
+        ]
+    ];
+
+    keyboard.innerHTML = "";
+
+    rows.forEach(function (row) {
+
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "office-hindi-keyboard-row";
+
+        row.forEach(function (char) {
+
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className = "office-hindi-key";
+            button.textContent = char;
+
+            button.addEventListener("mousedown", function (event) {
+                event.preventDefault();
+            });
+
+            button.addEventListener("click", function () {
+                insertHindiText(input, char);
+            });
+
+            rowDiv.appendChild(button);
+        });
+
+        keyboard.appendChild(rowDiv);
+    });
+
+    const actionRow = document.createElement("div");
+    actionRow.className = "office-hindi-keyboard-row office-hindi-actions";
+
+    function createActionButton(text, className, handler) {
+
+        const button = document.createElement("button");
+
+        button.type = "button";
+        button.className = className;
+        button.textContent = text;
+
+        button.addEventListener("mousedown", function (event) {
+            event.preventDefault();
+        });
+
+        button.addEventListener("click", handler);
+
+        return button;
+    }
+
+    actionRow.appendChild(
+        createActionButton(
+            "Space / स्पेस",
+            "office-hindi-action office-hindi-space",
+            function () {
+                insertHindiText(input, " ");
+            }
+        )
+    );
+
+    actionRow.appendChild(
+        createActionButton(
+            "⌫ Backspace",
+            "office-hindi-action",
+            function () {
+                deleteHindiCharacter(input);
+            }
+        )
+    );
+
+    actionRow.appendChild(
+        createActionButton(
+            "Clear / साफ़ करें",
+            "office-hindi-action office-hindi-clear",
+            function () {
+                input.value = "";
+                input.focus();
+            }
+        )
+    );
+
+    keyboard.appendChild(actionRow);
+
+    toggle.addEventListener("click", function () {
+
+        const isVisible = keyboard.style.display === "block";
+
+        keyboard.style.display = isVisible ? "none" : "block";
+
+        if (!isVisible) {
+            input.focus();
+        }
+    });
+
+    function insertHindiText(element, text) {
+
+        const start = element.selectionStart ?? element.value.length;
+        const end = element.selectionEnd ?? element.value.length;
+
+        element.value =
+            element.value.substring(0, start) +
+            text +
+            element.value.substring(end);
+
+        const newPosition = start + text.length;
+
+        element.focus();
+        element.setSelectionRange(newPosition, newPosition);
+
+        element.dispatchEvent(new Event("input", {
+            bubbles: true
+        }));
+    }
+
+    function deleteHindiCharacter(element) {
+
+        const start = element.selectionStart ?? element.value.length;
+        const end = element.selectionEnd ?? element.value.length;
+
+        if (start !== end) {
+
+            element.value =
+                element.value.substring(0, start) +
+                element.value.substring(end);
+
+            element.focus();
+            element.setSelectionRange(start, start);
+
+            return;
+        }
+
+        if (start === 0) {
+            return;
+        }
+
+        element.value =
+            element.value.substring(0, start - 1) +
+            element.value.substring(start);
+
+        element.focus();
+        element.setSelectionRange(start - 1, start - 1);
+
+        element.dispatchEvent(new Event("input", {
+            bubbles: true
+        }));
+    }
+
+});
+</script>
 <script>
  document.addEventListener("DOMContentLoaded", function() {
  document.body.appendChild(document.getElementById('officeDetailsModal'));

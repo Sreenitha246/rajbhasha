@@ -82,7 +82,7 @@ from .models import (
     Section9ImplementationCommitteeData, Section10HindiAdvisoryData,
     Section11SpecificAchievementsData, StaffHindiKnowledge,
     TranslationKnowledge, TypingStenographyKnowledge,
-    UserProfile, WebsiteDetail, WeeklyFill, WeeklySnapshot, Employee, ManagerQPR, AdminQPR, Office
+    UserProfile, WebsiteDetail, WeeklyFill, WeeklySnapshot, Employee, ManagerQPR, AdminQPR, Office,OfficeEditRequest
 )
 from website.models import OfficersWorkInHindi
 
@@ -424,24 +424,43 @@ def admin_upload_new_event(request):
     if denied_response:
         return denied_response
     request.session.pop(EVENT_UPLOAD_SESSION_KEY, None)
+    request.session['events_dashboard_return_to'] = 'admin_events_dashboard'
     return redirect("admin_upload_event")
-
 
 @login_required
 @require_POST
 def admin_select_upload_event(request):
     require_event_manager(request.user)
+
     denied_response = require_event_admin_ip(request)
     if denied_response:
         return denied_response
+
+    # Keep the correct Event Manager page for the current workflow.
+    return_to = (
+        request.POST.get('return_to') or 'admin_events_dashboard'
+    ).strip()
+
+    # Allow only these two internal destinations.
+    if return_to not in {
+        'admin_events_dashboard',
+        'manager_events_dashboard',
+    }:
+        return_to = 'admin_events_dashboard'
+
+    request.session['events_dashboard_return_to'] = return_to
+
     try:
-        folder = validate_existing_event_folder(request.POST.get("folder"))
+        folder = validate_existing_event_folder(
+            request.POST.get('folder')
+        )
     except ValidationError:
-        messages.error(request, "Invalid event folder.")
-        return redirect("admin_events_dashboard")
+        messages.error(request, 'Invalid event folder.')
+        return redirect(return_to)
 
     request.session[EVENT_UPLOAD_SESSION_KEY] = folder
-    return redirect("admin_upload_event")
+
+    return redirect('admin_upload_event')
 
 @login_required
 def admin_upload_event(request):
@@ -483,8 +502,26 @@ def admin_upload_event(request):
             logger.exception("Failed to upload event")
             return JsonResponse({"status": "error", "message": "Unable to upload event"})
  
-    return render(request, "admin_upload_event.html", {"folder": folder})
- 
+    return_to = request.session.get(
+        'events_dashboard_return_to',
+        'admin_events_dashboard'
+    )
+
+    if return_to not in {
+        'admin_events_dashboard',
+        'manager_events_dashboard',
+    }:
+        return_to = 'admin_events_dashboard'
+
+    return render(
+        request,
+        "admin_upload_event.html",
+        {
+            "folder": folder,
+            "events_dashboard_url": reverse(return_to),
+        }
+    )
+    
  
 @login_required
 def admin_delete_event(request, folder):
@@ -3276,6 +3313,21 @@ def manager_dashboard(request):
 
     manager_office = getattr(request.user.profile, 'office_code', None)
 
+    manager_office_record = None
+
+    if manager_office:
+        manager_office_record = Office.objects.filter(
+            code=manager_office
+        ).first()
+
+    office_edit_request = None
+
+    if manager_office_record:
+        office_edit_request = OfficeEditRequest.objects.filter(
+            office=manager_office_record,
+            manager=request.user,
+        ).order_by('-created_at').first()
+
     users = CustomUser.objects.select_related('profile').filter(
         profile__office_code=manager_office,
         profile__approval_status='approved',
@@ -3420,10 +3472,411 @@ def manager_dashboard(request):
         'employees': employee_data,
         'pending_profile_requests': pending_profile_requests,
         'pending_qpr_edits': pending_qpr_edits,
+        'manager_office': manager_office_record,
+        'office_edit_request': office_edit_request,
     }
     return render(request, 'manager_dashboard.html', context)
 
+@login_required
+@require_POST
+def manager_edit_office(request):
+    """
+    Allow a Manager to edit only their own Office.
 
+    Office Code and State are not editable by Manager.
+    A frozen office can only be edited when an approved
+    OfficeEditRequest exists for that Manager.
+    """
+
+    if not (
+        user_has_role(request.user, 'manager')
+        or request.user.is_superuser
+    ):
+        messages.error(request, 'Permission denied')
+        return redirect('manager_dashboard')
+
+    manager_office_code = (
+        getattr(request.user.profile, 'office_code', '') or ''
+    ).strip()
+
+    if not manager_office_code:
+        messages.error(
+            request,
+            'No office is assigned to your profile.'
+        )
+        return redirect('manager_dashboard')
+
+    office = Office.objects.filter(
+        code=manager_office_code
+    ).first()
+
+    if not office:
+        messages.error(
+            request,
+            'Your assigned office could not be found.'
+        )
+        return redirect('manager_dashboard')
+
+    # For a frozen office, Manager needs Admin approval first.
+    approved_request = OfficeEditRequest.objects.filter(
+        office=office,
+        manager=request.user,
+        status='approved'
+    ).order_by('-created_at').first()
+
+    if office.is_frozen and not approved_request:
+        messages.error(
+            request,
+            'This office is frozen. Please request edit permission from the Admin.'
+        )
+        return redirect('manager_dashboard')
+
+    office_name = (
+        request.POST.get('office_name') or ''
+    ).strip()
+
+    office_name_hindi = (
+        request.POST.get('office_name_hindi') or ''
+    ).strip()
+
+    if not office_name or not office_name_hindi:
+        messages.error(
+            request,
+            'English and Hindi office names are required.'
+        )
+        return redirect('manager_dashboard')
+
+    with transaction.atomic():
+
+        office.name = office_name
+        office.name_hindi = office_name_hindi
+
+        # Every successful Manager save freezes the office again.
+        office.is_frozen = True
+
+        office.save(
+            update_fields=[
+                'name',
+                'name_hindi',
+                'is_frozen'
+            ]
+        )
+
+        # If this edit was performed using Admin approval,
+        # complete that request.
+        if approved_request:
+            approved_request.status = 'completed'
+            approved_request.completed_at = timezone.now()
+
+            approved_request.save(
+                update_fields=[
+                    'status',
+                    'completed_at'
+                ]
+            )
+
+    messages.success(
+        request,
+        f'Office {office.code} updated successfully and is now frozen.'
+    )
+
+    return redirect('manager_dashboard')
+
+@login_required
+@require_POST
+def manager_freeze_office(request):
+    """Freeze the Manager's own office."""
+
+    if not (
+        user_has_role(request.user, 'manager')
+        or request.user.is_superuser
+    ):
+        messages.error(request, 'Permission denied')
+        return redirect('manager_dashboard')
+
+    manager_office_code = (
+        getattr(request.user.profile, 'office_code', '') or ''
+    ).strip()
+
+    if not manager_office_code:
+        messages.error(
+            request,
+            'No office is assigned to your profile.'
+        )
+        return redirect('manager_dashboard')
+
+    office = Office.objects.filter(
+        code=manager_office_code
+    ).first()
+
+    if not office:
+        messages.error(
+            request,
+            'Your assigned office could not be found.'
+        )
+        return redirect('manager_dashboard')
+
+    office.is_frozen = True
+    office.save(update_fields=['is_frozen'])
+
+    messages.success(
+        request,
+        f'Office {office.code} has been frozen.'
+    )
+
+    return redirect('manager_dashboard')
+
+
+@login_required
+@require_POST
+def manager_request_office_edit(request):
+    if not (
+        user_has_role(request.user, 'manager')
+        or request.user.is_superuser
+    ):
+        messages.error(request, 'Permission denied')
+        return redirect('manager_dashboard')
+
+    manager_office_code = (
+        getattr(request.user.profile, 'office_code', '') or ''
+    ).strip()
+
+    if not manager_office_code:
+        messages.error(request, 'No office is assigned to your profile.')
+        return redirect('manager_dashboard')
+
+    office = Office.objects.filter(code=manager_office_code).first()
+
+    if not office:
+        messages.error(request, 'Your assigned office could not be found.')
+        return redirect('manager_dashboard')
+
+    # Request is only meaningful for a frozen office.
+    if not office.is_frozen:
+        messages.info(
+            request,
+            'Your office is already editable. You do not need to request edit permission.'
+        )
+        return redirect('manager_dashboard')
+
+    reason = (request.POST.get('reason') or '').strip()
+
+    if not reason:
+        messages.error(
+            request,
+            'Please provide a reason for requesting edit permission.'
+        )
+        return redirect('manager_dashboard')
+
+    # Prevent duplicate active requests.
+    existing_request = OfficeEditRequest.objects.filter(
+        office=office,
+        manager=request.user,
+        status__in=['pending', 'approved']
+    ).order_by('-created_at').first()
+
+    if existing_request:
+        if existing_request.status == 'pending':
+            messages.info(
+                request,
+                'You already have a pending edit permission request for this office.'
+            )
+        else:
+            messages.info(
+                request,
+                'Edit permission has already been approved for this office.'
+            )
+
+        return redirect('manager_dashboard')
+
+    office_edit_request = OfficeEditRequest.objects.create(
+        office=office,
+        manager=request.user,
+        reason=reason,
+        status='pending',
+    )
+
+    log_audit(
+        request,
+        'request_office_edit_permission',
+        'OfficeEditRequest',
+        (
+            f"Manager {request.user.username} requested edit permission "
+            f"for office {office.code}. Request ID: {office_edit_request.id}"
+        ),
+    )
+
+    messages.success(
+        request,
+        (
+            f'Edit permission request submitted for office {office.code}. '
+            'Please wait for Admin approval.'
+        )
+    )
+
+    return redirect('manager_dashboard') 
+
+@login_required
+@require_POST
+def admin_approve_office_edit(request, request_id):
+    if not (
+        user_has_role(request.user, 'admin')
+        or request.user.is_superuser
+    ):
+        messages.error(request, 'Permission denied')
+        return redirect('qpr_admin_dashboard')
+
+    admin_state = (
+        getattr(request.user.profile, 'office_state', '') or ''
+    ).strip()
+
+    if not admin_state:
+        messages.error(
+            request,
+            'Your Admin profile is missing a state.'
+        )
+        return redirect('qpr_admin_dashboard')
+
+    with transaction.atomic():
+        edit_request = (
+            OfficeEditRequest.objects
+            .select_for_update()
+            .select_related('office', 'manager')
+            .filter(
+                id=request_id,
+                office__state=admin_state,
+            )
+            .first()
+        )
+
+        if not edit_request:
+            messages.error(
+                request,
+                'Office edit request not found or you do not have access to it.'
+            )
+            return redirect('qpr_admin_dashboard')
+
+        if edit_request.status != 'pending':
+            messages.info(
+                request,
+                f'This request has already been {edit_request.status}.'
+            )
+            return redirect('qpr_admin_dashboard')
+
+        edit_request.status = 'approved'
+        edit_request.reviewed_by = request.user
+        edit_request.reviewed_at = timezone.now()
+
+        edit_request.save(
+            update_fields=[
+                'status',
+                'reviewed_by',
+                'reviewed_at',
+            ]
+        )
+
+    log_audit(
+        request,
+        'approve_office_edit_request',
+        'OfficeEditRequest',
+        (
+            f"Admin {request.user.username} approved OfficeEditRequest "
+            f"{edit_request.id} for office {edit_request.office.code} "
+            f"requested by manager {edit_request.manager.username}"
+        ),
+    )
+
+    messages.success(
+        request,
+        (
+            f'Edit permission approved for office '
+            f'{edit_request.office.code}.'
+        )
+    )
+
+    return redirect('qpr_admin_dashboard')
+
+
+@login_required
+@require_POST
+def admin_reject_office_edit(request, request_id):
+    if not (
+        user_has_role(request.user, 'admin')
+        or request.user.is_superuser
+    ):
+        messages.error(request, 'Permission denied')
+        return redirect('qpr_admin_dashboard')
+
+    admin_state = (
+        getattr(request.user.profile, 'office_state', '') or ''
+    ).strip()
+
+    if not admin_state:
+        messages.error(
+            request,
+            'Your Admin profile is missing a state.'
+        )
+        return redirect('qpr_admin_dashboard')
+
+    with transaction.atomic():
+        edit_request = (
+            OfficeEditRequest.objects
+            .select_for_update()
+            .select_related('office', 'manager')
+            .filter(
+                id=request_id,
+                office__state=admin_state,
+            )
+            .first()
+        )
+
+        if not edit_request:
+            messages.error(
+                request,
+                'Office edit request not found or you do not have access to it.'
+            )
+            return redirect('qpr_admin_dashboard')
+
+        if edit_request.status != 'pending':
+            messages.info(
+                request,
+                f'This request has already been {edit_request.status}.'
+            )
+            return redirect('qpr_admin_dashboard')
+
+        edit_request.status = 'rejected'
+        edit_request.reviewed_by = request.user
+        edit_request.reviewed_at = timezone.now()
+
+        edit_request.save(
+            update_fields=[
+                'status',
+                'reviewed_by',
+                'reviewed_at',
+            ]
+        )
+
+    log_audit(
+        request,
+        'reject_office_edit_request',
+        'OfficeEditRequest',
+        (
+            f"Admin {request.user.username} rejected OfficeEditRequest "
+            f"{edit_request.id} for office {edit_request.office.code} "
+            f"requested by manager {edit_request.manager.username}"
+        ),
+        status='failure',
+    )
+
+    messages.success(
+        request,
+        (
+            f'Edit permission request for office '
+            f'{edit_request.office.code} was rejected.'
+        )
+    )
+
+    return redirect('qpr_admin_dashboard')
 
 def _can_manage_employee_master(user):
     return user.is_authenticated and (
@@ -3758,11 +4211,26 @@ def admin_dashboard(request):
             approval_status='pending_admin',
             office_state=admin_state,
         ).select_related('user', 'employee').order_by('-created_at')
+    
+    pending_office_edit_requests = (
+        OfficeEditRequest.objects
+        .filter(
+            status='pending',
+            office__state=admin_state,
+        )
+        .select_related(
+            'office',
+            'manager',
+            'manager__profile',
+        )
+        .order_by('-created_at')
+    )
     context = {
         'role': 'admin',
         'hod_stats': hod_stats,
         'manager_requests': pending_requests,
         'pending_admin_approvals': pending_admin_approvals,
+        'pending_office_edit_requests': pending_office_edit_requests,
         'users': users,
         'archived_users': archived_users
     }
@@ -3906,13 +4374,14 @@ def api_create_office(request):
 
     code = request.POST.get('office_code', '').strip()
     name = request.POST.get('office_name', '').strip()
+    name_hindi = request.POST.get('office_name_hindi', '').strip()
     if not code or not name:
-        messages.error(request, 'Office code and name are required')
+        messages.error(request, 'Office code, English name and Hindi name are required')
         return redirect('qpr_admin_dashboard')
 
     office, created = Office.objects.get_or_create(
         code=code,
-        defaults={'name': name,'state': admin_state}
+        defaults={'name': name,'name_hindi': name_hindi,'state': admin_state}
     )
     if not created:
         messages.error(request, 'Office code already exists')

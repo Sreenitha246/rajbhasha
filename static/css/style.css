@@ -4523,3 +4523,206 @@ a[href*="manager_employee_master_list"] {
     }
 }
 
+/* =========================================================
+   OFFICE EDIT REQUESTS
+   ========================================================= */
+
+.office-edit-requests-header {
+    background: linear-gradient(135deg, #37306f, #4f46a5) !important;
+}
+
+.office-edit-requests-header h5,
+.office-edit-requests-header small {
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   TABLE LAYOUT
+   ========================================================= */
+
+.office-edit-requests-table {
+    width: 100%;
+    table-layout: fixed;
+    margin-bottom: 0;
+}
+
+.office-edit-requests-table th,
+.office-edit-requests-table td {
+    min-width: 0;
+    overflow: hidden;
+    vertical-align: top;
+}
+
+
+/* =========================================================
+   COLUMN WIDTHS
+   ========================================================= */
+
+/* Office */
+.office-edit-requests-table th:nth-child(1),
+.office-edit-requests-table td:nth-child(1) {
+    width: 21%;
+}
+
+/* Manager */
+.office-edit-requests-table th:nth-child(2),
+.office-edit-requests-table td:nth-child(2) {
+    width: 15%;
+}
+
+/* Reason */
+.office-edit-requests-table th:nth-child(3),
+.office-edit-requests-table td:nth-child(3) {
+    width: 28%;
+}
+
+/* Requested On */
+.office-edit-requests-table th:nth-child(4),
+.office-edit-requests-table td:nth-child(4) {
+    width: 14%;
+}
+
+/* Actions */
+.office-edit-requests-table th:nth-child(5),
+.office-edit-requests-table td:nth-child(5) {
+    width: 22%;
+}
+
+
+/* =========================================================
+   OFFICE COLUMN
+   ========================================================= */
+
+.office-edit-office-cell {
+    width: 21%;
+    min-width: 0 !important;
+    max-width: 0;
+    white-space: normal !important;
+    overflow: hidden;
+    vertical-align: top;
+}
+
+.office-edit-office-code,
+.office-edit-office-name,
+.office-edit-office-state {
+    max-width: 100%;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+.office-edit-office-code {
+    font-weight: 700;
+    margin-bottom: 3px;
+}
+
+.office-edit-office-name {
+    line-height: 1.4;
+    margin-top: 2px;
+}
+
+.office-edit-office-state {
+    line-height: 1.4;
+    margin-top: 2px;
+}
+
+
+/* =========================================================
+   REASON COLUMN
+   ========================================================= */
+
+.office-edit-reason-cell {
+    width: 28%;
+    min-width: 0 !important;
+    max-width: 0;
+    white-space: normal !important;
+    overflow: hidden;
+    vertical-align: top;
+}
+
+.office-edit-reason {
+    width: 100%;
+    max-width: 100%;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    line-height: 1.5;
+    max-height: 90px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+}
+
+
+/* =========================================================
+   ACTIONS COLUMN
+   ========================================================= */
+
+.office-edit-actions-cell {
+    width: 22%;
+    min-width: 0 !important;
+    max-width: 0;
+    white-space: normal !important;
+    vertical-align: top;
+    overflow: hidden;
+}
+
+.office-edit-actions-cell .d-flex {
+    align-items: flex-start;
+}
+
+.office-edit-actions-cell form {
+    margin: 0;
+}
+
+
+/* =========================================================
+   REQUESTED ON
+   ========================================================= */
+
+.office-edit-requests-table th:nth-child(4),
+.office-edit-requests-table td:nth-child(4) {
+    white-space: normal;
+}
+
+.office-edit-requests-table td:nth-child(4) .small {
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 992px) {
+
+    .office-edit-requests-table {
+        min-width: 900px;
+    }
+
+    .office-edit-requests-table th:nth-child(1),
+    .office-edit-requests-table td:nth-child(1) {
+        width: 21%;
+    }
+
+    .office-edit-requests-table th:nth-child(2),
+    .office-edit-requests-table td:nth-child(2) {
+        width: 15%;
+    }
+
+    .office-edit-requests-table th:nth-child(3),
+    .office-edit-requests-table td:nth-child(3) {
+        width: 28%;
+    }
+
+    .office-edit-requests-table th:nth-child(4),
+    .office-edit-requests-table td:nth-child(4) {
+        width: 14%;
+    }
+
+    .office-edit-requests-table th:nth-child(5),
+    .office-edit-requests-table td:nth-child(5) {
+        width: 22%;
+    }
+}

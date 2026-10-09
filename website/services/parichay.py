@@ -128,6 +128,16 @@ class ParichayService:
             "Parichay revoke endpoint response: %s",
             response.status_code
         )
+        
+        try:
+            response_data = response.json()
+        except ValueError:
+            response_data = response.text
+
+        revoke_log.info(
+            "Parichay revoke response: %s",
+            response_data
+        )
 
         if not response.ok:
             print("PARICHAY REVOKE ERROR")

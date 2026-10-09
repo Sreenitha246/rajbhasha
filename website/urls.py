@@ -90,7 +90,11 @@ urlpatterns = [
     path('qpr/admin/form/', views.admin_qpr_view, name='admin_qpr_form'),
     path('qpr/admin/form/<int:id>/', views.admin_qpr_view, name='admin_qpr_form_edit'),
     path('qpr/admin/<int:id>/', views.admin_qpr_detail, name='admin_qpr_detail'),
-
+    path('manager/office/edit/',views.manager_edit_office,name='manager_edit_office'),
+    path('manager/office/freeze/',views.manager_freeze_office, name='manager_freeze_office'),
+    path('manager/office/request-edit/',views.manager_request_office_edit,name='manager_request_office_edit'),
+    path('qpr/admin/office-edit-request/<int:request_id>/approve/',views.admin_approve_office_edit,name='admin_approve_office_edit'),
+    path('qpr/admin/office-edit-request/<int:request_id>/reject/',views.admin_reject_office_edit,name='admin_reject_office_edit'),
     # --- HOD WORKFLOW ---
     path('qpr/hod/details/', views.hod_detail_list, name='qpr_hod_detail_list'),
     path('qpr/hod/freeze/<int:qpr_record_id>/', views.toggle_freeze_qpr, name='toggle_freeze_qpr'),

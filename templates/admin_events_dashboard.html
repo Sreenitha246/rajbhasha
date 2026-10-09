@@ -251,6 +251,10 @@
                                name="folder"
                                value="{{ event.folder }}">
 
+                        <input type="hidden"
+                               name="return_to"
+                               value="{% if can_add_event %}admin_events_dashboard{% else %}manager_events_dashboard{% endif %}">
+                       
                         <button type="submit"
                                 class="btn btn-sm btn-info w-100">
 

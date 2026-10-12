@@ -108,13 +108,6 @@ def send_system_email(user, request, email_type, extra_context=None, target_emai
     raw_role = request.session.get('active_role', 'user').title() if request else 'User'
     translated_role = translate_text(raw_role, lang)
     configs = {
-        'otp': {
-            'subject': translate_text("One-Time Password (OTP)", lang),
-            'headline': translate_text("Verify Your Identity", lang),
-            'body': translate_text("Your One-Time Password (OTP) is below. It is valid for 5 minutes.", lang),
-            'details': {translate_text('OTP Code', lang): extra_context.get('otp')},
-            'is_alert': True
-        },
         'welcome': {
             'subject': "चेतावनी | Alert",
             'headline': "आपका स्वागत है! | Welcome Aboard!",
@@ -178,20 +171,6 @@ def send_system_email(user, request, email_type, extra_context=None, target_emai
             'action_text': "Review Request",
             'action_url': f"{domain}{reverse('manager_dashboard')}"
         },
-        'login_otp': {
-            'subject': "One-Time Password (OTP)| एक बारी पासवर्ड (ओटीपी)",
-            'headline': "Login Verification | लॉगिन सत्यापन",
-            'body': "Use the OTP below to securely log into your account. Do not share this code with anyone.\n\nअपने खाते में सुरक्षित रूप से लॉगिन करने के लिए नीचे दिए गए ओटीपी का उपयोग करें। इस कोड को किसी के साथ साझा न करें।",
-            'details': {'OTP | ओटीपी': extra_context.get('otp')},
-            'skip_translation': True
-        },
-        'reset_otp': {
-            'subject': "One-Time Password (OTP)| एक बारी पासवर्ड (ओटीपी)",
-            'headline': "Reset Your Password | अपना पासवर्ड रीसेट करें",
-            'body': "Use the OTP below to reset your password. If you did not request this, please ignore this email.\n\nअपना पासवर्ड रीसेट करने के लिए नीचे दिए गए ओटीपी का उपयोग करें। यदि आपने इसका अनुरोध नहीं किया है, तो कृपया इस ईमेल को अनदेखा करें।",
-            'details': {'OTP | ओटीपी': extra_context.get('otp')},
-            'skip_translation': True
-        },
         'reset': {
             'subject': "Alert",
             'headline': "Password Updated",
@@ -199,15 +178,15 @@ def send_system_email(user, request, email_type, extra_context=None, target_emai
             'is_alert': True
         },
         'freeze': {
-    'subject': "Alert",
-    'headline': "Account Access Restricted",
-    'body': "For your security, your profile has been frozen. You will need manager approval for future modifications.",
-    'details': {
-        'Status': translate_text("Frozen", lang),
-        'Time': timezone.now().astimezone(ZoneInfo("Asia/Kolkata")).strftime('%Y-%m-%d %H:%M')
-    },
-    'is_alert': True
-}
+            'subject': "Alert",
+            'headline': "Account Access Restricted",
+            'body': "For your security, your profile has been frozen. You will need manager approval for future modifications.",
+            'details': {
+                'Status': translate_text("Frozen", lang),
+                'Time': timezone.now().astimezone(ZoneInfo("Asia/Kolkata")).strftime('%Y-%m-%d %H:%M')
+            },
+            'is_alert': True
+        }
     }
     cfg = configs.get(email_type)
     if not cfg:

@@ -67,8 +67,6 @@ class CustomUser(AbstractUser):
     encrypted_email_data = models.BinaryField(null=True, blank=True)
     email = models.EmailField(unique=False, null=True, blank=True)
     roles = models.ManyToManyField(Role, related_name='users', blank=True)
-    otp = models.CharField(max_length=6, blank=True, null=True)
-    otp_created_at = models.DateTimeField(blank=True, null=True)
     consent_given_at = models.DateTimeField(null=True, blank=True)
     is_frozen = models.BooleanField(default=False)
     is_edit_allowed = models.BooleanField(default=False)

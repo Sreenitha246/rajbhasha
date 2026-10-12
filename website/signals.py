@@ -36,10 +36,6 @@ def create_user_profile(sender, instance, created, **kwargs):
 #  Always ensure profile exists and sync roles
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    # 1. Prevent this signal from running when we are just updating the OTP
-    update_fields = kwargs.get('update_fields')
-    if update_fields and 'otp' in update_fields:
-        return
 
     try:
         profile, created = UserProfile.objects.get_or_create(

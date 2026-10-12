@@ -194,6 +194,17 @@ HINDI_TRANSLATIONS = {
     "Office Name (Hindi)": "कार्यालय का नाम (हिंदी)",
     "English Office Name": "अंग्रेज़ी कार्यालय का नाम",
     "Hindi Office Name": "हिंदी कार्यालय का नाम",
+    "Enter the unique code assigned to this office":"इस ऑफ़िस के लिए तय किया गया यूनिक कोड डालें।",
+    "Create Office":"ऑफ़िस बनाएँ",
+
+    "Search": "खोजें",
+    "Highest Hindi Exam Passed": "उत्तीर्ण उच्चतम हिंदी परीक्षा",
+    "All": "सभी",
+    "Filter": "फ़िल्टर",
+    "Reset": "रीसेट",
+    "Empcode": "कर्मचारी कोड",
+    "Employee Name": "कर्मचारी का नाम",
+
     # Office status
     "Frozen": "लॉक",
     "Editable": "संपादन योग्य",
@@ -213,9 +224,11 @@ HINDI_TRANSLATIONS = {
     "Reason for Edit Request": "संपादन अनुरोध का कारण",
     "Submit Request": "अनुरोध भेजें",
     "Edit Request Rejected": "संपादन अनुरोध अस्वीकृत",
+    "Please provide enough detail for the Admin to review your request":"कृपया प्रशासक को आपके अनुरोध की समीक्षा करने के लिए पर्याप्त जानकारी प्रदान करें।",
+
     # Admin office edit requests
-    "Office Edit Requests": "कार्यालय संपादन अनुरोध",
-    "Review Manager requests for editing frozen offices":"लॉक किए गए कार्यालयों के संपादन के लिए Manager के अनुरोधों की समीक्षा करें",
+    "Office Edit Requests":"कार्यालय संपादन अनुरोध",
+    "Review Manager requests for editing frozen offices":"फ़्रीज़ किए गए ऑफ़िस में बदलाव के अनुरोधों की समीक्षा करें।",
     "Pending": "लंबित",
     "Manager": "प्रबंधक",
     "Reason": "कारण",
@@ -226,6 +239,13 @@ HINDI_TRANSLATIONS = {
     "No Pending Office Edit Requests":"कोई लंबित कार्यालय संपादन अनुरोध नहीं है",
     "All Office edit permission requests have been reviewed.":"सभी कार्यालय संपादन अनुमति अनुरोधों की समीक्षा की जा चुकी है।",
     "Edit Completed": "संपादन पूर्ण",
+
+    "Employee": "कर्मचारी",
+    "Employees": "कर्मचारीगण",
+    "Employee Code": "कर्मचारी कोड",
+    "Employee Name": "कर्मचारी का नाम",
+    "Employee Details": "कर्मचारी विवरण",
+    "Employee Management": "कर्मचारी प्रबंधन",
 
 }
 

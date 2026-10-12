@@ -95,7 +95,7 @@
                 {% else %}
                     <span class="badge bg-success">
                         <i class="fas fa-unlock me-1"></i>
-                        {{"Editable"|t:current_lang}
+                        {{"Editable"|t:current_lang}}
                     </span>
                 {% endif %}
             </div>
@@ -269,9 +269,9 @@
                         <thead class="table-light">
                             <tr>
                                 <th>{{"Emp Code"|t:current_lang}}</th>
-                                <th>Name</th>
-                                <th>Designation</th>
-                                <th class="text-center">Actions</th>
+                                <th>{{"Name"|t:current_lang}}</th>
+                                <th>{{"Designation"|t:current_lang}}</th>
+                                <th class="text-center">{{"Actions"|t:current_lang}}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -304,11 +304,11 @@
                 <div class="card-body table-responsive">
                     <form method="get" class="row g-3 align-items-end mb-3">
                         <div class="col-md-5">
-                            <label class="form-label fw-semibold">Search</label>
+                            <label class="form-label fw-semibold">{{"Search"|t:current_lang}}</label>
                             <input type="text" name="user_q" class="form-control" value="{{ user_search }}" placeholder="Empcode, username, employee name, Hindi name">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Highest Hindi Exam Passed</label>
+                            <label class="form-label fw-semibold">{{"Highest Hindi Exam Passed"|t:current_lang}}</label>
                             <select name="hindi_exam" class="form-select">
                                 <option value="">All</option>
                                 {% for exam in highest_exam_options %}
@@ -317,18 +317,18 @@
                             </select>
                         </div>
                         <div class="col-md-3 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary w-100">Filter</button>
-                            <a href="{% url 'manager_dashboard' %}" class="btn btn-outline-secondary w-100">Reset</a>
+                            <button type="submit" class="btn btn-primary w-100">{{"Filter"|t:current_lang}}</button>
+                            <a href="{% url 'manager_dashboard' %}" class="btn btn-outline-secondary w-100">{{"Reset"|t:current_lang}}</a>
                         </div>
                     </form>
 
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Empcode</th>
-                                <th>Employee Name</th>
-                                <th>Status</th>
-                                <th>Highest Hindi Exam Passed</th>
+                                <th>{{"Empcode"|t:current_lang}}</th>
+                                <th>{{"Employee Name"|t:current_lang}}</th>
+                                <th>{{"Status"|t:current_lang}}</th>
+                                <th>{{"Highest Hindi Exam Passed"|t:current_lang}}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -345,7 +345,7 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted">No application users found.</td>
+                                <td colspan="4" class="text-center text-muted">"No application users found.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -360,8 +360,8 @@
                     <table class="table table-bordered align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Employee</th>
-                                <th>Actions</th>
+                                <th>{{"Employee"|t:current_lang}}</th>
+                                <th>{{"Actions"|t:current_lang}}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -616,10 +616,6 @@
                                 maxlength="1000"
                                 required
                                 placeholder="Please explain why the office details need to be changed."></textarea>
-
-                            <div class="form-text">
-                                {{"Please provide enough detail for the Admin to review your request."|t:current_lang}}
-                            </div>
 
                         </div>
 

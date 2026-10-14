@@ -115,6 +115,7 @@ urlpatterns = [
     path('qpr/manager/my-reports/', views.manager_qpr_list, name='manager_qpr_list'),
     path('qpr/admin/my-reports/', views.admin_qpr_list, name='admin_qpr_list'),
     path('qpr/records/save/', views.qpr_save_record, name='qpr_save_record'),
+    path('qpr/records/<int:record_id>/freeze/', views.freeze_employee_qpr, name='freeze_employee_qpr'),
     path('qpr/records/delete/<int:id>/', views.qpr_delete_record, name='qpr_delete_record'),
     path('qpr/api/request-edit/', views.request_edit_api, name='request_edit_api'),
 

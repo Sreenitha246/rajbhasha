@@ -636,6 +636,7 @@ class QPRRecord(models.Model):
     is_submitted = models.BooleanField(default=False)
     is_editing_allowed = models.BooleanField(default=False, help_text='Allow editing of submitted form after unlock')
     is_quarterly_frozen = models.BooleanField(default=False, help_text='Freeze quarterly report on quarter end (HOD can freeze only at quarter end)')
+    is_employee_frozen = models.BooleanField(default=False, help_text='Employee has frozen this QPR record')
     cert_edit_count = models.IntegerField(default=0, help_text='Track certificate edits (max 2)')
     cert_office_code = models.CharField(max_length=50, blank=True, null=True, help_text='Override office code for certificate')
     cert_quarter = models.CharField(max_length=50, blank=True, null=True, help_text='Override quarter for certificate')

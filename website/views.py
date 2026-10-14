@@ -1415,16 +1415,30 @@ def _add_qpr_edit_flags(record_dict, record, current_user, owner_user=None):
         if approved_request:
             approved_scope = ((approved_request.requested_data or {}).get('edit_scope') or '').lower()
 
+    is_employee_frozen = bool(getattr(record, 'is_employee_frozen', False))
+    is_current_quarter = (
+        getattr(record, 'frequency', '') == 'quarterly'
+        and str(getattr(record, 'quarter', '')).strip() == str(get_current_quarter()).strip()
+        and str(getattr(record, 'year', '')).strip() == str(get_current_year_label()).strip()
+    )
+
+    record_dict['is_employee_frozen'] = is_employee_frozen
+    record_dict['is_current_quarter'] = is_current_quarter
     record_dict['edit_approved'] = edit_approved
     record_dict['edit_approved_scope'] = approved_scope
     record_dict['can_edit'] = (
         is_owner
+        and not is_employee_frozen
         and (
             not getattr(record, 'is_submitted', False)
+            or is_current_quarter
             or (edit_approved and approved_scope not in SNAPSHOT_EDIT_SCOPES)
         )
     )
-    record_dict['snapshot_can_edit'] = is_owner and edit_approved and approved_scope in SNAPSHOT_EDIT_SCOPES
+    record_dict['snapshot_can_edit'] = (
+        is_owner and not is_employee_frozen
+        and edit_approved and approved_scope in SNAPSHOT_EDIT_SCOPES
+    )
     record_dict['has_pending_edit_request'] = EditRequest.objects.filter(
         user=owner_user,
         request_type='qpr',
@@ -1787,7 +1801,7 @@ def universal_error_view(request, exception=None, status_code=500):
 
 def error_400(request, exception=None): return universal_error_view(request, exception, 400)
 def error_403(request, exception=None): return universal_error_view(request, exception, 403)
-def csrf_failure(request, reason=""): return universal_error_view(request, None, 403)
+def csrf_failure(request, reason=""):return universal_error_view(request, None, 403)
 def error_404(request, exception=None): return universal_error_view(request, exception, 404)
 def error_500(request): return universal_error_view(request, None, 500)
 
@@ -6766,6 +6780,9 @@ def qpr_save_record(request):
 
         if record_id:
             record = get_object_or_404(QPRRecord, pk=record_id, user=request.user)
+            if record.is_employee_frozen:
+                messages.error(request, "This QPR is frozen. Editing is not allowed.")
+                return redirect('qpr_report_list')
             was_submitted = record.is_submitted
             original_frequency = record.frequency
             original_period_start = record.period_start
@@ -6799,12 +6816,29 @@ def qpr_save_record(request):
                 return redirect('qpr_report_list')
 
             base_approved_request = None
-            if record.is_submitted:
-                base_approved_request = _approved_qpr_edit_request(request.user, record, 'base')
-            if record.is_submitted and not base_approved_request:
-                messages.error(request, "QPR edit approval not found for this submitted record.")
+
+            is_current_quarter_record = (
+                record.frequency == 'quarterly'
+                and str(record.quarter).strip() == str(get_current_quarter()).strip()
+                and str(record.year).strip() == str(get_current_year_label()).strip()
+            )
+
+            if record.is_submitted and not is_current_quarter_record:
+                base_approved_request = _approved_qpr_edit_request(
+                    request.user, record, 'base'
+                )
+
+            if (
+                record.is_submitted
+                and not is_current_quarter_record
+                and not base_approved_request
+            ):
+                messages.error(
+                    request,
+                    "QPR edit approval not found for this submitted record."
+                )
                 return redirect('qpr_report_list')
-           
+                    
             old_values = None
             if record.is_submitted:
                 try:
@@ -7324,6 +7358,42 @@ def request_profile_edit(request):
     return render(request, 'qpr/request_profile_edit.html', context)
 
 
+
+@login_required
+def freeze_employee_qpr(request, record_id):
+    if request.method != 'POST':
+        return redirect('qpr_report_list')
+
+    record = get_object_or_404(QPRRecord, pk=record_id, user=request.user)
+
+    if record.frequency != 'quarterly':
+        messages.error(request, "Only quarterly QPRs can be frozen here.")
+        return redirect('qpr_report_list')
+
+    if (
+        str(record.quarter).strip() != str(get_current_quarter()).strip()
+        or str(record.year).strip() != str(get_current_year_label()).strip()
+    ):
+        messages.error(request, "Only the current-quarter QPR can be frozen.")
+        return redirect('qpr_report_list')
+
+    if not record.is_submitted:
+        messages.error(request, "Submit the QPR before freezing it.")
+        return redirect('qpr_report_list')
+
+    if not record.is_employee_frozen:
+        record.is_employee_frozen = True
+        record.save(update_fields=['is_employee_frozen', 'updated_at'])
+        log_audit(
+            request,
+            'freeze_employee_qpr',
+            'QPRRecord',
+            f"Employee {request.user.username} froze QPR record {record.pk}",
+        )
+        messages.success(request, "Your QPR has been frozen.")
+
+    return redirect('qpr_report_list')
+
 @login_required
 def request_qpr_edit(request, record_id):
     lang = request.session.get('lang', 'en')
@@ -7334,6 +7404,9 @@ def request_qpr_edit(request, record_id):
         messages.error(request, translate_text("QPR record not found.", lang))
         return redirect('qpr_report_list')
    
+    if qpr_record.is_employee_frozen:
+        messages.error(request, translate_text("This QPR is frozen and cannot be edited.", lang))
+        return redirect('qpr_report_detail', record_id=record_id)
     if qpr_record.frequency == 'quarterly' and qpr_record.is_quarterly_frozen:
         messages.error(request, translate_text("This quarterly report is frozen and cannot be edited.", lang))
         return redirect('qpr_report_detail', record_id=record_id)

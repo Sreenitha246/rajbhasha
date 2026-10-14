@@ -220,16 +220,33 @@
                 const viewSuffix = editScope ? `?view_as=${editScope}` : '';
                 const approvedScope = String(rec.edit_approved_scope || '').toLowerCase();
                 const requestedScope = String(editScope || '').toLowerCase();
-                const isSnapshotScope = ['weekly', 'monthly', 'quarterly'].includes(requestedScope);
+                const isSnapshotScope = ['weekly', 'monthly'].includes(requestedScope) ||
+                (requestedScope === 'quarterly' && !rec.is_current_quarter);
                 const canEditThisScope = isSnapshotScope && approvedScope === requestedScope && rec.snapshot_can_edit;
                 const canEditBaseRecord = !isSnapshotScope && rec.can_edit && !approvedScope;
-                // HOD view is read-only: only show View button
-                if (IS_HOD_VIEW) {
-                    return ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(rec.id, viewSuffix)}">View</a>`;
+                const isFrozen = !!rec.is_employee_frozen;
+                const isCurrentQuarter = !!rec.is_current_quarter;
+                const viewButton = `<a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(rec.id, viewSuffix)}">View</a>`;
+
+                if (IS_HOD_VIEW) return viewButton;
+
+                if (isFrozen) {
+                    return `<span class="badge bg-secondary">Frozen</span> ${viewButton}`;
                 }
-                // If record is editable (owner + approved/unsubmitted), show Edit button
+
+                if (isCurrentQuarter && !isSnapshotScope) {
+                    let actions = '';
+                    if (canEditBaseRecord || !isSubmittedRecord(rec)) {
+                        actions += `<button type="button" class="btn btn-sm btn-outline-success js-qpr-edit" data-record-id="${rec.id}">Edit</button> `;
+                    }
+                    if (isSubmittedRecord(rec)) {
+                       actions += `<button type="button" class="btn btn-sm btn-outline-danger js-qpr-freeze" data-record-id="${rec.id}">Freeze</button> `;
+                    }
+                    return actions + viewButton;
+                }
+
                 if (canEditThisScope || canEditBaseRecord) {
-                    return `<button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); edit(${rec.id}${scopeArg})">Edit</button> <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(rec.id, viewSuffix)}">View</a>`;
+                    return `<button type="button" class="btn btn-sm btn-outline-success js-qpr-edit" data-record-id="${rec.id}" data-edit-scope="${editScope || ''}">Edit</button> ${viewButton}`;
                 }
                 if (rec.has_pending_edit_request) {
                     return `<button class="btn btn-sm btn-outline-secondary" disabled>Pending</button> <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(rec.id, viewSuffix)}">View</a>`;
@@ -240,13 +257,47 @@
                 if (!rec.is_submitted && String(rec.status || '').toLowerCase() !== 'submitted') {
                     return isSnapshotScope
                         ? '<button class="btn btn-sm btn-outline-secondary" disabled>—</button>'
-                        : `<button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); edit(${rec.id})">Edit Draft</button>`;
+                        : `<button type="button" class="btn btn-sm btn-outline-success js-qpr-edit" data-record-id="${rec.id}">Edit Draft</button>`;
                 }
                 // Otherwise offer request-to-edit
-                let actions = `<button class="btn btn-sm btn-outline-info" onclick="event.stopPropagation(); requestEdit(${rec.id}${scopeArg})">Request to Edit</button>`;
+                let actions = `<button type="button" class="btn btn-sm btn-outline-info js-request-edit" data-record-id="${rec.id}" data-edit-scope="${editScope || ''}">Request to Edit</button>`;
                 actions += ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(rec.id, viewSuffix)}">View</a>`;
                 return actions;
             }
+
+            function freezeEmployeeQPR(recordId) {
+                if (!confirm('Freeze this QPR? You will not be able to edit it afterwards.')) {
+                    return;
+                }
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/qpr/records/${recordId}/freeze/`;
+
+                // Get the CSRF token rendered by Django into the page.
+                const csrfInput = document.querySelector(
+                    'input[name="csrfmiddlewaretoken"]'
+                );
+
+                const csrfToken = csrfInput
+                    ? csrfInput.value
+                    : "{{ csrf_token }}";
+
+                if (!csrfToken || csrfToken === "NOTPROVIDED") {
+                    alert('CSRF token unavailable. Refresh the page and try again.');
+                    return;
+                }
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'csrfmiddlewaretoken';
+                input.value = csrfToken;
+                form.appendChild(input);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+            window.freezeEmployeeQPR = freezeEmployeeQPR;
 
             function chooseActionRecord(candidates, scope) {
                 const requestedScope = String(scope || '').toLowerCase();
@@ -314,13 +365,13 @@
                                 // HOD view: only View
                                 actions = `<a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.weekly_record_id, '?view_as=fill')}">View</a>`;
                             } else if (weeklyRec && weeklyRec.can_edit && !weeklyRec.edit_approved_scope) {
-                                actions = `<button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); edit(${d.weekly_record_id})">Edit</button>`;
+                                actions = `<button type="button" class="btn btn-sm btn-outline-success js-qpr-edit" data-record-id="${d.weekly_record_id}">Edit</button>`;
                                 actions += ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.weekly_record_id, '?view_as=fill')}">View</a>`;
                             } else if (weeklyRec && weeklyRec.has_pending_edit_request) {
                                 actions = `<button class="btn btn-sm btn-outline-secondary" disabled>Pending</button>`;
                                 actions += ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.weekly_record_id, '?view_as=fill')}">View</a>`;
                             } else {
-                                actions = `<button class="btn btn-sm btn-outline-info" onclick="event.stopPropagation(); requestEdit(${d.weekly_record_id})">Request to Edit</button>`;
+                                actions = `<button type="button" class="btn btn-sm btn-outline-info js-request-edit" data-record-id="${d.weekly_record_id}">Request to Edit</button>`;
                                 actions += ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.weekly_record_id, '?view_as=fill')}">View</a>`;
                             }
                         } else if (d.filled_by_monthly && d.is_first_monthly_fill_day && d.monthly_record_id) {
@@ -328,13 +379,13 @@
                             if (IS_HOD_VIEW) {
                                 actions = `<a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.monthly_record_id, '?view_as=fill')}">View</a>`;
                             } else if (monthlyRec && monthlyRec.can_edit && !monthlyRec.edit_approved_scope) {
-                                actions = `<button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); edit(${d.monthly_record_id})">Edit</button>`;
+                                actions = `<button type="button" class="btn btn-sm btn-outline-success js-qpr-edit" data-record-id="${d.monthly_record_id}">Edit</button>`;
                                 actions += ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.monthly_record_id, '?view_as=fill')}">View</a>`;
                             } else if (monthlyRec && monthlyRec.has_pending_edit_request) {
                                 actions = `<button class="btn btn-sm btn-outline-secondary" disabled>Pending</button>`;
                                 actions += ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.monthly_record_id, '?view_as=fill')}">View</a>`;
                             } else {
-                                actions = `<button class="btn btn-sm btn-outline-info" onclick="event.stopPropagation(); requestEdit(${d.monthly_record_id})">Request to Edit</button>`;
+                                actions = `<button type="button" class="btn btn-sm btn-outline-info js-request-edit" data-record-id="${d.monthly_record_id}">Request to Edit</button>`;
                                 actions += ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.monthly_record_id, '?view_as=fill')}">View</a>`;
                             }
                         } else if (d.filled_by_quarterly && d.is_first_quarterly_fill_day && d.quarterly_record_id) {
@@ -342,13 +393,13 @@
                             if (IS_HOD_VIEW) {
                                 actions = `<a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.quarterly_record_id, '?view_as=fill')}">View</a>`;
                             } else if (quarterlyRec && quarterlyRec.can_edit && !quarterlyRec.edit_approved_scope) {
-                                actions = `<button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); edit(${d.quarterly_record_id})">Edit</button>`;
+                                actions = `<button type="button" class="btn btn-sm btn-outline-success js-qpr-edit" data-record-id="${d.quarterly_record_id}">Edit</button>`;
                                 actions += ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.quarterly_record_id, '?view_as=fill')}">View</a>`;
                             } else if (quarterlyRec && quarterlyRec.has_pending_edit_request) {
                                 actions = `<button class="btn btn-sm btn-outline-secondary" disabled>Pending</button>`;
                                 actions += ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.quarterly_record_id, '?view_as=fill')}">View</a>`;
                             } else {
-                                actions = `<button class="btn btn-sm btn-outline-info" onclick="event.stopPropagation(); requestEdit(${d.quarterly_record_id})">Request to Edit</button>`;
+                                actions = `<button type="button" class="btn btn-sm btn-outline-info js-request-edit" data-record-id="${d.quarterly_record_id}">Request to Edit</button>`;
                                 actions += ` <a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(d.quarterly_record_id, '?view_as=fill')}">View</a>`;
                             }
                         }
@@ -594,44 +645,108 @@
     }
 
     function requestEdit(id, editScope) {
-        if (IS_HOD_VIEW) { alert("You are viewing in read-only mode."); return; }
-        const scope = editScope ? String(editScope).toLowerCase() : '';
-        if (['weekly', 'monthly', 'quarterly'].includes(scope)) {
-            const ok = confirm("You are about to replace and rewrite the existing cumulation with your filled values. Do you want to continue?");
-            if (!ok) {
-                window.location.href = "{% url 'qpr_report_list' %}";
-                return;
-            }
+        if (IS_HOD_VIEW) {
+            alert("You are viewing in read-only mode.");
+            return;
         }
-        const reason = prompt("{{ 'Please enter the reason for requesting to edit this report:'|t:current_lang }}");
-        if (!reason) return;
+
+        const scope = editScope ? String(editScope).toLowerCase() : '';
+
+        if (['weekly', 'monthly', 'quarterly'].includes(scope)) {
+            const ok = confirm(
+                "You are about to replace and rewrite the existing cumulation with your filled values. Do you want to continue?"
+            );
+            if (!ok) return;
+        }
+
+        const reason = prompt(
+            "{{ 'Please enter the reason for requesting to edit this report:'|t:current_lang }}"
+        );
+
+        if (reason === null) return;
+
+        if (!reason.trim()) {
+            alert("Please enter a reason for your edit request.");
+            return;
+        }
+
         const templateCsrfToken = "{{ csrf_token }}";
-        // Submit a standard POST form to the server-side handler so the view can
-        // record the EditRequest and redirect to the report detail page.
+        const csrfCookie = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('csrftoken='));
+
+        const csrfToken = csrfCookie
+            ? decodeURIComponent(csrfCookie.split('=').slice(1).join('='))
+            : templateCsrfToken;
+
+        if (!csrfToken || csrfToken === 'NOTPROVIDED') {
+            alert("Unable to retrieve the security token. Refresh the page and try again.");
+            return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/qpr/reports/${id}/request-edit/`;
+
+        const fields = {
+            csrfmiddlewaretoken: csrfToken,
+            reason: reason.trim()
+        };
+
+        if (scope) {
+            fields.edit_scope = scope;
+        }
+
+        Object.entries(fields).forEach(([name, value]) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+
         try {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/qpr/reports/${id}/request-edit/`;
-
-            // CSRF token from cookie
-            const csrf = (function(){
-                const name = 'csrftoken=';
-                const parts = document.cookie.split(';').map(s=>s.trim());
-                for (let p of parts) if (p.indexOf(name)===0) return decodeURIComponent(p.substring(name.length));
-                return null;
-            })();
-                const csrfValue = csrf || templateCsrfToken;
-                const inp = document.createElement('input'); inp.type='hidden'; inp.name='csrfmiddlewaretoken'; inp.value = csrfValue; form.appendChild(inp);
-
-            const rInp = document.createElement('input'); rInp.type='hidden'; rInp.name='reason'; rInp.value = reason; form.appendChild(rInp);
-            if (scope) {
-                const sInp = document.createElement('input'); sInp.type='hidden'; sInp.name='edit_scope'; sInp.value = scope; form.appendChild(sInp);
-            }
-            document.body.appendChild(form);
             form.submit();
-        } catch (e) { console.error('request-edit submit failed', e); alert('Failed to submit request.'); }
+        } catch (error) {
+            console.error('Request edit submission failed:', error);
+            form.remove();
+            alert("Failed to submit the edit request. Please try again.");
+        }
     }
+    
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.js-request-edit');
+        if (!button) return;
 
+        event.stopPropagation();
+
+        const recordId = button.dataset.recordId;
+        const editScope = button.dataset.editScope || '';
+
+        requestEdit(recordId, editScope);
+    });
+
+    document.addEventListener('click', function (event) {
+    const button = event.target.closest('.js-qpr-edit');
+    if (!button) return;
+
+    event.stopPropagation();
+
+    const recordId = button.dataset.recordId;
+    const editScope = button.dataset.editScope || '';
+
+    edit(recordId, editScope);
+    });
+
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.js-qpr-freeze');
+        if (!button) return;
+
+        event.stopPropagation();
+        freezeEmployeeQPR(button.dataset.recordId);
+    });
     function finalizeQPR() {
         // Show confirmation dialog
         if (!confirm('This finalizes your quarterly report for this quarter. Do you want to continue?')) {

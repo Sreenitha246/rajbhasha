@@ -228,7 +228,7 @@ async function loadReport() {
                     v = (typeof r[key] !== 'undefined' && r[key] !== null && r[key] !== '') ? r[key] : 0;
                     src = 'rec';
                 }
-                return `<div class="dv">${v}<div style="font-size:8px;color:#999">(${src})</div></div>`;
+                return `<div class="dv">${v}</div>`;
             } catch (e) { return cell(r[key]); }
         }
 
@@ -250,7 +250,7 @@ async function loadReport() {
                 if (!textVal || textVal.trim() === '') {
                     return '<span style="color:#bbb">–</span>';
                 }
-                return `<div>${textVal}</div><div style="font-size:8px;color:#999">(${src})</div>`;
+                return `<div>${textVal}</div>`;
             } catch (e) { 
                 const val = r[textKey];
                 return (val && val.trim()) ? escapeHtml(val) : '<span style="color:#bbb">–</span>';

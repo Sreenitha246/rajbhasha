@@ -8449,9 +8449,13 @@ def manager_certificate_form(request, pk):
         certificate.chairperson_name = request.POST.get('chairperson_name', '').strip()
         certificate.chairperson_designation = request.POST.get('chairperson_designation', '').strip()
         certificate.organization_name = request.POST.get('organization_name', '').strip()
+        certificate.chairperson_name_hi = request.POST.get('chairperson_name_hi', '').strip()
+        certificate.chairperson_designation_hi = request.POST.get('chairperson_designation_hi', '').strip()
+        certificate.organization_name_hi = request.POST.get('organization_name_hi', '').strip()
         certificate.phone_fax = request.POST.get('phone_fax', '').strip()
         certificate.email = request.POST.get('email', '').strip()
         certificate.place = request.POST.get('place', '').strip()
+        certificate.place_hi = request.POST.get('place_hi', '').strip()
         certificate_date = request.POST.get('certificate_date', '').strip()
         certificate.certificate_date = certificate_date or None
         certificate.is_submitted = True
@@ -8479,9 +8483,14 @@ def manager_certificate_view(request, pk):
         return HttpResponseForbidden('Only managers can access certificates.')
 
     certificate = get_object_or_404(ManagerCertificate, pk=pk, user=request.user)
+    cert_lang = request.GET.get('cert_lang', 'en')
+    if cert_lang not in ('en', 'hi'):
+        cert_lang = 'en'
+
     return render(request, 'qpr/certificate.html', {
         'manager_certificate': certificate,
-        'current_lang': request.session.get('lang', 'en'),
+        'current_lang': cert_lang,
+        'cert_lang': cert_lang,
     })
 
 

@@ -82,17 +82,40 @@
 
 {% block content %}
 <div class="container">
+   <div class="text-end no-print mb-3">
+        <span class="me-2">Certificate Language / प्रमाणपत्र की भाषा:</span>
+        <button type="button" class="btn btn-outline-primary btn-sm"
+                onclick="setCertificateLanguage('en')">English</button>
+        <button type="button" class="btn btn-outline-primary btn-sm"
+                onclick="setCertificateLanguage('hi')">हिंदी</button>
+    </div>
     <div class="certificate">
         <div class="text-end no-print"><button onclick="window.print()" class="btn btn-primary">{{ "Print"|t:current_lang }}</button></div>
         <div class="print-heading">
-            <h2>{{ "Certificate"|t:current_lang }}</h2>
+            <h2>
+                {% if cert_lang == 'hi' %}
+                    प्रमाणपत्र
+                {% else %}
+                    Certificate
+                {% endif %}
+            </h2>
         </div>
 
         <div class="meta">
             {% if manager_certificate %}
                 <p class="meta-row">
-                    <span class="meta-item"><strong>{{ "Office Code:"|t:current_lang }}</strong> {{ manager_certificate.office_code }}</span>
-                    <span class="meta-item"><strong>{{ "Financial Year:"|t:current_lang }}</strong> {{ manager_certificate.financial_year }}</span>
+                    <span class="meta-item">
+                        <strong>
+                            {% if cert_lang == 'hi' %}कार्यालय कोड:{% else %}Office Code:{% endif %}
+                        </strong>
+                        {{ manager_certificate.office_code }}
+                    </span>
+                    <span class="meta-item">
+                        <strong>
+                            {% if cert_lang == 'hi' %}वित्तीय वर्ष:{% else %}Financial Year:{% endif %}
+                        </strong>
+                        {{ manager_certificate.financial_year }}
+                    </span>
                 </p>
             {% else %}
                 <p><strong>{{ "Office Code:"|t:current_lang }}</strong> {{ record.officeCode }}</p>
@@ -102,23 +125,133 @@
 
         <div style="margin-top:20px; text-align:justify;">
             <p>
-            {{ "I   hereby certify that the information provided in the attached quarterly progress report (Part I/II) ending"|t:current_lang }} {% if manager_certificate %}{{ manager_certificate.quarter }}{% else %}{{ record.quarter }}{% endif %} {{ "has been prepared on the basis of available records and, to the best of my knowledge, is completely true and correct. I fully understand that the responsibility for proper compliance with the directives contained in the Official Language Act, 1963 and the Official Language Rules, 1976 rests with the undersigned. If, at any stage, the figures filled in the report are found to be false or exaggerated, this office shall be deprived of the Official Language Award for the next 03 years, and the matter may also be brought to the notice of my controlling office/ministry/headquarters for taking action for providing incorrect information."|t:current_lang }}
+            {% if cert_lang == 'hi' %}
+                मैं एतद्द्वारा प्रमाणित करता/करती हूँ कि संलग्न त्रैमासिक प्रगति रिपोर्ट (भाग I/II)
+                {% if manager_certificate %}{{ manager_certificate.quarter }}{% else %}{{ record.quarter }}{% endif %}
+                की समाप्ति तक उपलब्ध कराई गई जानकारी उपलब्ध अभिलेखों के आधार पर तैयार की गई है
+                तथा मेरी सर्वोत्तम जानकारी के अनुसार पूर्णतः सत्य और सही है।
+                मैं पूरी तरह समझता/समझती हूँ कि राजभाषा अधिनियम, 1963 और राजभाषा नियम, 1976
+                में निहित निर्देशों के उचित अनुपालन की जिम्मेदारी अधोहस्ताक्षरी की है।
+                यदि किसी भी स्तर पर रिपोर्ट में भरे गए आँकड़े गलत या बढ़ा-चढ़ाकर प्रस्तुत किए गए
+                पाए जाते हैं, तो इस कार्यालय को अगले तीन वर्षों के लिए राजभाषा पुरस्कार से वंचित
+                किया जा सकता है तथा गलत जानकारी देने के संबंध में कार्रवाई हेतु मामला मेरे
+                नियंत्रक कार्यालय/मंत्रालय/मुख्यालय के संज्ञान में भी लाया जा सकता है।
+            {% else %}
+                I hereby certify that the information provided in the attached quarterly progress report (Part I/II) ending
+                {% if manager_certificate %}{{ manager_certificate.quarter }}{% else %}{{ record.quarter }}{% endif %}
+                has been prepared on the basis of available records and, to the best of my knowledge, is completely true and correct.
+                I fully understand that the responsibility for proper compliance with the directives contained in the Official Language Act, 1963
+                and the Official Language Rules, 1976 rests with the undersigned. If, at any stage, the figures filled in the report are found
+                to be false or exaggerated, this office shall be deprived of the Official Language Award for the next 03 years, and the matter
+                may also be brought to the notice of my controlling office/ministry/headquarters for taking action for providing incorrect information.
+            {% endif %}
             </p>
+            
             <br class="print-gap">
-            <p class="signature-stamp" style="margin-top:30px">({{ "Signature with stamp"|t:current_lang }})</p>
-            <br class="print-gap">
-            <div class="signature">
-              <div class = "signature-right">
-                <p><strong>{{ "Name of the chairperson"|t:current_lang }}:</strong> {% if manager_certificate %}{{ manager_certificate.chairperson_name|default:"______________________" }}{% else %}______________________{% endif %}</p>
-                <p><strong>{{ "Designation"|t:current_lang }}:</strong> {% if manager_certificate %}{{ manager_certificate.chairperson_designation|default:"______________________" }}{% else %}______________________{% endif %}</p>
-                <p><strong>{{ "Name of Min./Dep./Org."|t:current_lang }}:</strong> {% if manager_certificate %}{{ manager_certificate.organization_name|default:"______________________" }}{% else %}______________________{% endif %}</p>
-                <p><strong>{{ "Telephone/ Fax No."|t:current_lang }}:</strong> {% if manager_certificate %}{{ manager_certificate.phone_fax|default:"______________________" }}{% else %}______________________{% endif %}</p>
-                <p><strong>{{ "Email address"|t:current_lang }}:</strong> {% if manager_certificate %}{{ manager_certificate.email|default:"______________________" }}{% else %}______________________{% endif %}</p>
-                </div>
-                <p class = "signature-date-place"><strong>{{ "Date"|t:current_lang }} :</strong> {% if manager_certificate and manager_certificate.certificate_date %}{{ manager_certificate.certificate_date|date:"d/m/Y" }}{% else %}______________________{% endif %} &nbsp;&nbsp; <strong>{{ "Place"|t:current_lang }} :</strong> {% if manager_certificate %}{{ manager_certificate.place|default:"______________________" }}{% else %}______________________{% endif %}</p>
-            </div>
+            <p class="signature-stamp" style="margin-top:30px">
+                ({% if cert_lang == 'hi' %}हस्ताक्षर एवं मुहर{% else %}Signature with stamp{% endif %})
+            </p>
 
+            <br class="print-gap">
+
+            <div class="signature">
+                <div class="signature-right">
+
+                    <p>
+                        <strong>{% if cert_lang == 'hi' %}अध्यक्ष का नाम{% else %}Name of the chairperson{% endif %}:</strong>
+                        {% if manager_certificate %}
+                                {% if cert_lang == 'hi' %}
+                                    {{ manager_certificate.chairperson_name_hi|default:manager_certificate.chairperson_name|default:"______________________" }}
+                                {% else %}
+                                    {{ manager_certificate.chairperson_name|default:"______________________" }}
+                                {% endif %}
+                        {% else %}
+                                    ______________________
+                        {% endif %}
+                    </p>
+
+                    <p>
+                        <strong>
+                            {% if cert_lang == 'hi' %}
+                                पदनाम
+                            {% else %}
+                                Designation
+                            {% endif %}:
+                        </strong>
+
+                        {% if manager_certificate %}
+                            {% if cert_lang == 'hi' %}
+                                {{ manager_certificate.chairperson_designation_hi|default:manager_certificate.chairperson_designation|default:"______________________" }}
+                            {% else %}
+                                {{ manager_certificate.chairperson_designation|default:"______________________" }}
+                            {% endif %}
+                        {% else %}
+                            ______________________
+                        {% endif %}
+                    </p>
+
+                    <p>
+                        <strong>
+                            {% if cert_lang == 'hi' %}
+                                मंत्रालय/विभाग/संगठन का नाम
+                            {% else %}
+                                Name of Min./Dep./Org.
+                            {% endif %}:
+                        </strong>
+
+                        {% if manager_certificate %}
+                            {% if cert_lang == 'hi' %}
+                                {{ manager_certificate.organization_name_hi|default:manager_certificate.organization_name|default:"______________________" }}
+                            {% else %}
+                                {{ manager_certificate.organization_name|default:"______________________" }}
+                            {% endif %}
+                        {% else %}
+                            ______________________
+                        {% endif %}
+                    </p>
+
+                    <p>
+                        <strong>{% if cert_lang == 'hi' %}दूरभाष/फैक्स नंबर{% else %}Telephone/Fax No.{% endif %}:</strong>
+                        {% if manager_certificate %}{{ manager_certificate.phone_fax|default:"______________________" }}{% else %}______________________{% endif %}
+                    </p>
+
+                    <p>
+                        <strong>{% if cert_lang == 'hi' %}ईमेल पता{% else %}Email address{% endif %}:</strong>
+                        {% if manager_certificate %}{{ manager_certificate.email|default:"______________________" }}{% else %}______________________{% endif %}
+                    </p>
+
+                </div>
+
+                <p class="signature-date-place">
+                    <strong>{% if cert_lang == 'hi' %}दिनांक{% else %}Date{% endif %}:</strong>
+                    {% if manager_certificate and manager_certificate.certificate_date %}
+                        {{ manager_certificate.certificate_date|date:"d/m/Y" }}
+                    {% else %}
+                        ______________________
+                    {% endif %}
+
+                    &nbsp;&nbsp;
+
+                    <strong>{% if cert_lang == 'hi' %}स्थान{% else %}Place{% endif %}:</strong>
+                    {% if manager_certificate %}
+                        {% if cert_lang == 'hi' %}
+                            {{ manager_certificate.place_hi|default:manager_certificate.place|default:"______________________" }}
+                        {% else %}
+                            {{ manager_certificate.place|default:"______________________" }}
+                        {% endif %}
+                    {% else %}
+                        ______________________
+                    {% endif %}
+                </p>
+            </div>
         </div>
     </div>
 </div>
+<script>
+    function setCertificateLanguage(lang) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('cert_lang', lang);
+        window.location.href = url.toString();
+    }
+</script>
 {% endblock %}

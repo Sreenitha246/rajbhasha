@@ -34,12 +34,27 @@
                 <input type="text" id="chairperson_name" name="chairperson_name" class="form-control" value="{{ certificate.chairperson_name|default:'' }}">
             </div>
             <div class="form-group">
+                <label for="chairperson_name_hi">अध्यक्ष का नाम (हिंदी)</label>
+                <input type="text" id="chairperson_name_hi" name="chairperson_name_hi"
+                    class="form-control" value="{{ certificate.chairperson_name_hi|default:'' }}">
+            </div>
+            <div class="form-group">
                 <label for="chairperson_designation">{{ "Designation"|t:current_lang }}</label>
                 <input type="text" id="chairperson_designation" name="chairperson_designation" class="form-control" value="{{ certificate.chairperson_designation|default:'' }}">
             </div>
             <div class="form-group">
+                <label for="chairperson_designation_hi">पदनाम (हिंदी)</label>
+                <input type="text" id="chairperson_designation_hi" name="chairperson_designation_hi"
+                    class="form-control" value="{{ certificate.chairperson_designation_hi|default:'' }}">
+            </div>
+            <div class="form-group">
                 <label for="organization_name">{{ "Name of Min./Dep./Org."|t:current_lang }}</label>
                 <input type="text" id="organization_name" name="organization_name" class="form-control" value="{{ certificate.organization_name|default:'' }}">
+            </div>
+            <div class="form-group">
+                <label for="organization_name_hi">संगठन का नाम (हिंदी)</label>
+                <input type="text" id="organization_name_hi" name="organization_name_hi"
+                    class="form-control" value="{{ certificate.organization_name_hi|default:'' }}">
             </div>
             <div class="form-group">
                 <label for="phone_fax">{{ "Telephone/ Fax No."|t:current_lang }}</label>
@@ -56,6 +71,14 @@
             <div class="form-group">
                 <label for="place">{{ "Place"|t:current_lang }}</label>
                 <input type="text" id="place" name="place" class="form-control" value="{{ certificate.place|default:'' }}">
+            </div>
+            <div class="form-group">
+                <label for="place_hi">स्थान (हिंदी)</label>
+                <input type="text"
+                    id="place_hi"
+                    name="place_hi"
+                    class="form-control"
+                    value="{{ certificate.place_hi|default:'' }}">
             </div>
         </div>
 

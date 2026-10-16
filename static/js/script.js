@@ -960,10 +960,22 @@ function editRecord(id) {
  ''
  ).toLowerCase();
  const scopedEditRequested = ['weekly', 'monthly', 'quarterly'].includes(requestedSnapshotScope);
+
+ // Reject direct edit attempts for frozen records, even if the URL is stale.
+ const isFrozenRecord = !!record.is_employee_frozen ||
+     (String(record.frequency || '').toLowerCase() === 'quarterly' &&
+      !!record.is_quarterly_frozen);
+
+ if (isFrozenRecord) {
+     alert('This QPR is frozen and can only be viewed.');
+     window.location.href = '/qpr/reports/';
+     return;
+ }
+
  const snapshotEdit = (record.snapshot_edit && record.snapshot_edit.scope === requestedSnapshotScope) ? record.snapshot_edit : null;
  const editFrequency = snapshotEdit ? snapshotEdit.scope : (scopedEditRequested ? requestedSnapshotScope : (record.frequency || 'daily'));
  const canUseCurrentApproval = !(record.edit_approved_scope) || !!snapshotEdit || scopedEditRequested;
- const canEditCurrentRecord = !!record.can_edit || (!!record.snapshot_can_edit && (!!snapshotEdit || scopedEditRequested)) || scopedEditRequested;
+ const canEditCurrentRecord = !!record.can_edit || (!!record.snapshot_can_edit && (!!snapshotEdit || scopedEditRequested));
  if (record.edit_approved_scope && record.edit_approved_scope !== requestedSnapshotScope && !snapshotEdit) {
  alert('This approval is only for the ' + record.edit_approved_scope + ' cumulative QPR. Please open the matching ' + record.edit_approved_scope + ' row from the report list.');
  window.location.href = '/qpr/reports/';

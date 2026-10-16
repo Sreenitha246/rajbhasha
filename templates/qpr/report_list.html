@@ -224,7 +224,11 @@
                 (requestedScope === 'quarterly' && !rec.is_current_quarter);
                 const canEditThisScope = isSnapshotScope && approvedScope === requestedScope && rec.snapshot_can_edit;
                 const canEditBaseRecord = !isSnapshotScope && rec.can_edit && !approvedScope;
-                const isFrozen = !!rec.is_employee_frozen;
+                const isFrozen = !!rec.is_employee_frozen ||
+                    (
+                        String(rec.frequency || '').toLowerCase() === 'quarterly'
+                        && !!rec.is_quarterly_frozen
+                    );
                 const isCurrentQuarter = !!rec.is_current_quarter;
                 const viewButton = `<a class="btn btn-sm btn-outline-primary ms-1" href="${buildViewUrl(rec.id, viewSuffix)}">View</a>`;
 
@@ -232,6 +236,24 @@
 
                 if (isFrozen) {
                     return `<span class="badge bg-secondary">Frozen</span> ${viewButton}`;
+                }
+
+                // Previous-quarter quarterly QPR: direct Edit and Freeze.
+                // HOD view remains read-only; fallback non-quarterly records are excluded.
+                const isHistoricalQuarterlyRecord =
+                    requestedScope === 'quarterly' &&
+                    !isCurrentQuarter &&
+                    String(rec.frequency || '').toLowerCase() === 'quarterly';
+
+                if (isHistoricalQuarterlyRecord) {
+                    let actions = '';
+                    if (rec.can_edit) {
+                        actions += `<button type="button" class="btn btn-sm btn-outline-success js-qpr-edit" data-record-id="${rec.id}">Edit</button> `;
+                    }
+                    if (isSubmittedRecord(rec)) {
+                        actions += `<button type="button" class="btn btn-sm btn-outline-danger js-qpr-freeze" data-record-id="${rec.id}">Freeze</button> `;
+                    }
+                    return actions + viewButton;
                 }
 
                 if (isCurrentQuarter && !isSnapshotScope) {

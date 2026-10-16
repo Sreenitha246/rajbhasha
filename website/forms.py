@@ -1,14 +1,10 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser
 from .templatetags.translate_tags import translate_text
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils import timezone
-import hashlib
-from captcha.fields import CaptchaField
-from django.contrib.auth import authenticate
-from django.core.cache import cache
 from django.core.exceptions import ValidationError
 
 class CustomUserCreationForm(UserCreationForm):
@@ -115,107 +111,6 @@ class CustomUserCreationForm(UserCreationForm):
         if commit:
             user.save()
         return user
-
-class CustomLoginForm(AuthenticationForm):
-
-    email_choice = forms.ChoiceField(
-        choices=[('primary', 'Official Email'), ('alternate', 'Alternate Email')],
-        widget=forms.RadioSelect,
-        initial='primary',
-        required=False
-    )
-    captcha = CaptchaField()
-
-    def __init__(self, request=None, *args, **kwargs):
-        self.request = request
-        if request is None and 'request' in kwargs:
-             self.request = kwargs.pop('request')
-             
-        super().__init__(request=self.request, *args, **kwargs)
-
-        if self.request and hasattr(self.request, 'session'):
-            self.lang = self.request.session.get('lang', 'en')
-        else:
-            self.lang = 'en'    
-        
-        self.fields["username"].label = translate_text("Employee Code", self.lang)
-        self.fields["password"].label = translate_text("Password", self.lang)
-        self.fields['captcha'].label = translate_text("Enter the characters shown", self.lang)
-        self.fields['email_choice'].label = translate_text("Send Secure OTP To:", self.lang)
-        self.fields['email_choice'].choices = [
-            ('primary', translate_text("Official Email", self.lang)),
-            ('alternate', translate_text("Alternate Email", self.lang))
-        ]
-
-        self.error_messages['invalid_login'] = translate_text(
-            "Please enter a correct username and password. Note that both fields may be case-sensitive.",
-            self.lang
-        )
-        self.error_messages['inactive'] = translate_text("This account is inactive.", self.lang)
-        
-
-        for field_name, field in self.fields.items():
-            field.help_text = ""
-            # Ensure bootstrap classes are applied to all
-            # Apply translated labels as placeholders
-            field.widget.attrs['placeholder'] = field.label
-
-        self.fields['password'].widget.attrs['autocomplete'] = 'off'
-
-    def clean(self):
-        """Authenticate using ONLY employee code"""
-        
-        cleaned_data = super(AuthenticationForm, self).clean()
-
-        emp_code = cleaned_data.get('username')
-        password = cleaned_data.get('password')
-
-        if not emp_code or not password:
-            return cleaned_data
-        cache_key = f"login_attempts_{emp_code}"
-        attempts = cache.get(cache_key, 0)
-
-        if attempts >= 3:
-            raise forms.ValidationError(
-                translate_text("Account locked due to 3 incorrect attempts. Please try again after 2 hours.", self.lang), 
-                code='locked'
-            )
-
-        from .models import UserProfile
-
-        try:
-            profile = UserProfile.objects.select_related('user').get(
-                employee_code=emp_code
-            )
-            
-        except UserProfile.DoesNotExist:
-            # Increment failed attempts even for invalid users to prevent brute-force enumeration
-            cache.set(cache_key, attempts + 1, 7200) 
-            raise forms.ValidationError("Invalid Employee Code")
-        
-        
-        user = authenticate(request=self.request,username=profile.user.username,password=password)
-        if user is None:
-            attempts += 1
-            cache.set(cache_key, attempts, 7200)
-            if attempts >= 3:
-                raise forms.ValidationError(
-                    translate_text("Account locked for 2 hours due to 3 incorrect attempts.", self.lang), 
-                    code='locked'
-                )
-            else:               
-                raise forms.ValidationError(
-                    translate_text(f"Invalid login. {3 - attempts} attempts remaining.", self.lang),
-                    code='invalid_login'
-                )
-        cache.delete(cache_key) 
-         
-        self.confirm_login_allowed(user)
-        self.user_cache = user
-
-        return cleaned_data
-
-
 
 class CertificateDataForm(forms.Form):
     """Form for manager to select financial year and quarter ending"""

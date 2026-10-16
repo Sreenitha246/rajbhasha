@@ -43,7 +43,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from captcha.models import logger
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import ParagraphStyle
@@ -864,76 +863,231 @@ NUMERIC_KEYS = [
 ]
 
 
-def _serialize_managerqpr(m):
-    out = {k: 0 for k in NUMERIC_KEYS}
-    if not m:
-        return out
-    try:
-        out['s2_meetings'] = int(getattr(m, 's2_meetings_count', 0) or 0)
-        out['s2_minutes'] = int(getattr(m, 's2_hindi_minutes', 0) or 0)
-        out['s2_papers_total'] = int(getattr(m, 's2_total_papers', 0) or 0)
-        out['s2_papers_hindi'] = int(getattr(m, 's2_hindi_papers', 0) or 0)
+def _serialize_managerqpr(obj):
+    """Serialize a QPR model into the shared report format."""
+    from datetime import date, datetime
 
-        out['s4_total'] = int(getattr(m, 's4_total_letters', 0) or 0)
-        out['s4_no_reply'] = int(getattr(m, 's4_no_reply_letters', 0) or 0)
-        out['s4_replied_hindi'] = int(getattr(m, 's4_replied_hindi_letters', 0) or 0)
-        out['s4_replied_eng'] = int(getattr(m, 's4_replied_english_letters', 0) or 0)
+    def value(*names, default=None):
+        for name in names:
+            try:
+                result = getattr(obj, name)
+            except (AttributeError, TypeError):
+                continue
+            if result is not None:
+                return result
+        return default
 
-        out['s5_total'] = int(getattr(m, 's5_region_a_english_letters', 0) or 0)
-        out['s5_hindi'] = int(getattr(m, 's5_region_a_replied_hindi', 0) or 0)
-        out['s5_english'] = int(getattr(m, 's5_region_a_replied_english', 0) or 0)
-        out['s5_noreply'] = int(getattr(m, 's5_region_a_no_reply', 0) or 0)
+    def text(*names, default=''):
+        result = value(*names, default=default)
+        if result is None:
+            return default
+        if isinstance(result, (date, datetime)):
+            return result.isoformat()
+        return str(result)
 
-        out['s6_a_hindi'] = int(getattr(m, 's6_region_a_hindi_bilingual', 0) or 0)
-        out['s6_a_eng'] = int(getattr(m, 's6_region_a_english_only', 0) or 0)
-        out['s6_a_total'] = int(getattr(m, 's6_region_a_total', 0) or 0)
-        out['s6_b_hindi'] = int(getattr(m, 's6_region_b_hindi_bilingual', 0) or 0)
-        out['s6_b_eng'] = int(getattr(m, 's6_region_b_english_only', 0) or 0)
-        out['s6_b_total'] = int(getattr(m, 's6_region_b_total', 0) or 0)
-        out['s6_c_hindi'] = int(getattr(m, 's6_region_c_hindi_bilingual', 0) or 0)
-        out['s6_c_eng'] = int(getattr(m, 's6_region_c_english_only', 0) or 0)
-        out['s6_c_total'] = int(getattr(m, 's6_region_c_total', 0) or 0)
+    user = getattr(obj, 'user', None)
+    profile = getattr(user, 'profile', None) if user else None
+    office = None
+    if profile and getattr(profile, 'office_code', None):
+        try:
+            office = Office.objects.filter(
+                code=profile.office_code
+            ).first()
+        except Exception:
+            office = None
 
-        out['s7_hindi'] = int(getattr(m, 's7_hindi_pages', 0) or 0)
-        out['s7_eng'] = int(getattr(m, 's7_english_pages', 0) or 0)
-        out['s7_total'] = int(getattr(m, 's7_total_pages', 0) or 0)
-        out['s7_eoffice'] = int(getattr(m, 's7_eoffice_notings', 0) or 0)
+    payload = {
+        'officeName': (
+            (
+                str(getattr(office, 'name_hindi', '') or '').strip()
+                + (
+                    ' / ' + str(getattr(office, 'name', '')).strip()
+                    if getattr(office, 'name', '') else ''
+                )
+            ).strip(' /')
+            or str(getattr(profile, 'office_name', '') or
+                   getattr(user, 'get_full_name', lambda: '')() or
+                   getattr(user, 'username', '') or '')
+        ),
+        'officeCode': str(
+            getattr(office, 'office_code', '') or
+            getattr(office, 'code', '') or
+            getattr(profile, 'office_code', '') or ''
+        ),
+        'quarter': text('quarter'),
+        'year': text('financial_year', 'year'),
+        'frequency': 'Quarterly',
+        'region': (
+            text('region', default='')
+            or str(getattr(profile, 'language_region', '') or '')
+        ),
+        'phone': (
+            text('phone', 'mobile', default='')
+            or str(getattr(profile, 'phone', '') or '')
+        ),
+        'email': (
+            text('email', default='')
+            or str(getattr(profile, 'email', '') or '')
+        ),
+        's1_total': value('s1_total_files', default=0),
+        's1_hindi': value('s1_hindi_files', default=0),
+        's2_meetings': value('s2_meetings_count', default=0),
+        's2_minutes': value('s2_hindi_minutes', default=0),
+        's2_papers_total': value('s2_total_papers', default=0),
+        's2_papers_hindi': value('s2_hindi_papers', default=0),
+        's3_total': value('s3_total_documents', default=0),
+        's3_bilingual': value('s3_bilingual_documents', default=0),
+        's3_english': value('s3_english_only_documents', default=0),
+        's3_hindi_only': value('s3_hindi_only_documents', default=0),
+        's4_total': value('s4_total_letters', default=0),
+        's4_no_reply': value('s4_no_reply_letters', default=0),
+        's4_replied_hindi': value('s4_replied_hindi_letters', default=0),
+        's4_replied_eng': value('s4_replied_english_letters', default=0),
+        's5_total': value('s5_region_a_english_letters', default=0),
+        's5_hindi': value('s5_region_a_replied_hindi', default=0),
+        's5_english': value('s5_region_a_replied_english', default=0),
+        's5_noreply': value('s5_region_a_no_reply', default=0),
+        's6_a_hindi': value('s6_region_a_hindi_bilingual', default=0),
+        's6_a_eng': value('s6_region_a_english_only', default=0),
+        's6_a_total': value('s6_region_a_total', default=0),
+        's6_b_hindi': value('s6_region_b_hindi_bilingual', default=0),
+        's6_b_eng': value('s6_region_b_english_only', default=0),
+        's6_b_total': value('s6_region_b_total', default=0),
+        's6_c_hindi': value('s6_region_c_hindi_bilingual', default=0),
+        's6_c_eng': value('s6_region_c_english_only', default=0),
+        's6_c_total': value('s6_region_c_total', default=0),
+        's7_hindi': value('s7_hindi_pages', default=0),
+        's7_eng': value('s7_english_pages', default=0),
+        's7_total': value('s7_total_pages', default=0),
+        's7_eoffice': value('s7_eoffice_notings', default=0),
+        's8_workshops': value('s8_full_day_workshops', default=0),
+        's8_officers': value('s8_officers_trained', default=0),
+        's8_employees': value('s8_employees_trained', default=0),
+        's9_date': value('s9_meeting_date', default=''),
+        's9_sub_committees': value('s9_sub_committees_count', default=0),
+        's9_meetings': value('s9_meetings_organized', default=0),
+        's9_agenda_hindi': value('s9_agenda_hindi', default=''),
+        's10_date': value('s10_meeting_date', default=''),
+        's11_innovative_work': value('s11_innovative_work', default=''),
+        's11_special_events': value('s11_special_events', default=''),
+        's11_hindi_medium_works': value('s11_hindi_medium_works', default=''),
+    }
 
-        out['s8_workshops'] = int(getattr(m, 's8_full_day_workshops', 0) or 0)
-        out['s8_officers'] = int(getattr(m, 's8_officers_trained', 0) or 0)
-        out['s8_employees'] = int(getattr(m, 's8_employees_trained', 0) or 0)
-    except Exception:
-        pass
-    return out
+    # Convert dates and other non-JSON values safely.
+    for key, item in list(payload.items()):
+        if isinstance(item, (date, datetime)):
+            payload[key] = item.isoformat()
+        elif item is None:
+            payload[key] = ''
+
+    return payload
 
 
-def _serialize_adminqpr(a):
-    out = {k: 0 for k in NUMERIC_KEYS}
-    if not a:
-        return out
-    try:
-        out['s2_meetings'] = int(getattr(a, 'a_s2_meetings_count', 0) or 0)
-        out['s2_minutes'] = int(getattr(a, 'a_s2_hindi_minutes', 0) or 0)
-        out['s2_papers_total'] = int(getattr(a, 'a_s2_total_papers', 0) or 0)
-        out['s2_papers_hindi'] = int(getattr(a, 'a_s2_hindi_papers', 0) or 0)
+def _serialize_adminqpr(obj):
+    """Serialize a QPR model into the shared report format."""
+    from datetime import date, datetime
 
-        out['s3_total'] = int(getattr(a, 'a_s3_total_documents', 0) or 0)
-        out['s3_bilingual'] = int(getattr(a, 'a_s3_bilingual_documents', 0) or 0)
-        out['s3_english'] = int(getattr(a, 'a_s3_english_only_documents', 0) or 0)
-        out['s3_hindi_only'] = int(getattr(a, 'a_s3_hindi_only_documents', 0) or 0)
+    def value(*names, default=None):
+        for name in names:
+            try:
+                result = getattr(obj, name)
+            except (AttributeError, TypeError):
+                continue
+            if result is not None:
+                return result
+        return default
 
-        out['s4_total'] = int(getattr(a, 'a_s4_total_letters', 0) or 0)
-        out['s4_no_reply'] = int(getattr(a, 'a_s4_no_reply_letters', 0) or 0)
-        out['s4_replied_hindi'] = int(getattr(a, 'a_s4_replied_hindi_letters', 0) or 0)
-        out['s4_replied_eng'] = int(getattr(a, 'a_s4_replied_english_letters', 0) or 0)
+    def text(*names, default=''):
+        result = value(*names, default=default)
+        if result is None:
+            return default
+        if isinstance(result, (date, datetime)):
+            return result.isoformat()
+        return str(result)
 
-        out['s7_hindi'] = int(getattr(a, 'a_s7_hindi_pages', 0) or 0)
-        out['s7_eng'] = int(getattr(a, 'a_s7_english_pages', 0) or 0)
-        out['s7_total'] = int(getattr(a, 'a_s7_total_pages', 0) or 0)
-        out['s7_eoffice'] = int(getattr(a, 'a_s7_eoffice_notings', 0) or 0)
-    except Exception:
-        pass
-    return out
+    user = getattr(obj, 'user', None)
+    profile = getattr(user, 'profile', None) if user else None
+    office = None
+    if profile and getattr(profile, 'office_code', None):
+        try:
+            office = Office.objects.filter(
+                code=profile.office_code
+            ).first()
+        except Exception:
+            office = None
+
+    payload = {
+        'officeName': (
+            (
+                str(getattr(office, 'name_hindi', '') or '').strip()
+                + (
+                    ' / ' + str(getattr(office, 'name', '')).strip()
+                    if getattr(office, 'name', '') else ''
+                )
+            ).strip(' /')
+            or str(getattr(profile, 'office_name', '') or
+                   getattr(user, 'get_full_name', lambda: '')() or
+                   getattr(user, 'username', '') or '')
+        ),
+        'officeCode': str(
+            getattr(office, 'office_code', '') or
+            getattr(office, 'code', '') or
+            getattr(profile, 'office_code', '') or ''
+        ),
+        'quarter': text('quarter'),
+        'year': text('financial_year', 'year'),
+        'frequency': 'Quarterly',
+        'region': (
+            text('region', default='')
+            or str(getattr(profile, 'language_region', '') or '')
+        ),
+        'phone': (
+            text('phone', 'mobile', default='')
+            or str(getattr(profile, 'phone', '') or '')
+        ),
+        'email': (
+            text('email', default='')
+            or str(getattr(profile, 'email', '') or '')
+        ),
+        's2_meetings': value('a_s2_meetings_count', 'a_s2_meetings', default=0),
+        's2_minutes': value('a_s2_hindi_minutes', 'a_s2_minutes', default=0),
+        's2_papers_total': value('a_s2_total_papers', 'a_s2_papers_total', default=0),
+        's2_papers_hindi': value('a_s2_hindi_papers', 'a_s2_papers_hindi', default=0),
+        's3_total': value('a_s3_total_documents', 'a_s3_total', default=0),
+        's3_bilingual': value('a_s3_bilingual_documents', 'a_s3_bilingual', default=0),
+        's3_english': value('a_s3_english_only_documents', 'a_s3_english', default=0),
+        's3_hindi_only': value('a_s3_hindi_only_documents', 'a_s3_hindi_only', default=0),
+        's4_total': value('a_s4_total_letters', 'a_s4_total', default=0),
+        's4_no_reply': value('a_s4_no_reply_letters', 'a_s4_no_reply', default=0),
+        's4_replied_hindi': value('a_s4_replied_hindi_letters', 'a_s4_replied_hindi', default=0),
+        's4_replied_eng': value('a_s4_replied_english_letters', 'a_s4_replied_eng', default=0),
+        's5_total': value('a_s5_region_a_english_letters', 'a_s5_total', default=0),
+        's5_hindi': value('a_s5_region_a_replied_hindi', 'a_s5_hindi', default=0),
+        's5_english': value('a_s5_region_a_replied_english', 'a_s5_english', default=0),
+        's5_noreply': value('a_s5_region_a_no_reply', 'a_s5_noreply', default=0),
+        's6_a_hindi': value('a_s6_region_a_hindi_bilingual', 'a_s6_a_hindi', default=0),
+        's6_a_eng': value('a_s6_region_a_english_only', 'a_s6_a_eng', default=0),
+        's6_a_total': value('a_s6_region_a_total', 'a_s6_a_total', default=0),
+        's6_b_hindi': value('a_s6_region_b_hindi_bilingual', 'a_s6_b_hindi', default=0),
+        's6_b_eng': value('a_s6_region_b_english_only', 'a_s6_b_eng', default=0),
+        's6_b_total': value('a_s6_region_b_total', 'a_s6_b_total', default=0),
+        's6_c_hindi': value('a_s6_region_c_hindi_bilingual', 'a_s6_c_hindi', default=0),
+        's6_c_eng': value('a_s6_region_c_english_only', 'a_s6_c_eng', default=0),
+        's6_c_total': value('a_s6_region_c_total', 'a_s6_c_total', default=0),
+        's7_hindi': value('a_s7_hindi_pages', 'a_s7_hindi', default=0),
+        's7_eng': value('a_s7_english_pages', 'a_s7_eng', default=0),
+        's7_total': value('a_s7_total_pages', 'a_s7_total', default=0),
+        's7_eoffice': value('a_s7_eoffice_notings', 'a_s7_eoffice', default=0),
+    }
+
+    # Convert dates and other non-JSON values safely.
+    for key, item in list(payload.items()):
+        if isinstance(item, (date, datetime)):
+            payload[key] = item.isoformat()
+        elif item is None:
+            payload[key] = ''
+
+    return payload
 
 def _aggregate_records_for_range(user, start_dt, end_dt, source_frequency='daily'):
     total = {k: 0 for k in NUMERIC_KEYS}
@@ -1416,22 +1570,28 @@ def _add_qpr_edit_flags(record_dict, record, current_user, owner_user=None):
             approved_scope = ((approved_request.requested_data or {}).get('edit_scope') or '').lower()
 
     is_employee_frozen = bool(getattr(record, 'is_employee_frozen', False))
+    is_quarterly_record = getattr(record, 'frequency', '') == 'quarterly'
+    is_quarterly_frozen = bool(getattr(record, 'is_quarterly_frozen', False))
     is_current_quarter = (
-        getattr(record, 'frequency', '') == 'quarterly'
+        is_quarterly_record
         and str(getattr(record, 'quarter', '')).strip() == str(get_current_quarter()).strip()
         and str(getattr(record, 'year', '')).strip() == str(get_current_year_label()).strip()
     )
 
     record_dict['is_employee_frozen'] = is_employee_frozen
+    record_dict['is_quarterly_record'] = is_quarterly_record
+    record_dict['is_quarterly_frozen'] = is_quarterly_frozen
     record_dict['is_current_quarter'] = is_current_quarter
     record_dict['edit_approved'] = edit_approved
     record_dict['edit_approved_scope'] = approved_scope
     record_dict['can_edit'] = (
         is_owner
         and not is_employee_frozen
+        and not (is_quarterly_record and is_quarterly_frozen)
         and (
             not getattr(record, 'is_submitted', False)
             or is_current_quarter
+            or (is_quarterly_record and not is_current_quarter)
             or (edit_approved and approved_scope not in SNAPSHOT_EDIT_SCOPES)
         )
     )
@@ -2631,20 +2791,36 @@ def manager_qpr_view(request, id=None):
     return render(request, 'qpr/manager_qpr_form.html', {'form': form, 'instance': instance})
 
 
+
 @login_required
 def manager_qpr_detail(request, id):
+    """Display a read-only structured Manager QPR report."""
+    import json
+
     obj = get_object_or_404(ManagerQPR, id=id)
-    if obj.user != request.user and not (request.user.is_staff or user_has_role(request.user, 'admin')):
+
+    if (
+        obj.user != request.user
+        and not (
+            request.user.is_staff
+            or user_has_role(request.user, 'admin')
+        )
+    ):
         return HttpResponseForbidden()
 
-    form = ManagerQPRForm(instance=obj)
-    for name in form.fields:
-        try:
-            form.fields[name].widget.attrs['disabled'] = 'disabled'
-        except Exception:
-            pass
+    record = _serialize_managerqpr(obj)
 
-    return render(request, 'qpr/manager_qpr_form.html', {'form': form, 'instance': obj, 'readonly': True})
+    return render(
+        request,
+        'qpr/report_detail.html',
+        {
+            'record_json': json.dumps(record, default=str),
+            'record': obj,
+            'instance': obj,
+            'report_title': 'Manager QPR Report',
+            'readonly': True,
+        },
+    )
 
 
 @login_required
@@ -2874,20 +3050,36 @@ def admin_qpr_view(request, id=None):
     return render(request, 'qpr/admin_qpr_form.html', {'form': form, 'instance': instance})
 
 
+
 @login_required
 def admin_qpr_detail(request, id):
+    """Display a read-only structured Admin QPR report."""
+    import json
+
     obj = get_object_or_404(AdminQPR, id=id)
-    if obj.user != request.user and not (request.user.is_staff or user_has_role(request.user, 'admin')):
+
+    if (
+        obj.user != request.user
+        and not (
+            request.user.is_staff
+            or user_has_role(request.user, 'admin')
+        )
+    ):
         return HttpResponseForbidden()
 
-    form = AdminQPRForm(instance=obj)
-    for name in form.fields:
-        try:
-            form.fields[name].widget.attrs['disabled'] = 'disabled'
-        except Exception:
-            pass
+    record = _serialize_adminqpr(obj)
 
-    return render(request, 'qpr/admin_qpr_form.html', {'form': form, 'instance': obj, 'readonly': True})
+    return render(
+        request,
+        'qpr/report_detail.html',
+        {
+            'record_json': json.dumps(record, default=str),
+            'record': obj,
+            'instance': obj,
+            'report_title': 'Admin QPR Report',
+            'readonly': True,
+        },
+    )
 
 @login_required
 def qpr_hod_dashboard(request):
@@ -5241,11 +5433,32 @@ def report_detail(request, record_id):
         aggregated['quarter'] = current_quarter
         aggregated['year'] = current_year
         aggregated['frequency'] = 'quarterly'
-        aggregated['officeName'] = (hod_name_val or '') + " (Division)"
-        aggregated['officeCode'] = ''
-        aggregated['region'] = ''
-        aggregated['phone'] = ''
-        aggregated['email'] = ''
+        hod_office = None
+        if hod_profile and getattr(hod_profile, 'office_code', None):
+            hod_office = Office.objects.filter(
+                code=hod_profile.office_code
+            ).first()
+
+        hod_office_hi = getattr(hod_office, 'name_hindi', '') or ''
+        hod_office_en = getattr(hod_office, 'name', '') or ''
+        aggregated['officeName'] = (
+            f"{hod_office_hi} / {hod_office_en}"
+            if hod_office_hi and hod_office_en
+            else (hod_office_hi or hod_office_en or (hod_name_val or ''))
+        ) + " (Division)"
+        aggregated['officeCode'] = (
+            getattr(hod_office, 'code', '') or
+            getattr(hod_profile, 'office_code', '') or ''
+        )
+        aggregated['region'] = str(
+            getattr(hod_profile, 'language_region', '') or ''
+        )
+        aggregated['phone'] = str(
+            getattr(hod_profile, 'phone', '') or ''
+        )
+        aggregated['email'] = str(
+            getattr(hod_profile, 'email', '') or ''
+        )
         aggregated['s9_date'] = ''
         aggregated['s10_date'] = ''
         aggregated['s12_1'] = ''
@@ -5757,8 +5970,24 @@ def freeze_division_snapshot(request):
     except Exception:
         totals = {k: 0 for k in NUMERIC_KEYS}
 
-    officeName = getattr(hod_profile, 'office_name', '') or ''
-    officeCode = getattr(hod_profile, 'office_code', '') or ''
+    hod_office = None
+    if hod_profile and getattr(hod_profile, 'office_code', None):
+        hod_office = Office.objects.filter(
+            code=hod_profile.office_code
+        ).first()
+
+    hod_office_hi = getattr(hod_office, 'name_hindi', '') or ''
+    hod_office_en = getattr(hod_office, 'name', '') or ''
+    officeName = (
+        f"{hod_office_hi} / {hod_office_en}"
+        if hod_office_hi and hod_office_en
+        else (hod_office_hi or hod_office_en or
+              getattr(hod_profile, 'office_name', '') or '')
+    )
+    officeCode = (
+        getattr(hod_office, 'code', '') or
+        getattr(hod_profile, 'office_code', '') or ''
+    )
 
     qpr_fields = {
         'user': request.user,
@@ -5769,6 +5998,9 @@ def freeze_division_snapshot(request):
         'is_submitted': True,
         'officeName': officeName,
         'officeCode': officeCode,
+        'region': str(getattr(hod_profile, 'language_region', '') or ''),
+        'phone': str(getattr(hod_profile, 'phone', '') or ''),
+        'email': str(getattr(hod_profile, 'email', '') or ''),
     }
 
     new_rec = QPRRecord.objects.create(**qpr_fields)
@@ -6780,7 +7012,13 @@ def qpr_save_record(request):
 
         if record_id:
             record = get_object_or_404(QPRRecord, pk=record_id, user=request.user)
-            if record.is_employee_frozen:
+            if (
+                record.is_employee_frozen
+                or (
+                    record.frequency == 'quarterly'
+                    and record.is_quarterly_frozen
+                )
+            ):
                 messages.error(request, "This QPR is frozen. Editing is not allowed.")
                 return redirect('qpr_report_list')
             was_submitted = record.is_submitted
@@ -6817,20 +7055,41 @@ def qpr_save_record(request):
 
             base_approved_request = None
 
-            is_current_quarter_record = (
+            # Determine current-quarter identity from the actual period dates.
+            # A historical record may have an incorrect/stale quarter label.
+            is_current_quarter_record = False
+            if (
                 record.frequency == 'quarterly'
-                and str(record.quarter).strip() == str(get_current_quarter()).strip()
+                and record.period_start
+                and record.period_end
                 and str(record.year).strip() == str(get_current_year_label()).strip()
-            )
+            ):
+                try:
+                    current_start, current_end = _quarter_label_to_daterange(
+                        get_current_quarter(), get_current_year_label()
+                    )
+                    is_current_quarter_record = (
+                        record.period_start == current_start
+                        and record.period_end == current_end
+                    )
+                except Exception:
+                    is_current_quarter_record = False
 
             if record.is_submitted and not is_current_quarter_record:
                 base_approved_request = _approved_qpr_edit_request(
                     request.user, record, 'base'
                 )
 
+            is_historical_quarterly_base_edit = (
+                record.frequency == 'quarterly'
+                and not is_current_quarter_record
+                and not snapshot_edit_scope
+            )
+
             if (
                 record.is_submitted
                 and not is_current_quarter_record
+                and not is_historical_quarterly_base_edit
                 and not base_approved_request
             ):
                 messages.error(
@@ -6876,8 +7135,44 @@ def qpr_save_record(request):
                 or (getattr(profile, 'email', '') if profile else '')
             )
     
-            record.quarter = data.get('quarter', '')
-            record.year = data.get('year', '')
+            # Preserve an existing submitted quarterly report's identity.
+            # Resolve its quarter label from its stored period dates so a June
+            # report cannot be routed into the December aggregation.
+            if (
+                record.pk
+                and was_submitted
+                and original_frequency == 'quarterly'
+                and original_period_start
+                and original_period_end
+            ):
+                record.year = record.year
+                matched_quarter = None
+                for candidate in get_allowed_quarters(record.year):
+                    try:
+                        candidate_start, candidate_end = _quarter_label_to_daterange(
+                            candidate, record.year
+                        )
+                        if (
+                            candidate_start == original_period_start
+                            and candidate_end == original_period_end
+                        ):
+                            matched_quarter = candidate
+                            break
+                    except Exception:
+                        continue
+
+                # If dates do not map to a known quarter, retain the stored
+                # label rather than guessing or moving the report.
+                if matched_quarter:
+                    record.quarter = matched_quarter
+                else:
+                    record.quarter = record.quarter
+                record.period_start = original_period_start
+                record.period_end = original_period_end
+            else:
+                record.quarter = data.get('quarter', '')
+                record.year = data.get('year', '')
+
             record.status = data.get('status', 'Draft')
 
             # TEMPORARY: Quarterly-only testing
@@ -7368,13 +7663,6 @@ def freeze_employee_qpr(request, record_id):
 
     if record.frequency != 'quarterly':
         messages.error(request, "Only quarterly QPRs can be frozen here.")
-        return redirect('qpr_report_list')
-
-    if (
-        str(record.quarter).strip() != str(get_current_quarter()).strip()
-        or str(record.year).strip() != str(get_current_year_label()).strip()
-    ):
-        messages.error(request, "Only the current-quarter QPR can be frozen.")
         return redirect('qpr_report_list')
 
     if not record.is_submitted:

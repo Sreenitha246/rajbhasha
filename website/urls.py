@@ -1,4 +1,3 @@
-from captcha import views as captcha_views
 from django.urls import include, path
 
 from website import parichay_views, views
@@ -9,8 +8,6 @@ from website.views import (
 )
 
 urlpatterns = [
-    path('captcha/', include('captcha.urls')),
-    path('captcha/refresh/', captcha_views.captcha_refresh, name='captcha-refresh'),    
     path('', views.home, name='home'),
     path('faqs/', views.faqs, name='faqs'),
     path(

@@ -82,12 +82,22 @@
 
 {% block content %}
 <div class="container">
-   <div class="text-end no-print mb-3">
+   <div class="d-flex justify-content-between align-items-center no-print mb-3">
+        <a href="{% url 'manager_dashboard' %}"
+            class="btn btn-outline-secondary btn-sm">
+            {% if current_lang == 'hi' %}
+                ← प्रबंधक डैशबोर्ड पर वापस जाएँ
+            {% else %}
+                ← Back to Manager Dashboard
+            {% endif %}
+        </a>
+        <div class="text-end">
         <span class="me-2">Certificate Language / प्रमाणपत्र की भाषा:</span>
         <button type="button" class="btn btn-outline-primary btn-sm"
                 onclick="setCertificateLanguage('en')">English</button>
         <button type="button" class="btn btn-outline-primary btn-sm"
                 onclick="setCertificateLanguage('hi')">हिंदी</button>
+        </div>
     </div>
     <div class="certificate">
         <div class="text-end no-print"><button onclick="window.print()" class="btn btn-primary">{{ "Print"|t:current_lang }}</button></div>

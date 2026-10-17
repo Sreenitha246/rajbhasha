@@ -1805,9 +1805,26 @@ def _allowed_frequencies_for_date(user, selected_date, allow_future_days=True):
 
 def serialize_qpr_record(record):
     """Serialize a QPRRecord with all related sections."""
+    office_name_display = record.officeName or ''
+    try:
+        office = Office.objects.filter(code=record.officeCode).first()
+        if office:
+            hindi_name = (getattr(office, 'name_hindi', '') or '').strip()
+            english_name = (getattr(office, 'name', '') or '').strip()
+
+            if hindi_name and english_name:
+                office_name_display = f'{hindi_name} / {english_name}'
+            elif hindi_name:
+                office_name_display = hindi_name
+            elif english_name:
+                office_name_display = english_name
+    except Exception:
+        # Keep the original saved name if the office lookup fails.
+        pass
+
     data = {
         'id': record.id,
-        'officeName': record.officeName,
+        'officeName': office_name_display,
         'officeCode': record.officeCode,
         'region': record.region,
         'quarter': record.quarter,
@@ -2010,32 +2027,6 @@ class CustomLoginView(View):
 
 def signup(request):
     return redirect("parichay_login")
-
-@login_required
-def change_password(request):
-    if request.method == 'POST':
-        old_password = request.POST.get('old_password', '')
-        new_password1 = request.POST.get('new_password1', '')
-        new_password2 = request.POST.get('new_password2', '')
-        if not request.user.check_password(old_password):
-            messages.error(request, 'Current password is incorrect')
-        elif new_password1 != new_password2:
-            messages.error(request, 'New passwords do not match')
-        elif len(new_password1) < 6:
-            messages.error(request, 'New password must be at least 6 characters')
-        else:
-            request.user.set_password(new_password1)
-            request.user.save()
-            log_audit(
-                request,
-                'password_change',
-                'CustomUser',
-                f"Password changed for user {request.user.username}",
-            )
-            messages.success(request, 'Password changed successfully!')
-            return redirect('dashboard')
-    return render(request, 'qpr/change_password.html')
-
 @login_required
 def export_user_data(request):
     user = request.user
@@ -5445,7 +5436,7 @@ def report_detail(request, record_id):
             f"{hod_office_hi} / {hod_office_en}"
             if hod_office_hi and hod_office_en
             else (hod_office_hi or hod_office_en or (hod_name_val or ''))
-        ) + " (Division)"
+        )
         aggregated['officeCode'] = (
             getattr(hod_office, 'code', '') or
             getattr(hod_profile, 'office_code', '') or ''
@@ -8777,7 +8768,7 @@ def manager_certificate_view(request, pk):
 
     return render(request, 'qpr/certificate.html', {
         'manager_certificate': certificate,
-        'current_lang': cert_lang,
+        'current_lang': request.session.get('lang', 'en'),
         'cert_lang': cert_lang,
     })
 

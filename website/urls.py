@@ -22,7 +22,6 @@ urlpatterns = [
     path('parichay/callback/', parichay_views.parichay_callback, name='parichay_callback'),
     path('signup/', signup, name='signup'),
     path('logout/', custom_logout, name='logout'),
-    path('change-password/', views.change_password, name='change_password'),
 
     path('profile/', views.profile_view, name='profile'),
     path('toggle-language/', views.toggle_language, name='toggle_language'),

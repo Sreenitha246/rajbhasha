@@ -759,10 +759,25 @@ def _save_section_data(record, details):
     s4.save()
     # Section 5
     s5, _ = Section5EnglishRepliedHindiData.objects.get_or_create(qpr_record=record)
+
+    # Region A
     s5.region_a_english_letters = _convert_to_int(details.get('s5_total'))
     s5.region_a_replied_hindi = _convert_to_int(details.get('s5_hindi'))
     s5.region_a_replied_english = _convert_to_int(details.get('s5_english'))
     s5.region_a_no_reply = _convert_to_int(details.get('s5_noreply'))
+
+    # Region B
+    s5.region_b_english_letters = _convert_to_int(details.get('s5_b_total'))
+    s5.region_b_replied_hindi = _convert_to_int(details.get('s5_b_hindi'))
+    s5.region_b_replied_english = _convert_to_int(details.get('s5_b_english'))
+    s5.region_b_no_reply = _convert_to_int(details.get('s5_b_noreply'))
+
+    # Total
+    s5.total_english_letters = _convert_to_int(details.get('s5_total_letters'))
+    s5.total_replied_hindi = _convert_to_int(details.get('s5_total_hindi'))
+    s5.total_replied_english = _convert_to_int(details.get('s5_total_english'))
+    s5.total_no_reply = _convert_to_int(details.get('s5_total_noreply'))
+
     s5.save()
     # Section 6
     s6, _ = Section6IssuedLettersData.objects.get_or_create(qpr_record=record)
@@ -858,6 +873,8 @@ NUMERIC_KEYS = [
     's3_total','s3_bilingual','s3_english','s3_hindi_only',
     's4_total','s4_no_reply','s4_replied_hindi','s4_replied_eng',
     's5_total','s5_hindi','s5_english','s5_noreply',
+    's5_b_total', 's5_b_hindi', 's5_b_english', 's5_b_noreply',
+    's5_total_letters', 's5_total_hindi', 's5_total_english', 's5_total_noreply',
     's6_a_hindi','s6_a_eng','s6_a_total','s6_b_hindi','s6_b_eng','s6_b_total','s6_c_hindi','s6_c_eng','s6_c_total',
     's7_hindi','s7_eng','s7_total','s7_eoffice',
     's8_workshops','s8_officers','s8_employees'
@@ -879,10 +896,23 @@ def _serialize_managerqpr(m):
         out['s4_replied_hindi'] = int(getattr(m, 's4_replied_hindi_letters', 0) or 0)
         out['s4_replied_eng'] = int(getattr(m, 's4_replied_english_letters', 0) or 0)
 
+               # Section 5 - Region A
         out['s5_total'] = int(getattr(m, 's5_region_a_english_letters', 0) or 0)
         out['s5_hindi'] = int(getattr(m, 's5_region_a_replied_hindi', 0) or 0)
         out['s5_english'] = int(getattr(m, 's5_region_a_replied_english', 0) or 0)
         out['s5_noreply'] = int(getattr(m, 's5_region_a_no_reply', 0) or 0)
+
+        # Section 5 - Region B
+        out['s5_b_total'] = int(getattr(m, 's5_region_b_english_letters', 0) or 0)
+        out['s5_b_hindi'] = int(getattr(m, 's5_region_b_replied_hindi', 0) or 0)
+        out['s5_b_english'] = int(getattr(m, 's5_region_b_replied_english', 0) or 0)
+        out['s5_b_noreply'] = int(getattr(m, 's5_region_b_no_reply', 0) or 0)
+
+        # Section 5 - Overall Total
+        out['s5_total_letters'] = int(getattr(m, 's5_total_english_letters', 0) or 0)
+        out['s5_total_hindi'] = int(getattr(m, 's5_total_replied_hindi', 0) or 0)
+        out['s5_total_english'] = int(getattr(m, 's5_total_replied_english', 0) or 0)
+        out['s5_total_noreply'] = int(getattr(m, 's5_total_no_reply', 0) or 0)
 
         out['s6_a_hindi'] = int(getattr(m, 's6_region_a_hindi_bilingual', 0) or 0)
         out['s6_a_eng'] = int(getattr(m, 's6_region_a_english_only', 0) or 0)
@@ -1674,11 +1704,21 @@ def serialize_qpr_record(record):
         's4_no_reply': getattr(record.section4, 'no_reply_letters', '') if hasattr(record, 'section4') else '',
         's4_replied_hindi': getattr(record.section4, 'replied_hindi_letters', '') if hasattr(record, 'section4') else '',
         's4_replied_eng': getattr(record.section4, 'replied_english_letters', '') if hasattr(record, 'section4') else '',
-        # Section 5
+       # Section 5
         's5_total': getattr(record.section5, 'region_a_english_letters', '') if hasattr(record, 'section5') else '',
         's5_hindi': getattr(record.section5, 'region_a_replied_hindi', '') if hasattr(record, 'section5') else '',
         's5_english': getattr(record.section5, 'region_a_replied_english', '') if hasattr(record, 'section5') else '',
         's5_noreply': getattr(record.section5, 'region_a_no_reply', '') if hasattr(record, 'section5') else '',
+
+        's5_b_total': getattr(record.section5, 'region_b_english_letters', '') if hasattr(record, 'section5') else '',
+        's5_b_hindi': getattr(record.section5, 'region_b_replied_hindi', '') if hasattr(record, 'section5') else '',
+        's5_b_english': getattr(record.section5, 'region_b_replied_english', '') if hasattr(record, 'section5') else '',
+        's5_b_noreply': getattr(record.section5, 'region_b_no_reply', '') if hasattr(record, 'section5') else '',
+
+        's5_total_letters': getattr(record.section5, 'total_english_letters', '') if hasattr(record, 'section5') else '',
+        's5_total_hindi': getattr(record.section5, 'total_replied_hindi', '') if hasattr(record, 'section5') else '',
+        's5_total_english': getattr(record.section5, 'total_replied_english', '') if hasattr(record, 'section5') else '',
+        's5_total_noreply': getattr(record.section5, 'total_no_reply', '') if hasattr(record, 'section5') else '',
         # Section 6
         's6_a_hindi': getattr(record.section6, 'region_a_hindi_bilingual', '') if hasattr(record, 'section6') else '',
         's6_a_eng': getattr(record.section6, 'region_a_english_only', '') if hasattr(record, 'section6') else '',
@@ -2822,9 +2862,8 @@ def manager_section11_select_texts(request, manager_qpr_id=None):
 
 @login_required
 def admin_qpr_view(request, id=None):
-    if not user_has_role(request.user, 'admin'):
-        return HttpResponseForbidden("Admin role required")
-
+    if not user_has_role(request.user, ['admin', 'manager']):
+        return HttpResponseForbidden("Admin or Manager role required")
     instance = None
     if id:
         instance = get_object_or_404(AdminQPR, pk=id)

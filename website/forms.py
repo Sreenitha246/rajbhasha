@@ -271,7 +271,7 @@ def _current_financial_year_bounds():
 def _financial_year_choices():
     start, end = _current_financial_year_bounds()
     current_label = f"{start}-{end}"
-    labels = ['2024-2025', '2025-2026', current_label]
+    labels = [current_label, '2025-2026', '2024-2025']
     try:
         FinancialYear.objects.get_or_create(start_year=start, end_year=end)
         for fy in FinancialYear.objects.filter(is_active=True).order_by('-start_year', '-end_year'):
@@ -377,9 +377,17 @@ class ManagerQPRForm(forms.ModelForm):
             's3_total_documents', 's3_bilingual_documents', 's3_english_only_documents', 's3_hindi_only_documents',
             # Section 4
             's4_total_letters', 's4_no_reply_letters', 's4_replied_hindi_letters', 's4_replied_english_letters',
-            # Section 5 (region A sample)
-            's5_region_a_english_letters', 's5_region_a_replied_hindi', 's5_region_a_replied_english', 's5_region_a_no_reply',
-            # Section 6 (region totals)
+          # Section 5: Region A
+            's5_region_a_english_letters', 's5_region_a_replied_hindi',
+            's5_region_a_replied_english', 's5_region_a_no_reply',
+
+            # Region B
+            's5_region_b_english_letters', 's5_region_b_replied_hindi',
+            's5_region_b_replied_english', 's5_region_b_no_reply',
+
+            # Total
+            's5_total_english_letters', 's5_total_replied_hindi',
+            's5_total_replied_english', 's5_total_no_reply',  # Section 6 (region totals)
             's6_region_a_hindi_bilingual', 's6_region_a_english_only', 's6_region_a_total',
             's6_region_b_hindi_bilingual', 's6_region_b_english_only', 's6_region_b_total',
             's6_region_c_hindi_bilingual', 's6_region_c_english_only', 's6_region_c_total',

@@ -155,7 +155,6 @@ HINDI_TRANSLATIONS = {
     "QPR PENDING": "QPR लंबित",
     "PROFILE UPDATED": "प्रोफ़ाइल अपडेट की गई",
     "View Detail List": "विवरण सूची देखें",
-    "Change Password": "पासवर्ड बदलें",
 
     # Manager Dashboard
     "Manager Report": "मैनेजर रिपोर्ट",
@@ -242,10 +241,31 @@ HINDI_TRANSLATIONS = {
 
     "Employee": "कर्मचारी",
     "Employees": "कर्मचारीगण",
-    "Employee Code": "कर्मचारी कोड",
     "Employee Name": "कर्मचारी का नाम",
     "Employee Details": "कर्मचारी विवरण",
     "Employee Management": "कर्मचारी प्रबंधन",
+
+    # Certificates page
+    "Certificates": "प्रमाणपत्र",
+    "Submit New Certificate": "नया प्रमाणपत्र जमा करें",
+    "Quarter": "तिमाही",
+    "Year": "वर्ष",
+    "Submitted Date": "जमा करने की तिथि",
+    "Status": "स्थिति",
+    "Actions": "कार्रवाइयाँ",
+    "Submitted": "जमा किया गया",
+    "View": "देखें",
+    "Print": "प्रिंट करें",
+    "Delete": "हटाएँ",
+
+    # Create New Certificate
+    "Create New Certificate": "नया प्रमाणपत्र बनाएँ",
+    "Please select the quarter and year for which you want to submit the certificate.": "कृपया वह तिमाही और वर्ष चुनें जिसके लिए आप प्रमाणपत्र जमा करना चाहते हैं।",
+    "Select Quarter": "तिमाही चुनें",
+    "Financial Year": "वित्तीय वर्ष",
+    "Select Year": "वर्ष चुनें",
+    "Continue": "जारी रखें",
+    "Cancel": "रद्द करें",
 
 }
 

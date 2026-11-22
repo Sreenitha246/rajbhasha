@@ -54,7 +54,6 @@ INSTALLED_APPS = [
 
   "django_bootstrap5",
   "rest_framework",
-  "captcha",
 
   "website",
 ]
@@ -247,18 +246,6 @@ CACHES = {
 }
 
 
-# CAPTCHA
-CAPTCHA_IMAGE_SIZE = (160, 60)
-CAPTCHA_FONT_SIZE = 32
-CAPTCHA_FOREGROUND_COLOR = "#000000"
-CAPTCHA_LETTER_ROTATION = (-15, 15)
-CAPTCHA_LENGTH = 5
-CAPTCHA_NOISE_FUNCTIONS = (
-  "captcha.helpers.noise_arcs",
-  "captcha.helpers.noise_dots",
-)
-CAPTCHA_CHALLENGE_FUNCT = "captcha.helpers.random_char_challenge"
-CAPTCHA_FLITE_PATH = os.path.join(BASE_DIR, "espeak_wrapper.sh")
 
 
 # ENCRYPTION

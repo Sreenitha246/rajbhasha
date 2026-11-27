@@ -11,9 +11,12 @@ from .services.parichay import ParichayService
 from .services.pkce import PKCEService
 
 log = logging.getLogger("")
+callback_log = logging.getLogger("parichay_callback")
 
 def parichay_login(request):
+    callback_log.info("Parichay Login initiated")
     if request.user.is_authenticated:
+        callback_log.info("User is already authenticated. Redirecting to dashboard")
         return redirect("dashboard")
 
     pkce_data = PKCEService.generate_pkce_pair()
@@ -21,11 +24,25 @@ def parichay_login(request):
     request.session["code_verifier"] = pkce_data["code_verifier"]
     request.session["oauth_state"] = ParichayService.generate_state()
 
-    authorization_url = ParichayService.build_authorization_url(
+    callback_log.info(
+        "PKCE values generated. Code challange present: %s, Code verifier present: %s",
+        bool(pkce_data.get("code_challenge")),
+        bool(pkce_data.get("code_verifier")),
+        )
+
+    callback_log.info(
+        "OAuth session values stored. Session key present: %s,State present: %s,Verifier present: %s",
+        bool(request.session.session_key),
+        bool(request.session.get("oauth_state")),
+        bool(request.session.get("code_verifier")),
+        )
+
+    authorization_url = ParichayService.auth_parichay_url(
         code_challenge=pkce_data["code_challenge"],
         state=request.session["oauth_state"],
     )
-    
+    callback_log.info("Parichay Autorization URL: %s", authorization_url)
+
     log.info("Parichay Authorization URL: %s", authorization_url)
 
     return redirect(authorization_url)
@@ -35,10 +52,18 @@ def parichay_callback(request):
     code = request.GET.get("code")
     state = request.GET.get("state")
 
+    callback_log.info("Parichay callback received")
+    callback_log.info(
+        "Authorization code present: %s, State present: %s",
+        bool(code),
+        bool(state),
+        )
     # ---------------------------------------------------------
     # Validate authorization response
     # ---------------------------------------------------------
     if not code:
+        callback_log.warning("Parichay callback validation failed: authorization key missing")
+
         return HttpResponse(
             "Authorization code not received.",
             status=400,
@@ -46,7 +71,13 @@ def parichay_callback(request):
 
     session_state = request.session.get("oauth_state")
 
+    callback_log.info("Session state present: %s, state validation succesful: %s",
+        bool(session_state),
+        bool(session_state and state== session_state),)
+
     if not session_state or state != session_state:
+        callback_log.warning("Pacrichay callback validation failed: invalid or missing state")
+
         return HttpResponse(
             "Invalid state parameter.",
             status=400,
@@ -54,7 +85,12 @@ def parichay_callback(request):
 
     code_verifier = request.session.get("code_verifier")
 
+    callback_log.info("PKCE code verifier present: %s",
+                      bool(code_verifier), )
+
     if not code_verifier:
+        callback_log.warning("Parichay callback validation failed: PKCE code verifier missing")
+
         return HttpResponse(
             "Missing PKCE code verifier.",
             status=400,
@@ -64,24 +100,37 @@ def parichay_callback(request):
     # Exchange authorization code for access token
     # ---------------------------------------------------------
     try:
+        callback_log.info("Starting Parichay token exchange")
+
         token_response = ParichayService.exchange_code_for_token(
             code=code,
             code_verifier=code_verifier,
         )
+        callback_log.info("Parichay token exchange completed")
 
         access_token = token_response.get("access_token")
         refresh_token = token_response.get("refresh_token")
         expires_in = token_response.get("expires_in")
 
+        callback_log.info("Access token received: %s", bool(access_token))
+
         if not access_token:
+            callback_log.warning("Parichay token response did not contain an access token")
             return HttpResponse(
                 "Access token not received from Parichay.",
                 status=400,
             )
 
+
+        callback_log.info("Requesting Parichay user details")
+
         user_info = ParichayService.get_user_details(access_token)
+        callback_log.info("Parichay user details retrieved successfully")
 
     except Exception as e:
+        callback_log.exception(
+            "Parichay token exchange or user details retrieval failed"
+            )
         return HttpResponse(
             f"Parichay authentication failed: {str(e)}",
             status=400,
@@ -252,7 +301,8 @@ def parichay_callback(request):
             status=400,
         )
 
+    callback_log.info(
+        "Parichay authentication successful. Redirecting to dashboard"
+    )
+
     return redirect("dashboard")
- 
- 
-   

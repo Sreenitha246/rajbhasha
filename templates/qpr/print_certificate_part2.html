@@ -53,182 +53,363 @@ h3,h4{
 </div>
 
 
-<!-- SECTION 1 -->
-
 <div class="qpr-section">
+    <p><strong>
+        1. (i) क्या कार्यालय राजभाषा नियम, 1976 के नियम 10(4) के अंतर्गत अधिसूचित है?
+        <br>Whether the office has been notified under Rule 10(4) of the Official Languages Rules, 1976?
+    </strong></p>
 
-<p><strong>1. (i) Whether the Office has been notified under Rule 10(4)</strong></p>
+    <p>
+        {% if part2.is_notified_rule_10_4 %}हाँ / Yes{% else %}नहीं / No{% endif %}
+    </p>
 
-<p>{{ part2.is_notified_rule_10_4|yesno:"Yes,No" }}</p>
+    <p><strong>
+        (ii) अधीनस्थ कार्यालयों (यदि कोई हों) की राजभाषा नियम, 1976 के नियम 10(4) के अंतर्गत अधिसूचना का विवरण:
+        <br>Details regarding notification of subordinate offices (if any) under Rule 10(4) of the Official Languages Rules, 1976:
+    </strong></p>
 
-<table class="qpr-table">
-<thead>
-<tr>
-<th>Total No. of Offices</th>
-<th>No. of Offices Notified</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td>{{ part2.total_sub_offices|default:"-" }}</td>
-<td>{{ part2.notified_sub_offices|default:"-" }}</td>
-</tr>
-</tbody>
-
-</table>
-
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th colspan="3">कुल कार्यालयों की संख्या<br>Total number of offices</th>
+                <th colspan="3">अधिसूचित कार्यालयों की कुल संख्या<br>Total number of notified offices</th>
+                <th style="color: red;">शेष कार्यालयों की संख्या व उनके नाम<br>Number and names of remaining offices</th>
+            </tr>
+            <tr>
+                <th style="color: red;">क क्षेत्र / Region A</th>
+                <th style="color: red;">ख क्षेत्र / Region B</th>
+                <th style="color: red;">ग क्षेत्र / Region C</th>
+                <th style="color: red;">क क्षेत्र / Region A</th>
+                <th style="color: red;">ख क्षेत्र / Region B</th>
+                <th style="color: red;">ग क्षेत्र / Region C</th>
+                <th style="color: red;">3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ part2.total_sub_offices_region_a|default:"0" }}</td>
+                <td>{{ part2.total_sub_offices_region_b|default:"0" }}</td>
+                <td>{{ part2.total_sub_offices_region_c|default:"0" }}</td>
+                <td>{{ part2.notified_sub_offices_region_a|default:"0" }}</td>
+                <td>{{ part2.notified_sub_offices_region_b|default:"0" }}</td>
+                <td>{{ part2.notified_sub_offices_region_c|default:"0" }}</td>
+                <td>{{ part2.remaining_sub_offices_details|default:"-"|linebreaksbr }}</td>
+            </tr>
+        </tbody>
+    </table>
 </div>
-
 
 <!-- SECTION 2(i) -->
 
 <div class="qpr-section">
 
-<p><strong>2. Officers/Employees possessing knowledge of Hindi</strong></p>
+    <p><strong>
+        2. (i) अधिकारियों/कर्मचारियों को राजभाषा हिन्दी का ज्ञान<br>
+        Officers/Employees possessing knowledge of Official Language Hindi
+    </strong></p>
 
-<table class="qpr-table">
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th rowspan="2"></th>
+                <th rowspan="2"></th>
+                <th colspan="2">अधिकारी / Officers</th>
+                <th colspan="2">कर्मचारी / Employees</th>
+                <th rowspan="2">कुल संख्या<br>Total No.</th>
+            </tr>
+            <tr>
+                <th>कार्यसाधक<br>Working</th>
+                <th>प्रवीणता प्राप्त<br>Proficient</th>
+                <th>कार्यसाधक<br>Working</th>
+                <th>प्रवीणता प्राप्त<br>Proficient</th>
+            </tr>
+        </thead>
 
-<thead>
-<tr>
-<th></th>
-<th>Officers</th>
-<th>Employees</th>
-<th>Total</th>
-</tr>
-</thead>
+        <tbody>
 
-<tbody>
+            {% for item in part2.staff_knowledge.all %}
 
-{% for item in part2.staff_knowledge.all %}
+                {% if item.category == 'total' %}
+                <tr>
+                    <td>(क)<br>(a)</td>
+                    <td class="text-left">
+                        अधिकारियों तथा कर्मचारियों की कुल संख्या<br>
+                        Total number of Officers and Employees
+                    </td>
+                    <td colspan="2">{{ item.officers_total|default:0 }}</td>
+                    <td colspan="2">{{ item.employees_total|default:0 }}</td>
+                    <td>{{ item.total_count|default:0 }}</td>
+                </tr>
 
-<tr>
-<td class="text-left">{{ item.category }}</td>
-<td>
-{% if item.category == 'knowledge' %}
-Working: {{ item.officers_working|default:"0" }}<br>
-Proficient: {{ item.officers_proficient|default:"0" }}
-{% else %}
-{{ item.officers_total|default:"0" }}
-{% endif %}
-</td>
-<td>
-{% if item.category == 'knowledge' %}
-Working: {{ item.employees_working|default:"0" }}<br>
-Proficient: {{ item.employees_proficient|default:"0" }}
-{% else %}
-{{ item.employees_total|default:"0" }}
-{% endif %}
-</td>
-<td>{{ item.total_count }}</td>
-</tr>
+                {% elif item.category == 'secretarial' %}
+                <tr>
+                    <td>(ख)<br>(b)</td>
+                    <td class="text-left">
+                        अनुसचिवीय कार्य से संबंधित अधिकारी/कर्मचारियों की संख्या<br>
+                        Number of Officers/Employees engaged in non-secretarial work
+                    </td>
+                    <td colspan="2">{{ item.officers_total|default:0 }}</td>
+                    <td colspan="2">{{ item.employees_total|default:0 }}</td>
+                    <td>{{ item.total_count|default:0 }}</td>
+                </tr>
 
-{% endfor %}
+                {% elif item.category == 'knowledge' %}
+                <tr>
+                    <td>(ग)<br>(c)</td>
+                    <td class="text-left">
+                        उपर्युक्त (क) में से हिन्दी का ज्ञान प्राप्त अधिकारी/कर्मचारी<br>
+                        Out of (a), Officers/Employees possessing knowledge of Hindi
+                    </td>
+                    <td>{{ item.officers_working|default:0 }}</td>
+                    <td>{{ item.officers_proficient|default:0 }}</td>
+                    <td>{{ item.employees_working|default:0 }}</td>
+                    <td>{{ item.employees_proficient|default:0 }}</td>
+                    <td>{{ item.total_count|default:0 }}</td>
+                </tr>
 
-</tbody>
+                {% elif item.category == 'being_trained' %}
+                <tr>
+                    <td>(घ)<br>(d)</td>
+                    <td class="text-left">
+                        कितने कर्मी हिन्दी भाषा का प्रशिक्षण ले रहे हैं?<br>
+                        How many personnel are receiving training in Hindi?
+                    </td>
+                    <td>{{ item.officers_working|default:0 }}</td>
+                    <td>{{ item.officers_proficient|default:0 }}</td>
+                    <td>{{ item.employees_working|default:0 }}</td>
+                    <td>{{ item.employees_proficient|default:0 }}</td>
+                    <td>{{ item.total_count|default:0 }}</td>
+                </tr>
 
-</table>
+                <tr>
+                    <td></td>
+                    <td class="text-left" style="color: green;">
+                        (i). उपर्युक्त में से नियमित हिन्दी प्रशिक्षण योजना माध्यम से प्रशिक्षण प्राप्त करने वाले अधिकारियों/कर्मचारियों की संख्या:-<br>
+                        (i). Number of Officers/Employees receiving training through the regular Hindi Training Scheme:
+                    </td>
+                    <td style="color: green;">{{ item.regular_officers_working|default:0 }}</td>
+                    <td style="color: green;">{{ item.regular_officers_proficient|default:0 }}</td>
+                    <td style="color: green;">{{ item.regular_employees_working|default:0 }}</td>
+                    <td style="color: green;">{{ item.regular_employees_proficient|default:0 }}</td>
+                    <td style="color: green;">{{ item.regular_total|default:0 }}</td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td class="text-left" style="color: green;">
+                        (ii). किसी अन्य माध्यम से प्रशिक्षण प्राप्त करने वाले अधिकारियों/कर्मचारियों की संख्या:-<br>
+                        (ii). Number of Officers/Employees receiving training through any other means:
+                    </td>
+                    <td style="color: green;">{{ item.other_officers_working|default:0 }}</td>
+                    <td style="color: green;">{{ item.other_officers_proficient|default:0 }}</td>
+                    <td style="color: green;">{{ item.other_employees_working|default:0 }}</td>
+                    <td style="color: green;">{{ item.other_employees_proficient|default:0 }}</td>
+                    <td style="color: green;">{{ item.other_total|default:0 }}</td>
+                </tr>
+
+                {% elif item.category == 'yet_to_be_trained' %}
+                <tr>
+                    <td>(ङ)<br>(e)</td>
+                    <td class="text-left">
+                        हिन्दी में प्रशिक्षण के लिए शेष<br>
+                        Yet to be trained in Hindi
+                    </td>
+                    <td>{{ item.officers_working|default:0 }}</td>
+                    <td>{{ item.officers_proficient|default:0 }}</td>
+                    <td>{{ item.employees_working|default:0 }}</td>
+                    <td>{{ item.employees_proficient|default:0 }}</td>
+                    <td>{{ item.total_count|default:0 }}</td>
+                </tr>
+                {% endif %}
+
+            {% endfor %}
+
+        </tbody>
+    </table>
+
+    <p style="color: red;">
+        कार्यालय में कार्यरत प्रत्येक अधिकारी/कर्मचारी जो फाइल कार्य/पत्राचार से जुड़ा है, अनुसचिवीय की श्रेणी में माना जाएगा।<br>
+        Every Officer/Employee working in the office who is connected with file work/correspondence shall be considered in the non-secretarial category.
+    </p>
 
 </div>
-
-
-<!-- SECTION 2(ii) -->
-
-<div class="qpr-section">
-
-<p><strong>Knowledge of Hindi Stenography/Typing</strong></p>
-
-<table class="qpr-table">
-
-<thead>
-<tr>
-<th>Category</th>
-<th>Total</th>
-<th>Trained</th>
-<th>Working in Hindi</th>
-<th>Yet to be trained</th>
-</tr>
-</thead>
-
-<tbody>
-
-{% for item in part2.typing_knowledge.all %}
-
-<tr>
-<td class="text-left">{{ item.category }}</td>
-<td>{{ item.total_no }}</td>
-<td>{{ item.trained_in_hindi }}</td>
-<td>{{ item.work_in_hindi }}</td>
-<td>{{ item.yet_to_be_trained }}</td>
-</tr>
-
-{% endfor %}
-
-</tbody>
-
-</table>
-
-</div>
-
-
-<!-- SECTION 2(iii) -->
-
-<div class="qpr-section">
-
-<p><strong>Knowledge of Translation</strong></p>
-
-<table class="qpr-table">
-
-<thead>
-<tr>
-<th>Category</th>
-<th>Officers</th>
-<th>Employees</th>
-<th>Total</th>
-</tr>
-</thead>
-
-<tbody>
-
-{% for item in part2.translation_knowledge.all %}
-
-<tr>
-<td class="text-left">{{ item.category }}</td>
-<td>{{ item.officers_count }}</td>
-<td>{{ item.employees_count }}</td>
-<td>{{ item.total_count }}</td>
-</tr>
-
-{% endfor %}
-
-</tbody>
-
-</table>
-
-</div>
-
 
 <!-- SECTION 3 -->
 
 <div class="qpr-section">
 
-<h4>3. Training for doing work in Hindi on Computer</h4>
+    <p><strong>
+        3. कार्यालय का प्रशिक्षण कैलेंडर एवं I-Got पर हिन्दी प्रशिक्षण<br>
+        Office Training Calendar and Hindi Training on I-Got
+    </strong></p>
 
-<table class="qpr-table">
+    <table class="qpr-table">
+        <tbody>
 
-<tr>
-<th>Total Staff</th>
-<th>Trained</th>
-<th>Working</th>
-</tr>
+            <tr>
+                <td class="text-left">
+                    <span style="color: red;">
+                        (i). कार्यालय का प्रशिक्षण कैलेंडर उपलब्ध है या नहीं।
+                    </span><br>
+                    <span style="color: red;">
+                        (i). Whether the office training calendar is available.
+                    </span>
+                </td>
+                <td>
+                    {% if part2.training_calendar_available %}
+                        हाँ / Yes
+                    {% else %}
+                        नहीं / No
+                    {% endif %}
+                </td>
+            </tr>
 
-<tr>
-<td>{{ part2.computer_training_total_staff }}</td>
-<td>{{ part2.computer_training_trained }}</td>
-<td>{{ part2.computer_training_working }}</td>
-</tr>
+            <tr>
+                <td class="text-left">
+                    <span style="color: green;">
+                        (ii). कैलेंडर के अनुसार कितने प्रशिक्षण दिए गए:-
+                    </span><br>
+                    <span style="color: green;">
+                        (ii). Number of training sessions conducted according to the calendar:
+                    </span>
+                </td>
+                <td>
+                    {{ part2.trainings_as_per_calendar|default:0 }}
+                </td>
+            </tr>
 
-</table>
+            <tr>
+                <td class="text-left">
+                    <span style="color: red;">
+                        (iii). I-Got पर हिन्दी प्रशिक्षण:-
+                    </span><br>
+                    <span style="color: red;">
+                        (iii). Hindi training on I-Got:
+                    </span><br>
+
+                    <span style="color: green;">
+                        (क). आपके कार्यालय से कितने अधिकारियों/कर्मचारियों ने I-Got पर हिन्दी प्रशिक्षण प्राप्त किया है?
+                    </span><br>
+                    <span style="color: green;">
+                        (a). How many officers/employees from your office have received Hindi training on I-Got?
+                    </span>
+                </td>
+                <td>
+                    {{ part2.igot_hindi_trained_staff|default:0 }}
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+
+</div>
+
+
+<!-- SECTION 4(i) -->
+
+<div class="qpr-section">
+
+    <p><strong>
+        4(i) हिन्दी आशुलिपि/टंकण प्रशिक्षण का ब्यौरा<br>
+        4(i) Details of Hindi Stenography/Typing Training
+    </strong></p>
+
+    <table class="qpr-table">
+
+        <thead>
+            <tr>
+                <th></th>
+                <th>कुल संख्या<br>Total No.</th>
+                <th>हिन्दी में प्रशिक्षित कार्मिकों की संख्या<br>No. of personnel trained in Hindi</th>
+                <th>प्रशिक्षितों में से हिन्दी में कार्य करने वाले<br>Out of trained how many work in Hindi</th>
+                <th>प्रशिक्षण शेष<br>Yet to be trained</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for item in part2.typing_knowledge.all %}
+
+            <tr>
+                <td class="text-left">
+                    {% if item.category == 'stenographer' %}
+                        (क) आशुलिपिक<br>(a) Stenographer
+                    {% elif item.category == 'typist_clerk' %}
+                        (ख) टंकक/लिपिक/सहायक अनुभाग अधिकारी/निजी सहायक/<br>
+                        ग्राहक सेवा सहयोगी/कनिष्ठ सहयोगी (ग्राहक सहायता एवं विक्रय)<br>
+                        (b) Typists/Clerks/Assistant Section Officer/Private Assistant/<br>
+                        Customer Service Associate/Junior Associate (Customer Support & Sales)
+                    {% elif item.category == 'tax_postal' %}
+                        (ग) कर/डाक सहायक आदि<br>(c) Tax/Postal Asstt. etc.
+                    {% endif %}
+                </td>
+
+                <td>{{ item.total_no|default:0 }}</td>
+                <td>{{ item.trained_in_hindi|default:0 }}</td>
+                <td>{{ item.work_in_hindi|default:0 }}</td>
+                <td>{{ item.yet_to_be_trained|default:0 }}</td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+    </table>
+
+</div>
+
+
+<!-- SECTION 4(ii) -->
+
+<div class="qpr-section">
+
+    <p><strong>
+        4(ii) अनुवाद का ज्ञान<br>
+        4(ii) Knowledge of Translation
+    </strong></p>
+
+    <table class="qpr-table">
+
+        <thead>
+            <tr>
+                <th></th>
+                <th>अधिकारी<br>Officers</th>
+                <th>कर्मचारी<br>Employees</th>
+                <th>कुल<br>Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for item in part2.translation_knowledge.all %}
+
+            <tr>
+                <td class="text-left">
+
+                    {% if item.category == 'engaged' %}
+                        (क) अनुवाद कार्य में संलग्न अधिकारी/कर्मचारी/राजभाषा अधिकारी<br>
+                        (a) Officers/Employees/Rajbhasha Officers engaged in Translation Work
+
+                    {% elif item.category == 'trained' %}
+                        (ख) (क) में से अनुवाद में प्रशिक्षित<br>
+                        (b) Out of (a), trained in Translation
+
+                    {% elif item.category == 'yet_to_be_trained' %}
+                        (ग) अनुवाद में प्रशिक्षण शेष<br>
+                        (c) No. of officials yet to be trained
+
+                    {% endif %}
+
+                </td>
+
+                <td>{{ item.officers_count|default:0 }}</td>
+                <td>{{ item.employees_count|default:0 }}</td>
+                <td>{{ item.total_count|default:0 }}</td>
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+    </table>
 
 </div>
 
@@ -255,42 +436,50 @@ Proficient: {{ item.employees_proficient|default:"0" }}
 
 </div>
 
-
 <!-- SECTION 5 -->
+<div class="qpr-section">
+    <h4>5. Details regarding Computers/Laptops</h4>
 
+    <p>
+        Whether all computers/laptops in your office are
+        Unicode-enabled for Hindi:
+        <strong>
+            {% if part2.all_computers_unicode_enabled %}
+                Yes / हाँ
+            {% else %}
+                No / नहीं
+            {% endif %}
+        </strong>
+    </p>
+</div>
+<!-- SECTION 6: Code, Manuals and Standard Forms -->
 <div class="qpr-section">
 
-<h4>5. Code / Manuals / Forms</h4>
+    <h4>6. Code, Manuals, Standard Forms etc.</h4>
 
-<table class="qpr-table">
-
-<thead>
-<tr>
-<th>Category</th>
-<th>Total</th>
-<th>Bilingual</th>
-</tr>
-</thead>
-
-<tbody>
-
-{% for item in part2.codes_manuals.all %}
-
-<tr>
-<td class="text-left">{{ item.category }}</td>
-<td>{{ item.total_no }}</td>
-<td>{{ item.bilingual_no }}</td>
-</tr>
-
-{% endfor %}
-
-</tbody>
-
-</table>
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th>Particulars</th>
+                <th>Total Number</th>
+                <th>Bilingual</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Acts/Rules/Official Codes/Manuals/Procedural Literature etc.</td>
+                <td>{{ part2.codes_manuals.all.0.total_no|default:"0" }}</td>
+                <td>{{ part2.codes_manuals.all.0.bilingual_no|default:"0" }}</td>
+            </tr>
+            <tr>
+                <td>Standard Forms</td>
+                <td>{{ part2.codes_manuals.all.1.total_no|default:"0" }}</td>
+                <td>{{ part2.codes_manuals.all.1.bilingual_no|default:"0" }}</td>
+            </tr>
+        </tbody>
+    </table>
 
 </div>
-
-
 <!-- SECTION 13 -->
 
 <div class="qpr-section">

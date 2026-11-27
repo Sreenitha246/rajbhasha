@@ -15,9 +15,11 @@ urlpatterns = [
     views.rajbhasha_activities,
     name='rajbhasha_activities'
     ),
+
     path('dashboard/', views.dashboard, name='dashboard'),
-    
+
     path('login/', CustomLoginView.as_view(), name='login'),
+    path('captcha/image/',views.auth_captcha_image,name='auth_captcha_image'),
     path('parichay/login/', parichay_views.parichay_login, name='parichay_login'),
     path('parichay/callback/', parichay_views.parichay_callback, name='parichay_callback'),
     path('signup/', signup, name='signup'),
@@ -34,6 +36,8 @@ urlpatterns = [
     path('profile/request-edit/', views.request_edit, name='request_edit'),
 
     path('qpr/admin/dashboard/', views.admin_dashboard, name='qpr_admin_dashboard'),
+    path('qpr/admin/correspondence/', views.admin_correspondence, name='admin_correspondence'),
+    path('qpr/office-correspondence/', views.employee_office_correspondence, name='employee_office_correspondence'),
     path('manager/dashboard/', views.manager_dashboard, name='manager_dashboard'),
     path('manager/employees/master/', views.manager_employee_master_list, name='manager_employee_master_list'),
     path('manager/employees/master/add/', views.manager_employee_master_add, name='manager_employee_master_add'),
@@ -58,7 +62,7 @@ urlpatterns = [
     path('manager/certificates/<int:pk>/view/', views.manager_certificate_view, name='manager_certificate_view'),
     path('manager/certificates/<int:pk>/print/', views.manager_certificate_print, name='manager_certificate_print'),
     path('manager/certificates/<int:pk>/delete/', views.manager_certificate_delete, name='manager_certificate_delete'),
-    
+
     path('qpr/hod/dashboard/', views.qpr_hod_dashboard, name='qpr_hod_dashboard'),
     path('qpr/user/dashboard/', views.user_dashboard, name='qpr_user_dashboard'),
 

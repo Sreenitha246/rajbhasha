@@ -1,179 +1,283 @@
+
 {% extends "master.html" %}
+{% load static %}
 {% load translate_tags %}
+
+{% block title %}{{ "Login"|t:current_lang }} | Rajbhasha QPR{% endblock %}
+
 {% block extra_css %}
 <style>
     .login-page {
-        min-height: calc(100vh - 190px);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 50px 20px;
+        padding: 22px 18px;
         position: relative;
         overflow: hidden;
-    }
-
-    /* Soft decorative background */
-    .login-page::before {
-        content: "";
-        position: absolute;
-        width: 320px;
-        height: 320px;
-        border-radius: 50%;
-        background: var(--rb-primary-light);
-        top: -120px;
-        left: -100px;
-        opacity: 0.65;
-    }
-
-    .login-page::after {
-        content: "";
-        position: absolute;
-        width: 280px;
-        height: 280px;
-        border-radius: 50%;
-        background: var(--rb-coral-light);
-        bottom: -120px;
-        right: -80px;
-        opacity: 0.6;
     }
 
     .login-wrapper {
         width: 100%;
-        max-width: 460px;
+        max-width: 1000px;
         position: relative;
-        z-index: 2;
+        z-index: 1;
     }
 
     .login-card {
-        background: var(--rb-surface);
-        border: 1px solid var(--rb-border);
-        border-radius: 24px;
-        padding: 42px 42px 38px;
-        box-shadow: var(--rb-shadow);
-        text-align: center;
-        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 0.9fr;
+        background: var(--rb-surface, var(--bs-body-bg));
+        border: 1px solid var(--rb-border, var(--bs-border-color));
+        border-radius: 18px;
         overflow: hidden;
+        box-shadow: var(--rb-shadow, 0 8px 30px rgba(0,0,0,.08));
     }
 
-    /* Small colorful line at the top */
-    .login-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 5px;
-        background: linear-gradient(
-            90deg,
-            var(--rb-primary),
-            var(--rb-pink, #e879a9),
-            var(--rb-accent),
-            var(--rb-secondary)
-        );
-    }
+    /* LEFT SIDE - LOGIN FORM */
 
-    .login-icon {
-        width: 76px;
-        height: 76px;
-        margin: 5px auto 22px;
-        border-radius: 22px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(
-            135deg,
-            var(--rb-primary-light),
-            var(--rb-secondary-light)
-        );
-        color: var(--rb-primary);
-        font-size: 2rem;
+    .login-left {
+        padding: 30px 38px;
     }
 
     .login-title {
-        color: var(--rb-text);
-        font-size: 1.8rem;
+        color: var(--rb-text, var(--bs-body-color));
+        font-size: 1.75rem;
         font-weight: 700;
-        margin-bottom: 9px;
-        letter-spacing: -0.3px;
+        margin-bottom: 5px;
     }
 
     .login-subtitle {
-        color: var(--rb-text-muted);
-        font-size: 0.96rem;
-        margin-bottom: 28px;
+        color: var(--rb-text-muted, var(--bs-secondary-color));
+        font-size: .9rem;
+        margin-bottom: 22px;
     }
 
-    .parichay-button {
-        width: 100%;
-        border: none;
-        border-radius: 12px;
-        padding: 13px 20px;
-        background: linear-gradient(
-            135deg,
-            var(--rb-primary),
-            var(--rb-secondary)
-        );
-        color: #fff !important;
+    .login-form .form-label {
+        color: var(--rb-text, var(--bs-body-color));
+        font-size: .88rem;
         font-weight: 600;
-        font-size: 0.98rem;
+        margin-bottom: 6px;
+    }
+
+    .login-form .form-control {
+        min-height: 43px;
+        border-radius: 9px;
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        border-color: var(--bs-border-color);
+        font-size: .92rem;
+    }
+
+    .login-form .form-control:focus {
+        border-color: var(--rb-primary, #29458d);
+        box-shadow: 0 0 0 .2rem rgba(41, 69, 141, .12);
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .forgot-password {
+        color: var(--rb-primary, #29458d);
+        font-size: .82rem;
         text-decoration: none;
+        cursor: default;
+    }
+
+    .captcha-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 7px;
+    }
+
+    .captcha-image {
+        height: 45px;
+        max-width: 180px;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 7px;
+        background: #fff;
+    }
+
+    .captcha-refresh {
+        border: 0;
+        background: transparent;
+        color: var(--rb-primary, #29458d);
+        font-size: .82rem;
+        padding: 5px;
+    }
+
+    .login-submit {
+        width: 100%;
+        min-height: 44px;
+        border: 0;
+        border-radius: 9px;
+        background: var(--rb-primary, #29458d);
+        color: #fff;
+        font-weight: 600;
+        font-size: .95rem;
+        margin-top: 5px;
+        transition: background .2s ease, transform .2s ease;
+    }
+
+    .login-submit:hover {
+        background: var(--rb-secondary, #405ca5);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    .signup-text {
+        color: var(--rb-text-muted, var(--bs-secondary-color));
+        font-size: .85rem;
+        text-align: center;
+        margin-top: 17px;
+        margin-bottom: 0;
+    }
+
+    .signup-text a {
+        color: var(--rb-primary, #29458d);
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .signup-text a:hover {
+        text-decoration: underline;
+    }
+
+    /* RIGHT SIDE - RAJBHASHA QPR */
+
+    .login-right {
+        background: #eef2ff;
+        padding: 34px 35px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-left: 1px solid var(--bs-border-color);
+    }
+
+    .portal-heading {
+        color: #263f83;
+        font-size: 2rem;
+        font-weight: 750;
+        line-height: 1.2;
+        margin-bottom: 13px;
+    }
+
+    .portal-description {
+        color: #56617a;
+        font-size: .92rem;
+        line-height: 1.7;
+        margin-bottom: 20px;
+    }
+
+    .portal-info {
+        border-left: 3px solid #526db2;
+        padding: 2px 0 2px 14px;
+        margin-bottom: 23px;
+    }
+
+    .portal-info h6 {
+        color: #263f83;
+        font-size: .9rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .portal-info p {
+        color: #56617a;
+        font-size: .84rem;
+        line-height: 1.6;
+        margin-bottom: 0;
+    }
+
+    .parichay-label {
+        color: #56617a;
+        font-size: .82rem;
+        margin-bottom: 9px;
+    }
+
+    .login-right .parichay-button {
+        width: 100%;
+        min-height: 45px;
+        padding: 11px 16px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 9px;
-        transition: all 0.25s ease;
-        box-shadow: 0 6px 16px rgba(79, 70, 165, 0.20);
+        background: #263f83;
+        color: #fff;
+        border: 1px solid #263f83;
+        border-radius: 9px;
+        font-size: .92rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background .2s ease, transform .2s ease;
     }
 
-    .parichay-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 22px rgba(79, 70, 165, 0.28);
+    .login-right .parichay-button:hover {
+        background: #405ca5;
+        color: #fff;
+        transform: translateY(-1px);
     }
 
-    .parichay-button i {
-        font-size: 1.1rem;
+    /* DARK THEME */
+
+    [data-bs-theme="dark"] .login-right {
+        background: #202b43;
+        border-left-color: var(--bs-border-color);
     }
 
-    .login-note {
-        margin-top: 20px;
-        color: var(--rb-text-muted);
-        font-size: 0.82rem;
+    [data-bs-theme="dark"] .portal-heading,
+    [data-bs-theme="dark"] .portal-info h6 {
+        color: #cbd8ff;
     }
 
-    .login-note span {
-        color: var(--rb-pink, #e879a9);
-        margin-right: 4px;
+    [data-bs-theme="dark"] .portal-description,
+    [data-bs-theme="dark"] .portal-info p,
+    [data-bs-theme="dark"] .parichay-label {
+        color: #c0c9dc;
     }
 
-    /* Dark theme */
-    [data-bs-theme="dark"] .login-page::before {
-        opacity: 0.2;
+    [data-bs-theme="dark"] .login-right .parichay-button {
+        background: #526db2;
+        border-color: #526db2;
     }
 
-    [data-bs-theme="dark"] .login-page::after {
-        opacity: 0.18;
+    [data-bs-theme="dark"] .login-right .parichay-button:hover {
+        background: #657fc2;
     }
 
-    [data-bs-theme="dark"] .login-card {
-        box-shadow: var(--rb-shadow);
-    }
+    /* RESPONSIVE */
 
-    /* Mobile */
-    @media (max-width: 576px) {
+    @media (max-width: 768px) {
         .login-page {
-            min-height: calc(100vh - 160px);
-            padding: 35px 16px;
+            padding: 15px 10px;
         }
 
         .login-card {
-            padding: 36px 24px 30px;
-            border-radius: 20px;
+            grid-template-columns: 1fr;
         }
 
-        .login-icon {
-            width: 68px;
-            height: 68px;
-            font-size: 1.8rem;
+        .login-left {
+            padding: 28px 25px;
+        }
+
+        .login-right {
+            padding: 27px 25px;
+            border-left: 0;
+            border-top: 1px solid var(--bs-border-color);
+        }
+
+        .portal-heading {
+            font-size: 1.65rem;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .login-left,
+        .login-right {
+            padding: 24px 19px;
         }
 
         .login-title {
@@ -187,41 +291,169 @@
 {% block content %}
 
 <div class="login-page">
-
     <div class="login-wrapper">
 
         <div class="login-card">
 
-            <div class="login-icon">
-                <i class="bi bi-person-circle"></i>
+            <!-- LEFT: EMPLOYEE LOGIN -->
+
+            <div class="login-left">
+
+                <h1 class="login-title">
+                    {{ "Welcome Back"|t:current_lang }}
+                </h1>
+
+                <p class="login-subtitle">
+                    {{ "Sign in to your Rajbhasha QPR account"|t:current_lang }}
+                </p>
+
+                <form method="POST" class="login-form">
+                    {% csrf_token %}
+
+                    {% if request.GET.next %}
+                        <input type="hidden" name="next" value="{{ request.GET.next }}">
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="id_username" class="form-label">
+                            {{ "Employee Code"|t:current_lang }}
+                        </label>
+
+                        <input
+                            type="text"
+                            name="username"
+                            id="id_username"
+                            class="form-control"
+                            placeholder="{{ 'Enter your Employee Code'|t:current_lang }}"
+                            value="{{ request.POST.username|default:'' }}"
+                            required
+                            autocomplete="username"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <label for="id_password" class="form-label">
+                                {{ "Password"|t:current_lang }}
+                            </label>
+
+                            <span class="forgot-password">
+                                {{ "Forgot Password?"|t:current_lang }}
+                            </span>
+                        </div>
+
+                        <input
+                            type="password"
+                            name="password"
+                            id="id_password"
+                            class="form-control"
+                            placeholder="{{ 'Enter your password'|t:current_lang }}"
+                            required
+                            autocomplete="current-password"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="captcha_answer" class="form-label">
+                            {{ "Security Verification"|t:current_lang }}
+                        </label>
+
+                        <div class="captcha-box">
+                            <img
+                                src="{% url 'auth_captcha_image' %}"
+                                alt="{{ 'CAPTCHA verification image'|t:current_lang }}"
+                                class="captcha-image"
+                                id="loginCaptchaImage"
+                            >
+
+                            <button
+                                type="button"
+                                class="captcha-refresh"
+                                id="refreshLoginCaptcha"
+                                aria-label="Refresh CAPTCHA"
+                            >
+                                <i class="bi bi-arrow-clockwise"></i>
+                                {{ "Refresh"|t:current_lang }}
+                            </button>
+                        </div>
+
+                        <input
+                            type="text"
+                            name="captcha_answer"
+                            id="captcha_answer"
+                            class="form-control mt-2"
+                            placeholder="{{ 'Enter the characters shown'|t:current_lang }}"
+                            required
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <button type="submit" class="login-submit">
+                        {{ "Login"|t:current_lang }}
+                    </button>
+
+                </form>
+
+                <p class="signup-text">
+                    {{ "Don't have an account?"|t:current_lang }}
+                    <a href="{% url 'signup' %}">
+                        {{ "Create an account"|t:current_lang }}
+                    </a>
+                </p>
+
             </div>
 
-            <h1 class="login-title">
-                {{ "Welcome Back"|t:current_lang }}
-            </h1>
 
-            <p class="login-subtitle">
-                {{ "Login using your Parichay account"|t:current_lang }}
-            </p>
+            <!-- RIGHT: RAJBHASHA QPR AND PARICHAY -->
 
-            <a href="{% url 'parichay_login' %}" class="parichay-button">
+            <div class="login-right">
 
-                <i class="bi bi-shield-check"></i>
+                <h2 class="portal-heading">
+                    {{ "Rajbhasha QPR"|t:current_lang }}
+                </h2>
 
-                <span>
-                    {{ "Login with Parichay"|t:current_lang }}
-                </span>
+                <p class="portal-description">
+                    {{ "Access the Rajbhasha Quarterly Progress Report system to manage official language activities and departmental reports."|t:current_lang }}
+                </p>
 
-            </a>
+                <div class="portal-info">
+                    <h6>
+                        {{ "Secure Employee Access"|t:current_lang }}
+                    </h6>
 
-            <div class="login-note">
-                <span>✦</span>
-                {{ "Welcome to Rajbhasha"|t:current_lang }}
+                    <p>
+                        {{ "Sign in using your registered Employee Code and password, or use NIC Parichay for secure authentication."|t:current_lang }}
+                    </p>
+                </div>
+
+                <div class="parichay-section">
+                    <p class="parichay-label">
+                        {{ "Or sign in using"|t:current_lang }}
+                    </p>
+
+                    <a href="{% url 'parichay_login' %}" class="parichay-button">
+                        <i class="bi bi-shield-lock"></i>
+                        {{ "Login with Parichay"|t:current_lang }}
+                    </a>
+                </div>
+
             </div>
+
         </div>
-
     </div>
-
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const refreshButton = document.getElementById("refreshLoginCaptcha");
+    const captchaImage = document.getElementById("loginCaptchaImage");
+
+    if (refreshButton && captchaImage) {
+        refreshButton.addEventListener("click", function () {
+            captchaImage.src = "{% url 'auth_captcha_image' %}?t=" + new Date().getTime();
+        });
+    }
+});
+</script>
 
 {% endblock %}

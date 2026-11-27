@@ -1,0 +1,591 @@
+{% extends "master.html" %}
+
+{% block content %}
+
+<div class="container-fluid px-4 mt-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+        <div>
+            <h2 class="fw-bold text-primary mb-1">
+                <i class="fas fa-envelope me-2"></i>
+                Correspondence / पत्राचार
+            </h2>
+            <p class="text-muted mb-0">
+                Manage office-wise quarterly correspondence data /
+                कार्यालय-वार तिमाही पत्राचार डेटा प्रबंधित करें
+            </p>
+        </div>
+
+        <a href="{% url 'qpr_admin_dashboard' %}"
+           class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>
+            Back to Dashboard / डैशबोर्ड पर वापस जाएँ
+        </a>
+    </div>
+
+    <!-- Office Information -->
+    <div class="alert alert-info border-0 shadow-sm">
+        <i class="fas fa-building me-2"></i>
+        <strong>Office / कार्यालय:</strong>
+        {{ office.name }}
+        <span class="ms-2 text-muted">({{ office.code }})</span>
+        <br>
+        <small>
+            Data entered here will be shared with all users of this office
+            for the selected quarter.
+            <br>
+            यहाँ दर्ज किया गया डेटा चयनित तिमाही के लिए इस कार्यालय के सभी उपयोगकर्ताओं के साथ साझा किया जाएगा।
+        </small>
+    </div>
+
+    <!-- Financial Year and Quarter Selection -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-primary text-white py-3">
+            <h5 class="mb-0">
+                <i class="fas fa-calendar-alt me-2"></i>
+                Reporting Period / रिपोर्टिंग अवधि
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold">
+                        Financial Year / वित्तीय वर्ष
+                    </label>
+
+                    <select name="financial_year" class="form-select" required>
+                        {% for year in financial_years %}
+                        <option value="{{ year }}"
+                            {% if selected_financial_year == year %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold">
+                        Quarter / तिमाही
+                    </label>
+
+                    <select name="quarter" class="form-select" required>
+                        {% for code, label in quarter_choices %}
+                        <option value="{{ code }}"
+                            {% if selected_quarter == code %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i>
+                        Load / देखें
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Existing Record Status -->
+    {% if correspondence %}
+    <div class="alert alert-success border-0">
+        <i class="fas fa-check-circle me-2"></i>
+        Existing correspondence data found.
+        You can update the figures below.
+        <br>
+        पत्राचार डेटा उपलब्ध है। आप नीचे दिए गए आँकड़ों को अपडेट कर सकते हैं।
+    </div>
+    {% else %}
+    <div class="alert alert-warning border-0">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        No correspondence data has been saved for this quarter yet.
+        Please enter the figures below.
+        <br>
+        इस तिमाही के लिए अभी तक कोई पत्राचार डेटा सहेजा नहीं गया है।
+        कृपया नीचे आँकड़े दर्ज करें।
+    </div>
+    {% endif %}
+
+    <!-- Correspondence Form -->
+    <form method="post">
+
+        {% csrf_token %}
+
+        <input type="hidden" name="financial_year"
+               value="{{ selected_financial_year }}">
+
+        <input type="hidden" name="quarter"
+               value="{{ selected_quarter }}">
+
+        <!-- SECTION 5 -->
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0">
+                    Section 5 – Incoming English Correspondence
+                    <br>
+                    अनुभाग 5 – अंग्रेज़ी में प्राप्त पत्राचार
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <p class="text-muted">
+                    Enter the number of English letters received and their reply status.
+                    <br>
+                    प्राप्त अंग्रेज़ी पत्रों की संख्या तथा उनके उत्तर की स्थिति दर्ज करें।
+                </p>
+
+                <!-- Region A -->
+                <h6 class="fw-bold text-primary mt-3 mb-3">
+                    Region A / क्षेत्र A
+                </h6>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Particulars / विवरण</th>
+                                <th style="width: 30%;">Number / संख्या</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>Total English letters received / प्राप्त कुल अंग्रेज़ी पत्र</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           class="form-control"
+                                           name="s5_a_total"
+                                           value="{{ correspondence.s5_a_total|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Replies in Hindi / हिंदी में उत्तर</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           class="form-control"
+                                           name="s5_a_hindi"
+                                           value="{{ correspondence.s5_a_hindi|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Replies in English / अंग्रेज़ी में उत्तर</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           class="form-control"
+                                           name="s5_a_english"
+                                           value="{{ correspondence.s5_a_english|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>No reply required / उत्तर आवश्यक नहीं</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           class="form-control"
+                                           name="s5_a_no_reply"
+                                           value="{{ correspondence.s5_a_no_reply|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Region B -->
+                <h6 class="fw-bold text-primary mt-4 mb-3">
+                    Region B / क्षेत्र B
+                </h6>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Particulars / विवरण</th>
+                                <th style="width: 30%;">Number / संख्या</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>Total English letters received / प्राप्त कुल अंग्रेज़ी पत्र</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           class="form-control"
+                                           name="s5_b_total"
+                                           value="{{ correspondence.s5_b_total|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Replies in Hindi / हिंदी में उत्तर</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           class="form-control"
+                                           name="s5_b_hindi"
+                                           value="{{ correspondence.s5_b_hindi|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Replies in English / अंग्रेज़ी में उत्तर</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           class="form-control"
+                                           name="s5_b_english"
+                                           value="{{ correspondence.s5_b_english|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>No reply required / उत्तर आवश्यक नहीं</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           class="form-control"
+                                           name="s5_b_no_reply"
+                                           value="{{ correspondence.s5_b_no_reply|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SECTION 6 -->
+        <div class="card shadow-sm border-0 mb-4">
+
+            <div class="card-header bg-success text-white py-3">
+                <h5 class="mb-0">
+                    Section 6 – Outgoing Correspondence
+                    <br>
+                    अनुभाग 6 – भेजा गया पत्राचार
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <p class="text-muted">
+                    Enter the number of letters issued in Hindi/bilingual
+                    and English-only.
+                    Total and Hindi percentage are calculated automatically.
+                    <br>
+                    हिंदी/द्विभाषी तथा केवल अंग्रेज़ी में जारी पत्रों की संख्या दर्ज करें।
+                    कुल संख्या और हिंदी प्रतिशत की गणना स्वतः होगी।
+                </p>
+
+                {% for region, hindi_field, english_field, total_field, percentage_field, hindi_value, english_value, total_value, percentage_value in section6_regions %}
+                {% endfor %}
+
+                <!-- Region A -->
+                <h6 class="fw-bold text-success mt-3 mb-3">
+                    Region A / क्षेत्र A
+                </h6>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Particulars / विवरण</th>
+                                <th>Number / संख्या</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>Hindi/Bilingual letters / हिंदी/द्विभाषी पत्र</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           id="s6_a_hindi"
+                                           name="s6_a_hindi"
+                                           class="form-control s6-hindi"
+                                           value="{{ correspondence.s6_a_hindi|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>English-only letters / केवल अंग्रेज़ी के पत्र</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           id="s6_a_english"
+                                           name="s6_a_english"
+                                           class="form-control s6-english"
+                                           value="{{ correspondence.s6_a_english|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr class="table-light fw-bold">
+                                <td>Total letters / कुल पत्र</td>
+                                <td>
+                                    <input type="text" id="s6_a_total"
+                                           class="form-control bg-light"
+                                           value="{{ correspondence.s6_a_total|default_if_none:'' }}"
+                                           readonly>
+                                </td>
+                            </tr>
+
+                            <tr class="table-light fw-bold">
+                                <td>Hindi percentage / हिंदी प्रतिशत</td>
+                                <td>
+                                    <input type="text" id="s6_a_percentage"
+                                           class="form-control bg-light"
+                                           value="{% if correspondence %}{{ correspondence.s6_a_hindi_percentage }}%{% endif %}"
+                                           readonly>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Region B -->
+                <h6 class="fw-bold text-success mt-4 mb-3">
+                    Region B / क्षेत्र B
+                </h6>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Particulars / विवरण</th>
+                                <th>Number / संख्या</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>Hindi/Bilingual letters / हिंदी/द्विभाषी पत्र</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           id="s6_b_hindi"
+                                           name="s6_b_hindi"
+                                           class="form-control s6-hindi"
+                                           value="{{ correspondence.s6_b_hindi|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>English-only letters / केवल अंग्रेज़ी के पत्र</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           id="s6_b_english"
+                                           name="s6_b_english"
+                                           class="form-control s6-english"
+                                           value="{{ correspondence.s6_b_english|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr class="table-light fw-bold">
+                                <td>Total letters / कुल पत्र</td>
+                                <td>
+                                    <input type="text" id="s6_b_total"
+                                           class="form-control bg-light"
+                                           value="{{ correspondence.s6_b_total|default_if_none:'' }}"
+                                           readonly>
+                                </td>
+                            </tr>
+
+                            <tr class="table-light fw-bold">
+                                <td>Hindi percentage / हिंदी प्रतिशत</td>
+                                <td>
+                                    <input type="text" id="s6_b_percentage"
+                                           class="form-control bg-light"
+                                           value="{% if correspondence %}{{ correspondence.s6_b_hindi_percentage }}%{% endif %}"
+                                           readonly>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Region C -->
+                <h6 class="fw-bold text-success mt-4 mb-3">
+                    Region C / क्षेत्र C
+                </h6>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Particulars / विवरण</th>
+                                <th>Number / संख्या</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>Hindi/Bilingual letters / हिंदी/द्विभाषी पत्र</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           id="s6_c_hindi"
+                                           name="s6_c_hindi"
+                                           class="form-control s6-hindi"
+                                           value="{{ correspondence.s6_c_hindi|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>English-only letters / केवल अंग्रेज़ी के पत्र</td>
+                                <td>
+                                    <input type="text" inputmode="numeric" pattern="[0-9]*"
+                                           id="s6_c_english"
+                                           name="s6_c_english"
+                                           class="form-control s6-english"
+                                           value="{{ correspondence.s6_c_english|default_if_none:'' }}"
+                                           required>
+                                </td>
+                            </tr>
+
+                            <tr class="table-light fw-bold">
+                                <td>Total letters / कुल पत्र</td>
+                                <td>
+                                    <input type="text" id="s6_c_total"
+                                           class="form-control bg-light"
+                                           value="{{ correspondence.s6_c_total|default_if_none:'' }}"
+                                           readonly>
+                                </td>
+                            </tr>
+
+                            <tr class="table-light fw-bold">
+                                <td>Hindi percentage / हिंदी प्रतिशत</td>
+                                <td>
+                                    <input type="text" id="s6_c_percentage"
+                                           class="form-control bg-light"
+                                           value="{% if correspondence %}{{ correspondence.s6_c_hindi_percentage }}%{% endif %}"
+                                           readonly>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="d-flex justify-content-end gap-2 mb-5">
+
+            <a href="{% url 'qpr_admin_dashboard' %}"
+               class="btn btn-outline-secondary">
+                Cancel / रद्द करें
+            </a>
+
+            <button type="submit" class="btn btn-success px-4">
+                <i class="fas fa-save me-2"></i>
+                Save Correspondence / पत्राचार सहेजें
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+<!-- Automatic Section 6 Calculations -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+        const correspondenceForm = document.querySelector('form[method="post"]');
+
+        if (correspondenceForm) {
+        correspondenceForm.querySelectorAll(
+            'input[inputmode="numeric"]'
+        ).forEach(input => {
+
+            // Block non-numeric characters before they appear
+            input.addEventListener('beforeinput', function (event) {
+                if (event.data && /[^0-9]/.test(event.data)) {
+                    event.preventDefault();
+                }
+            });
+
+            // Block invalid pasted content
+            input.addEventListener('paste', function (event) {
+                const pastedText = event.clipboardData.getData('text');
+
+                if (!/^[0-9]*$/.test(pastedText)) {
+                    event.preventDefault();
+                }
+            });
+        });
+    }
+    const regions = ['a', 'b', 'c'];
+
+    function calculateRegion(region) {
+
+        const hindiInput = document.getElementById(
+            `s6_${region}_hindi`
+        );
+
+        const englishInput = document.getElementById(
+            `s6_${region}_english`
+        );
+
+        const totalOutput = document.getElementById(
+            `s6_${region}_total`
+        );
+
+        const percentageOutput = document.getElementById(
+            `s6_${region}_percentage`
+        );
+
+        if (!hindiInput || !englishInput) return;
+
+        const hindi = Number(hindiInput.value) || 0;
+        const english = Number(englishInput.value) || 0;
+
+        const total = hindi + english;
+
+        const percentage = total > 0
+            ? ((hindi / total) * 100).toFixed(2)
+            : '0.00';
+
+        totalOutput.value = total;
+        percentageOutput.value = percentage + '%';
+    }
+
+    regions.forEach(function (region) {
+
+        const hindiInput = document.getElementById(
+            `s6_${region}_hindi`
+        );
+
+        const englishInput = document.getElementById(
+            `s6_${region}_english`
+        );
+
+        hindiInput.addEventListener('input', function () {
+            calculateRegion(region);
+        });
+
+        englishInput.addEventListener('input', function () {
+            calculateRegion(region);
+        });
+
+        calculateRegion(region);
+    });
+
+});
+</script>
+
+{% endblock %}

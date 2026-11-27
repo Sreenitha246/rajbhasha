@@ -148,6 +148,66 @@ function maskSensitiveData(value) {
 
 // Fields to mask when in draft mode (don't mask officeCode anymore)
 const SENSITIVE_FIELDS = [];
+async function loadOfficeCorrespondence() {
+    const year = document.getElementById('year')?.value;
+    const quarter = document.getElementById('quarter')?.value;
+
+    const fieldMap = {
+        s5_total: 's5_a_total',
+        s5_hindi: 's5_a_hindi',
+        s5_english: 's5_a_english',
+        s5_noreply: 's5_a_no_reply',
+
+        s5_b_total: 's5_b_total',
+        s5_b_hindi: 's5_b_hindi',
+        s5_b_english: 's5_b_english',
+        s5_b_noreply: 's5_b_no_reply',
+
+        s6_a_hindi: 's6_a_hindi',
+        s6_a_eng: 's6_a_english',
+        s6_a_total: 's6_a_total',
+        s6_a_percentage: 's6_a_percentage',
+
+        s6_b_hindi: 's6_b_hindi',
+        s6_b_eng: 's6_b_english',
+        s6_b_total: 's6_b_total',
+        s6_b_percentage: 's6_b_percentage',
+
+        s6_c_hindi: 's6_c_hindi',
+        s6_c_eng: 's6_c_english',
+        s6_c_total: 's6_c_total',
+        s6_c_percentage: 's6_c_percentage'
+    };
+
+    if (!year || !quarter) return;
+
+    try {
+        const params = new URLSearchParams({ year, quarter });
+
+        const response = await fetch(
+            `/qpr/office-correspondence/?${params}`,
+            { credentials: 'same-origin' }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Correspondence request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        Object.entries(fieldMap).forEach(([elementId, responseKey]) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.value = data[responseKey] ?? 0;
+            }
+        });
+
+        console.log('Office correspondence loaded:', year, quarter);
+
+    } catch (error) {
+        console.error('Failed to load office correspondence:', error);
+    }
+}
 
 // --- 1. Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -172,22 +232,24 @@ document.addEventListener('DOMContentLoaded', () => {
  // Populate quarter options based on selected year and today's date
  try { populateQuarterDropdown(); } catch(e) { console.error(e); }
  try { updateQuarterAvailability(); } catch(e) { console.error(e); }
+ loadOfficeCorrespondence();
 
  // Recompute quarter options & availability when year changes
  if (yearEl) yearEl.addEventListener('change', () => {
  try { populateQuarterDropdown(); } catch(e) { console.error(e); }
  try { updateQuarterAvailability(); } catch(e) { console.error(e); }
+ loadOfficeCorrespondence();
  });
 
  // Selected date behavior: default to today, set min/max and query availability
  const selectedDateEl = document.getElementById('selectedDate');
  const frequencyEl = document.getElementById('frequency');
- 
+
  // Ensure frequency defaults to 'daily' (should not be empty)
  if (frequencyEl && (!frequencyEl.value || frequencyEl.value === '')) {
  frequencyEl.value = 'daily';
  }
- 
+
  const availabilityBoxId = 'qprAvailabilityBox';
  function isScopedSnapshotEditMode() {
  const params = new URLSearchParams(window.location.search || '');
@@ -388,7 +450,7 @@ function parseLocalDate(dateStr) {
  updateQuarterAvailability();
  updateMissingDaysAlert();
  updateAvailabilitySummary();
- 
+
  // Draft is valid for normal QPR entry flows, including weekly/monthly/quarterly
  // entries used to fill missed daily periods. Hide it only for snapshot overwrites.
                 try {
@@ -463,6 +525,7 @@ function parseLocalDate(dateStr) {
  quarterEl.addEventListener('change', () => {
  updateMissingDaysAlert();
  updateAvailabilitySummary();
+ loadOfficeCorrespondence();
  });
  }
 
@@ -708,7 +771,7 @@ async function loadData() {
 
  // Update the global variable so editRecord finds the data
  records = data;
- 
+
  // If tableBody exists on this page, populate the table (report list or main view)
  const tableBody = document.getElementById('tableBody');
  if (tableBody && tableBody !== null) {
@@ -790,7 +853,7 @@ async function loadData() {
  if (editScopeFromUrl) localStorage.setItem('editSnapshotScope', editScopeFromUrl);
  console.log("After loadData - editId from localStorage:", editId);
  console.log("Total records loaded:", records.length);
- 
+
  if (editId) {
  localStorage.removeItem('editRecordId');
  const rid = parseInt(editId, 10);
@@ -818,13 +881,13 @@ async function loadData() {
 async function saveData(status) {
  const idInput = document.getElementById('recordId');
  const id = idInput ? idInput.value : null;
- 
+
  console.log("saveData called with status:", status);
  console.log("recordId input element:", idInput);
  console.log("recordId value:", id);
- 
+
  const mainFields = ['officeName', 'officeCode', 'region', 'quarter', 'recordId', 'phone', 'email', 'year'];
- 
+
  const payload = {
  id: id ? id : null,
  status: status,
@@ -838,7 +901,7 @@ async function saveData(status) {
  // frequency is determined by server; do not send from client
  phone: document.getElementById('phone')?.value || '',
  email: document.getElementById('email')?.value || '',
- details: {} 
+ details: {}
  };
 
  // Safety check: ensure frequency is not empty before submission
@@ -851,7 +914,7 @@ async function saveData(status) {
  console.log("Payload being sent:", payload);
 
  const form = document.getElementById('qprForm');
- const elements = form.elements; 
+ const elements = form.elements;
 
  for (let i = 0; i < elements.length; i++) {
  const el = elements[i];
@@ -914,14 +977,14 @@ async function saveData(status) {
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify(payload)
  });
- 
+
  console.log("Response status:", res.status, "ok:", res.ok);
- 
+
  if (res.ok) {
  alert(status === 'Draft' ? "Draft Saved Successfully!" : "Report Submitted Successfully!");
- 
+
  console.log("Alert shown. Status is:", status);
- 
+
  // If submitted, redirect to report list; if draft, reload form
  if (status === 'Submitted') {
  console.log("Redirecting to /qpr/reports/");
@@ -946,7 +1009,7 @@ async function saveData(status) {
 function editRecord(id) {
  // This finds the record because we updated 'records' in loadData()
  const record = records.find(r => String(r.id) === String(id));
- 
+
  if (!record) {
  console.error("Record not found for ID:", id);
  return;
@@ -1009,13 +1072,13 @@ function editRecord(id) {
  }
  const snapshotScopeEl = document.getElementById('snapshotEditScope');
  if (snapshotScopeEl) snapshotScopeEl.value = snapshotEdit ? snapshotEdit.scope : (scopedEditRequested ? requestedSnapshotScope : '');
- 
+
  // Handle phone field if it exists in details
  const phoneEl = document.getElementById('phone');
  if (phoneEl && String(phoneEl.dataset.protected) !== '1') {
  phoneEl.value = record.phone || '';
  }
- 
+
  // Handle email field if it exists in details
  const emailEl = document.getElementById('email');
  if (emailEl && String(emailEl.dataset.protected) !== '1') {
@@ -1058,7 +1121,7 @@ function editRecord(id) {
  }
  }
  localStorage.removeItem('editSnapshotScope');
- 
+
  // Disable/Enable form based on edit permission
  setFormEditability(canEditCurrentRecord && canUseCurrentApproval, (record.edit_approved || scopedEditRequested) && canUseCurrentApproval);
  setApprovedEditPeriodLock(canEditCurrentRecord && canUseCurrentApproval && (record.edit_approved || scopedEditRequested));
@@ -1070,10 +1133,10 @@ function editRecord(id) {
 function setFormEditability(canEdit, editApproved) {
  const form = document.getElementById('qprForm');
  const allInputs = form.querySelectorAll('input, textarea, select');
- 
+
  // Get all save buttons (both Draft and Submit buttons)
  const saveBtns = document.querySelectorAll('button[onclick*="saveData"]');
- 
+
  if (canEdit) {
  // Enable fields except those protected by profile data
  allInputs.forEach(input => {
@@ -1098,16 +1161,16 @@ function setFormEditability(canEdit, editApproved) {
 function showEditApprovedMessage() {
  const existingMsg = document.getElementById('editApprovedMsg');
  if (existingMsg) existingMsg.remove();
- 
+
  const msgDiv = document.createElement('div');
  msgDiv.id = 'editApprovedMsg';
  msgDiv.className = 'alert alert-success alert-dismissible fade show mb-3';
  msgDiv.innerHTML = `
- <i class="fas fa-check-circle"></i> <strong>Edit Approved!</strong> 
+ <i class="fas fa-check-circle"></i> <strong>Edit Approved!</strong>
  Admin has approved your edit request. You can now modify this QPR.
  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
  `;
- 
+
  const form = document.getElementById('qprForm');
  form.parentNode.insertBefore(msgDiv, form);
 }
@@ -1116,17 +1179,17 @@ function showEditApprovedMessage() {
 function showEditDisabledMessage() {
  const existingMsg = document.getElementById('editDisabledMsg');
  if (existingMsg) existingMsg.remove();
- 
+
  const msgDiv = document.createElement('div');
  msgDiv.id = 'editDisabledMsg';
  msgDiv.className = 'alert alert-warning alert-dismissible fade show mb-3';
  msgDiv.innerHTML = `
- <i class="fas fa-lock"></i> <strong>Read-Only Mode</strong> 
- This submitted QPR cannot be edited. If you need to make changes, 
+ <i class="fas fa-lock"></i> <strong>Read-Only Mode</strong>
+ This submitted QPR cannot be edited. If you need to make changes,
  please request permission using the "Request to Edit" option.
  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
  `;
- 
+
  const form = document.getElementById('qprForm');
  form.parentNode.insertBefore(msgDiv, form);
 }
@@ -1194,10 +1257,10 @@ function showTab(n) {
 function clearForm() {
  const form = document.getElementById('qprForm');
  if (form) form.reset();
- 
+
  const idInput = document.getElementById('recordId');
  if (idInput) idInput.value = '';
- 
+
  showTab(1);
 }
 

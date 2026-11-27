@@ -1,0 +1,505 @@
+
+{% extends "master.html" %}
+{% load static %}
+{% load translate_tags %}
+
+{% block title %}{{ "Create Account"|t:current_lang }} | Rajbhasha QPR{% endblock %}
+
+{% block extra_css %}
+<style>
+    .signup-page {
+        min-height: calc(100vh - 180px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 25px 18px;
+        background: var(--bs-body-bg);
+    }
+
+    .signup-wrapper {
+        width: 100%;
+        max-width: 900px;
+    }
+
+    .signup-card {
+        display: grid;
+        grid-template-columns: 1.15fr .85fr;
+        overflow: hidden;
+        border: 1px solid var(--bs-border-color);
+        border-radius: 15px;
+        background: var(--bs-body-bg);
+        box-shadow: 0 10px 35px rgba(30, 45, 90, .08);
+    }
+
+    /* LEFT PANEL */
+
+    .signup-left {
+        padding: 34px 35px;
+        background: #fff;
+    }
+
+    .signup-brand {
+        color: #29458d;
+        font-size: .82rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 22px;
+    }
+
+    .signup-title {
+        color: #202b45;
+        font-size: 1.7rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .signup-subtitle {
+        color: #737b8c;
+        font-size: .88rem;
+        margin-bottom: 25px;
+    }
+
+    .signup-field {
+        margin-bottom: 16px;
+    }
+
+    .signup-form .form-label {
+        display: block;
+        color: #30394e;
+        font-size: .86rem;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .signup-form input:not([type="checkbox"]) {
+        width: 100%;
+        min-height: 43px;
+        padding: 9px 12px;
+        border: 1px solid #dfe3eb;
+        border-radius: 7px;
+        background: #fff;
+        color: #202b45;
+        font-size: .9rem;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .signup-form input:not([type="checkbox"]):focus {
+        outline: none;
+        border-color: #334e9e;
+        box-shadow: 0 0 0 3px rgba(51, 78, 158, .10);
+    }
+
+    .signup-form input::placeholder {
+        color: #9aa1af;
+    }
+
+    .signup-form .form-check {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        padding-left: 0;
+        margin: 17px 0 0;
+    }
+
+    .signup-form .form-check-input {
+        flex-shrink: 0;
+        margin: 4px 0 0;
+        cursor: pointer;
+    }
+
+    .signup-form .form-check-label {
+        color: #737b8c;
+        font-size: .83rem;
+        line-height: 1.5;
+        cursor: pointer;
+    }
+
+    /* RIGHT PANEL */
+
+    .signup-right {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 35px 28px;
+        background: #edf1fb;
+    }
+
+    .captcha-heading {
+        color: #263f83;
+        font-size: .94rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .captcha-description {
+        color: #65708a;
+        font-size: .84rem;
+        line-height: 1.6;
+        margin-bottom: 17px;
+    }
+
+    .captcha-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .captcha-image {
+        display: block;
+        width: 180px;
+        max-width: calc(100% - 50px);
+        height: 53px;
+        object-fit: contain;
+        border: 1px solid #dfe3eb;
+        border-radius: 7px;
+        background: #fff;
+    }
+
+    .captcha-refresh {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 7px;
+        color: #334e9e;
+        border-color: #b9c5e1;
+    }
+
+    .captcha-refresh:hover {
+        background: #dce4f7;
+        color: #263f83;
+    }
+
+    .captcha-input {
+        margin-top: 11px;
+        min-height: 43px;
+        border-radius: 7px;
+        border: 1px solid #d1d9eb;
+        background: #fff;
+    }
+
+    .captcha-input:focus {
+        border-color: #334e9e;
+        box-shadow: 0 0 0 3px rgba(51, 78, 158, .10);
+    }
+
+    .signup-button {
+        width: 100%;
+        min-height: 45px;
+        margin-top: 23px;
+        border: none;
+        border-radius: 7px;
+        background: #29458d;
+        color: #fff;
+        font-size: .94rem;
+        font-weight: 600;
+        transition: background .2s;
+    }
+
+    .signup-button:hover {
+        background: #405ca5;
+        color: #fff;
+    }
+
+    .signup-footer {
+        text-align: center;
+        margin-top: 19px;
+        padding-top: 16px;
+        border-top: 1px solid #d5dced;
+        color: #65708a;
+        font-size: .84rem;
+    }
+
+    .signup-footer a {
+        color: #29458d;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .signup-footer a:hover {
+        text-decoration: underline;
+    }
+
+    .signup-card .alert {
+        border-radius: 7px;
+        font-size: .85rem;
+    }
+
+    /* DARK THEME */
+
+    [data-bs-theme="dark"] .signup-left {
+        background: #1c2232;
+    }
+
+    [data-bs-theme="dark"] .signup-brand,
+    [data-bs-theme="dark"] .signup-title {
+        color: #d5dfff;
+    }
+
+    [data-bs-theme="dark"] .signup-subtitle,
+    [data-bs-theme="dark"] .signup-form .form-check-label {
+        color: #aeb8cc;
+    }
+
+    [data-bs-theme="dark"] .signup-form .form-label {
+        color: #e0e5ef;
+    }
+
+    [data-bs-theme="dark"] .signup-form input:not([type="checkbox"]) {
+        background: #252d40;
+        border-color: #414b62;
+        color: #f1f3f8;
+    }
+
+    [data-bs-theme="dark"] .signup-right {
+        background: #27334d;
+    }
+
+    [data-bs-theme="dark"] .captcha-heading {
+        color: #d5dfff;
+    }
+
+    [data-bs-theme="dark"] .captcha-description {
+        color: #bdc9df;
+    }
+
+    [data-bs-theme="dark"] .captcha-input {
+        background: #fff;
+        color: #202b45;
+    }
+
+    [data-bs-theme="dark"] .signup-footer {
+        border-color: #46536d;
+        color: #bdc9df;
+    }
+
+    [data-bs-theme="dark"] .signup-footer a {
+        color: #cbd8ff;
+    }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 700px) {
+        .signup-page {
+            min-height: auto;
+            padding: 20px 12px;
+        }
+
+        .signup-card {
+            grid-template-columns: 1fr;
+        }
+
+        .signup-left {
+            padding: 28px 24px;
+        }
+
+        .signup-right {
+            padding: 27px 24px;
+        }
+
+        .signup-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 380px) {
+        .signup-left,
+        .signup-right {
+            padding: 23px 18px;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="signup-page">
+    <div class="signup-wrapper">
+
+        <div class="signup-card">
+
+            <!-- LEFT: ACCOUNT DETAILS -->
+
+            <div class="signup-left">
+
+                <div class="signup-brand">
+                    {{ "Rajbhasha QPR"|t:current_lang }}
+                </div>
+
+                <h1 class="signup-title">
+                    {{ "Create Account"|t:current_lang }}
+                </h1>
+
+                <p class="signup-subtitle">
+                    {{ "Register for the Rajbhasha QPR portal"|t:current_lang }}
+                </p>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'signup' %}" class="signup-form" id="signup-form">
+                    {% csrf_token %}
+                    <div class="signup-field">
+                        <label class="form-label" for="{{ form.username.id_for_label }}">
+                            {{ form.username.label|t:current_lang }}
+                        </label>
+
+                        {{ form.username }}
+
+                        {% for error in form.username.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="signup-field">
+                        <label class="form-label" for="{{ form.email.id_for_label }}">
+                            {{ form.email.label|t:current_lang }}
+                        </label>
+
+                        {{ form.email }}
+
+                        {% for error in form.email.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="signup-field">
+                        <label class="form-label" for="{{ form.password1.id_for_label }}">
+                            {{ form.password1.label|t:current_lang }}
+                        </label>
+
+                        {{ form.password1 }}
+
+                        {% for error in form.password1.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="signup-field">
+                        <label class="form-label" for="{{ form.password2.id_for_label }}">
+                            {{ form.password2.label|t:current_lang }}
+                        </label>
+
+                        {{ form.password2 }}
+
+                        {% for error in form.password2.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="signup-field">
+                        <div class="form-check">
+                            {{ form.consent }}
+
+                            <label
+                                class="form-check-label"
+                                for="{{ form.consent.id_for_label }}"
+                            >
+                                {{ form.consent.label|t:current_lang }}
+                            </label>
+                        </div>
+
+                        {% for error in form.consent.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                </form>
+            </div>
+
+
+            <!-- RIGHT: CAPTCHA AND SUBMISSION -->
+
+            <div class="signup-right">
+
+                <div class="captcha-heading">
+                    {{ "Security Verification"|t:current_lang }}
+                </div>
+
+                <p class="captcha-description">
+                    {{ "Enter the characters shown below to verify your registration."|t:current_lang }}
+                </p>
+
+                <div class="captcha-row">
+
+                    <img
+                        src="{% url 'auth_captcha_image' %}"
+                        id="signup-captcha-image"
+                        class="captcha-image"
+                        alt="{{ 'Security verification CAPTCHA'|t:current_lang }}"
+                        width="220"
+                        height="75"
+                    >
+
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary captcha-refresh"
+                        id="refresh-signup-captcha"
+                        title="{{ 'Refresh CAPTCHA'|t:current_lang }}"
+                        aria-label="{{ 'Refresh CAPTCHA'|t:current_lang }}"
+                    >
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+
+                </div>
+
+                <input
+                    type="text"
+                    name="captcha_answer"
+                    form="signup-form"
+                    class="form-control captcha-input"
+                    placeholder="{{ 'Enter the characters shown'|t:current_lang }}"
+                    maxlength="6"
+                    autocomplete="off"
+                    required
+                    aria-label="{{ 'Enter CAPTCHA characters'|t:current_lang }}"
+                >
+
+                <button
+                    type="submit"
+                    form="signup-form"
+                    class="signup-button"
+                >
+                    {{ "Create Account"|t:current_lang }}
+                </button>
+
+                <div class="signup-footer">
+                    {{ "Already have an account?"|t:current_lang }}
+                    <a href="{% url 'login' %}">
+                        {{ "Login here"|t:current_lang }}
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- FORM ID FOR RIGHT-PANEL CONTROLS -->
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    const form = document.querySelector(".signup-form");
+                    if (form) {
+                        form.id = "signup-form";
+                    }
+
+                    const refreshButton = document.getElementById("refresh-signup-captcha");
+                    const captchaImage = document.getElementById("signup-captcha-image");
+
+                    if (refreshButton && captchaImage) {
+                        refreshButton.addEventListener("click", function () {
+                            captchaImage.src =
+                                "{% url 'auth_captcha_image' %}?t=" + Date.now();
+                        });
+                    }
+                });
+            </script>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -37,14 +37,42 @@ HINDI_TRANSLATIONS = {
 
     # Login / Account
     "Login": "लॉगिन",
-    "Welcome Back": "वापसी पर स्वागत है",
     "Login using your Parichay account":
         "अपने परिचय खाते का उपयोग करके लॉगिन करें",
     "Login with Parichay": "परिचय के साथ लॉगिन करें",
     "Logout": "लॉगआउट",
-    
+
     "About Us": "हमारे बारे में",
     "Events & Highlights": "कार्यक्रम एवं मुख्य आकर्षण",
+    "Welcome Back": "वापसी पर स्वागत है",
+    "Sign in to your Rajbhasha QPR account": "अपने राजभाषा QPR खाते में लॉगिन करें",
+
+    # Employee credentials
+    "Employee Code": "कर्मचारी कोड",
+    "Enter your Employee Code": "अपना कर्मचारी कोड दर्ज करें",
+    "Password": "पासवर्ड",
+    "Enter your password": "अपना पासवर्ड दर्ज करें",
+    "Forgot Password?": "पासवर्ड भूल गए?",
+
+    # CAPTCHA
+    "Security Verification": "सुरक्षा सत्यापन",
+    "Refresh": "रीफ्रेश करें",
+    "Enter the characters shown": "दिखाए गए अक्षर दर्ज करें",
+    "CAPTCHA verification image": "कैप्चा सत्यापन चित्र",
+
+    # Signup
+    "Don't have an account?": "क्या आपका खाता नहीं है?",
+    "Create an account": "खाता बनाएँ",
+
+    # Right panel
+    "Rajbhasha QPR": "राजभाषा QPR",
+    "Access the Rajbhasha Quarterly Progress Report system to manage official language activities and departmental reports.": "आधिकारिक भाषा गतिविधियों और विभागीय रिपोर्टों के प्रबंधन के लिए राजभाषा त्रैमासिक प्रगति रिपोर्ट प्रणाली का उपयोग करें।",
+
+    "Secure Employee Access": "सुरक्षित कर्मचारी प्रवेश",
+    "Sign in using your registered Employee Code and password, or use NIC Parichay for secure authentication.": "अपने पंजीकृत कर्मचारी कोड और पासवर्ड का उपयोग करके लॉगिन करें या सुरक्षित प्रमाणीकरण के लिए NIC परिचय का उपयोग करें।",
+
+    "Or sign in using": "या इसके माध्यम से लॉगिन करें",
+    "Login with Parichay": "परिचय के माध्यम से लॉगिन करें",
 
     # Registration
     "Registration": "पंजीकरण",
@@ -54,6 +82,51 @@ HINDI_TRANSLATIONS = {
     "Email": "ईमेल",
     "Password": "पासवर्ड",
     "Confirm Password": "पासवर्ड की पुष्टि करें",
+
+    # Signup page
+    "Create Account": "खाता बनाएँ",
+    "Create an Account": "एक खाता बनाएँ",
+    "Sign Up": "साइन अप करें",
+    "Register": "पंजीकरण करें",
+    "Register for Rajbhasha QPR": "राजभाषा QPR के लिए पंजीकरण करें",
+    "Create your Rajbhasha account": "अपना राजभाषा खाता बनाएँ",
+    "Enter your details to create an account": "खाता बनाने के लिए अपना विवरण दर्ज करें",
+
+    # Employee details
+    "Employee Code": "कर्मचारी कोड",
+    "Enter your Employee Code": "अपना कर्मचारी कोड दर्ज करें",
+    "Email": "ईमेल",
+    "Email Address": "ईमेल पता",
+    "Enter your email address": "अपना ईमेल पता दर्ज करें",
+
+    # Password fields
+    "Password": "पासवर्ड",
+    "Enter your password": "अपना पासवर्ड दर्ज करें",
+    "Confirm Password": "पासवर्ड की पुष्टि करें",
+    "Confirm your password": "अपने पासवर्ड की पुष्टि करें",
+    "Password must contain at least 8 characters": "पासवर्ड में कम से कम 8 अक्षर होने चाहिए",
+
+    # Consent
+    "Consent": "सहमति",
+    "I agree to the terms and conditions": "मैं नियमों और शर्तों से सहमत हूँ",
+    "I agree to the terms of use": "मैं उपयोग की शर्तों से सहमत हूँ",
+
+    # CAPTCHA
+    "Security Verification": "सुरक्षा सत्यापन",
+    "Enter the characters shown": "दिखाए गए अक्षर दर्ज करें",
+    "Refresh": "रीफ्रेश करें",
+
+    # Navigation
+    "Already have an account?": "क्या आपके पास पहले से खाता है?",
+    "Login here": "यहाँ लॉगिन करें",
+    "Login": "लॉगिन करें",
+    "Back to Login": "लॉगिन पृष्ठ पर वापस जाएँ",
+
+    # Messages
+    "Account created successfully": "खाता सफलतापूर्वक बनाया गया",
+    "Please fill in all required fields": "कृपया सभी आवश्यक फ़ील्ड भरें",
+    "Passwords do not match": "पासवर्ड मेल नहीं खाते",
+    "This field is required": "यह फ़ील्ड आवश्यक है",
 
     # Common actions
     "Submit": "जमा करें",
@@ -83,6 +156,7 @@ HINDI_TRANSLATIONS = {
     "Submit QPR": "त्रैमासिक प्रगति रिपोर्ट जमा करें",
     "Edit QPR": "त्रैमासिक प्रगति रिपोर्ट संपादित करें",
     "QPR Dashboard": "त्रैमासिक प्रगति रिपोर्ट डैशबोर्ड",
+    "Fill HOD/HO QPR": "HOD/HO त्रैमासिक प्रगति रिपोर्ट",
 
     # Common status/messages
     "Pending": "लंबित",
@@ -133,7 +207,7 @@ HINDI_TRANSLATIONS = {
     "Create New Manager": "नया मैनेजर बनाएँ",
     "Employee Detail List": "कर्मचारी विवरण सूची",
     "Office Details": "कार्यालय विवरण",
-        
+
     "Admin Approval Requests": "एडमिन अनुमोदन अनुरोध",
     "NAME": "नाम",
     "CONTACT": "संपर्क",

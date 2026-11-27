@@ -135,13 +135,13 @@
         // Preloaded aggregated QPR for division mode
         window.INITIAL_QPR = JSON.parse(document.getElementById('initial-qpr-data').textContent);
         if(typeof window.INITIAL_QPR == 'string'){
-            window.INITIAL_QPR = JSON.parse(window.INITIAL_QPR);} 
+            window.INITIAL_QPR = JSON.parse(window.INITIAL_QPR);}
         window.IS_DIVISION = true;
     </script>
     {% else %}
     <script>window.INITIAL_QPR = null; window.IS_DIVISION = false;</script>
     {% endif %}
-    
+
     {% if record_json %}
     <script>
         try { window.PRELOADED_RECORD = JSON.parse('{{ record_json|escapejs }}'); } catch(e) { window.PRELOADED_RECORD = null; }
@@ -238,7 +238,7 @@ async function loadReport() {
                 let period = isFillView ? 'daily' : (viewAs ? viewAs.toLowerCase() : (r.frequency || 'daily').toLowerCase());
                 let textVal = '';
                 let src = 'rec';
-                
+
                 if (period !== 'daily' && r.cumulative_text && r.cumulative_text[period]) {
                     textVal = escapeHtml(r.cumulative_text[period][textKey] || '');
                     src = 'cum';
@@ -246,12 +246,12 @@ async function loadReport() {
                     textVal = (typeof r[textKey] !== 'undefined' && r[textKey] !== null) ? escapeHtml(r[textKey]): '';
                     src = 'rec';
                 }
-                
+
                 if (!textVal || textVal.trim() === '') {
                     return '<span style="color:#bbb">–</span>';
                 }
                 return `<div>${textVal}</div>`;
-            } catch (e) { 
+            } catch (e) {
                 const val = r[textKey];
                 return (val && val.trim()) ? escapeHtml(val) : '<span style="color:#bbb">–</span>';
             }
@@ -332,11 +332,22 @@ async function loadReport() {
 
         <!-- S5 -->
         <div class="sec">
-            <div class="sec-hd">5. अंग्रेजी पत्रों के उत्तर हिंदी में — 'क' क्षेत्र <span class="en">(English letters replied in Hindi — Region A)</span></div>
+            <div class="sec-hd">
+                5. अंग्रेजी पत्रों के उत्तर हिंदी में
+                <span class="en">(English letters replied in Hindi)</span>
+            </div>
+
+            <div class="sh">'क' क्षेत्र / Region A</div>
             <div class="dr"><div class="dl"><span class="hi">अंग्रेजी में प्राप्त पत्रों की संख्या</span><span class="en">Letters received in English</span></div>${valFor('s5_total')}</div>
             <div class="dr"><div class="dl"><span class="hi">उत्तर हिंदी में दिए गए</span><span class="en">Replied in Hindi</span></div>${valFor('s5_hindi')}</div>
             <div class="dr"><div class="dl"><span class="hi">उत्तर अंग्रेजी में दिए गए</span><span class="en">Replied in English</span></div>${valFor('s5_english')}</div>
             <div class="dr"><div class="dl"><span class="hi">उत्तर अपेक्षित नहीं</span><span class="en">No reply expected</span></div>${valFor('s5_noreply')}</div>
+
+            <div class="sh">'ख' क्षेत्र / Region B</div>
+            <div class="dr"><div class="dl"><span class="hi">अंग्रेजी में प्राप्त पत्रों की संख्या</span><span class="en">Letters received in English</span></div>${valFor('s5_b_total')}</div>
+            <div class="dr"><div class="dl"><span class="hi">उत्तर हिंदी में दिए गए</span><span class="en">Replied in Hindi</span></div>${valFor('s5_b_hindi')}</div>
+            <div class="dr"><div class="dl"><span class="hi">उत्तर अंग्रेजी में दिए गए</span><span class="en">Replied in English</span></div>${valFor('s5_b_english')}</div>
+            <div class="dr"><div class="dl"><span class="hi">उत्तर अपेक्षित नहीं</span><span class="en">No reply expected</span></div>${valFor('s5_b_noreply')}</div>
         </div>
 
         <!-- S6 -->
@@ -346,14 +357,17 @@ async function loadReport() {
             <div class="dr"><div class="dl"><span class="hi">हिंदी/द्विभाषी में</span><span class="en">Hindi/Bilingual</span></div>${valFor('s6_a_hindi')}</div>
             <div class="dr"><div class="dl"><span class="hi">केवल अंग्रेजी में</span><span class="en">English only</span></div>${valFor('s6_a_eng')}</div>
             <div class="dr"><div class="dl"><span class="hi">कुल पत्र</span><span class="en">Total letters</span></div>${valFor('s6_a_total')}</div>
+            <div class="dr"><div qclass="dl"><span class="hi">हिंदी का प्रतिशत (%)</span><span class="en">Hindi percentage (%)</span></div>${valFor('s6_a_percentage')}</div>
             <div class="sh">'ख' क्षेत्र / Region B</div>
             <div class="dr"><div class="dl"><span class="hi">हिंदी/द्विभाषी में</span><span class="en">Hindi/Bilingual</span></div>${valFor('s6_b_hindi')}</div>
             <div class="dr"><div class="dl"><span class="hi">केवल अंग्रेजी में</span><span class="en">English only</span></div>${valFor('s6_b_eng')}</div>
             <div class="dr"><div class="dl"><span class="hi">कुल पत्र</span><span class="en">Total letters</span></div>${valFor('s6_b_total')}</div>
+            <div class="dr"><div class="dl"><span class="hi">हिंदी का प्रतिशत (%)</span><span class="en">Hindi percentage (%)</span></div>${valFor('s6_b_percentage')}</div>
             <div class="sh">'ग' क्षेत्र / Region C</div>
             <div class="dr"><div class="dl"><span class="hi">हिंदी/द्विभाषी में</span><span class="en">Hindi/Bilingual</span></div>${valFor('s6_c_hindi')}</div>
             <div class="dr"><div class="dl"><span class="hi">केवल अंग्रेजी में</span><span class="en">English only</span></div>${valFor('s6_c_eng')}</div>
             <div class="dr"><div class="dl"><span class="hi">कुल पत्र</span><span class="en">Total letters</span></div>${valFor('s6_c_total')}</div>
+            <div class="dr"><div class="dl"><span class="hi">हिंदी का प्रतिशत (%)</span><span class="en">Hindi percentage (%)</span></div>${valFor('s6_c_percentage')}</div>
         </div>
 
         <!-- S7 -->

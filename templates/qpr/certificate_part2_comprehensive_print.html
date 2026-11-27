@@ -5,18 +5,80 @@
 
 {% block content %}
 <style>
- #topHeader .logo-img {
- display: none !important;
- }
+/* A4 print page setup */
+@page {
+    size: A4 portrait;
+    margin: 12mm;
+}
 
- @media print {
- body { margin: 0; padding: 0; }
- .no-print { display: none !important; }
- #topHeader, .navbar, footer { display: none !important; }
- .print-heading { display: none !important; }
- .print-container { box-shadow: none; max-width: 100%; font-size: 11px; }
- }
- 
+@media print {
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .no-print,
+    #topHeader,
+    .navbar,
+    footer,
+    .print-heading {
+        display: none !important;
+    }
+
+    .print-container {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        font-size: 12px;
+    }
+
+    .qpr-section h4 {
+        break-after: avoid;
+        page-break-after: avoid;
+    }
+
+    .qpr-table thead {
+        display: table-header-group;
+    }
+
+    .qpr-table tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .qpr-table,
+    .qpr-table th,
+    .qpr-table td {
+        border: 1px solid #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+/* Keep Section 12 together when printing */
+@media print {
+    .section-12 {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .section-12 .qpr-table {
+        font-size: 10px;
+        margin: 6px 0;
+    }
+
+    .section-12 .qpr-table th,
+    .section-12 .qpr-table td {
+        padding: 4px;
+    }
+}
  .print-toolbar {
  margin-bottom: 20px;
  padding: 15px;
@@ -24,7 +86,7 @@
  border-radius: 5px;
  text-align: center;
  }
- 
+
  .print-toolbar button, .print-toolbar a {
  padding: 8px 15px;
  margin: 0 5px;
@@ -35,69 +97,81 @@
  text-decoration: none;
  display: inline-block;
  }
- 
+
  .print-toolbar .btn-print {
  background-color: #007bff;
  border-color: #007bff;
  }
- 
- .print-container {
- max-width: 1000px;
- margin: 20px auto;
- padding: 30px;
- background: white;
- font-family: Arial, sans-serif;
- font-size: 12px;
- }
- 
- .qpr-section {
- margin-bottom: 20px;
- page-break-inside: avoid;
- }
- 
- .qpr-section h4 {
- font-size: 1rem;
- margin: 15px 0 10px 0;
- font-weight: bold;
- }
- 
- .qpr-section p {
- margin-bottom: 8px;
- line-height: 1.4;
- }
- 
- .qpr-table {
- width: 100%;
- border-collapse: collapse;
- margin: 10px 0;
- font-size: 11px;
- }
- 
- .qpr-table th, .qpr-table td {
- border: 1px solid #000;
- padding: 5px;
- text-align: center;
- vertical-align: middle;
- }
- 
- .qpr-table th {
- background-color: #f2f2f2;
- font-weight: bold;
- }
- 
- .qpr-table td.text-left {
- text-align: left;
- }
- 
- .header-info {
- padding: 15px;
- border-radius: 5px;
- margin-bottom: 20px;
- font-size: 11px;
- }
- .header-info p {
- margin: 3px 0;
- }
+
+.print-container {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 30px;
+    background: white;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+}
+
+ /* QPR section spacing */
+.qpr-section {
+    margin-bottom: 14px;
+}
+
+/* Standard text throughout all QPR sections */
+.qpr-section p,
+.qpr-section p strong,
+.qpr-section strong {
+    font-size: 14px !important;
+    line-height: 1.5;
+    margin-top: 4px;
+    margin-bottom: 6px;
+}
+
+/* Consistent section headings */
+.qpr-section h4 {
+    font-size: 16px !important;
+    margin: 12px 0 8px 0;
+    font-weight: bold;
+    line-height: 1.4;
+    break-after: avoid;
+    page-break-after: avoid;
+}
+/* Common QPR table formatting */
+.qpr-table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 12px;
+}
+
+.qpr-table th,
+.qpr-table td {
+    border: 1px solid #000;
+    padding: 4px;
+    text-align: center;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+    word-wrap: break-word;
+}
+/* QPR report header */
+.header-info {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    border: 1px solid #999;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.header-info p {
+    margin: 3px 0;
+}
+
+.header-info p:first-child {
+    font-size: 15px;
+}
+
 </style>
 
 <div class="no-print print-toolbar">
@@ -107,203 +181,548 @@
 
 <div class="print-container">
  <h2 class="print-heading" style="text-align: center; margin-bottom: 20px; font-size: 1.2rem;">{{ "Quarterly Progress Report - Part II"|t:current_lang }}</h2>
- 
  <!-- Header Information -->
- <div class="header-info">
- <p><strong>{{ "Office"|t:current_lang }}:</strong> {{ office_name|default:"" }}</p>
- <p><strong>{{ "Quarter"|t:current_lang }}:</strong> {{ certificate.quarter }} | <strong>{{ "Year"|t:current_lang }}:</strong> {{ certificate.year }}</p>
- {% if certificate.submitted_at %}<p><strong>{{ "Submitted"|t:current_lang }}:</strong> {{ certificate.submitted_at|date:"d M Y" }}</p>{% endif %}
- </div>
+<div class="header-info">
+    <p>
+        <strong>{{ "Office"|t:current_lang }}:</strong>
+        {{ office_name|default:"-" }}
+    </p>
+
+    <p>
+        <strong>{{ "Quarter"|t:current_lang }}:</strong>
+        {{ certificate.quarter }}
+        &nbsp; | &nbsp;
+        <strong>{{ "Year"|t:current_lang }}:</strong>
+        {{ certificate.year }}
+    </p>
+
+    {% if certificate.submitted_at %}
+    <p>
+        <strong>{{ "Submitted"|t:current_lang }}:</strong>
+        {{ certificate.submitted_at|date:"d M Y" }}
+    </p>
+    {% endif %}
+</div>
 
  <!-- Section 1 -->
- <div class="qpr-section">
- <h4>{{ "1. (i) Whether the Office has been notified under Rule 10(4) of Official Languages Rules, 1976"|t:current_lang }}</h4>
- <p><strong>{{ "Whether the Office has been notified under Rule 10(4) of Official Languages Rules, 1976"|t:current_lang }}:</strong> {% if certificate.is_notified_rule_10_4 %}{{ "Yes"|t:current_lang }}{% else %}{{ "No"|t:current_lang }}{% endif %}</p>
- <p><strong>{{ "Total No. of Offices"|t:current_lang }}:</strong> {{ certificate.total_sub_offices|default:"0" }} | <strong>{{ "No. of Offices Notified"|t:current_lang }}:</strong> {{ certificate.notified_sub_offices|default:"0" }}</p>
- </div>
+<div class="qpr-section">
+    <h4>1. (i) क्या कार्यालय राजभाषा नियम, 1976 के नियम 10(4) के अंतर्गत अधिसूचित है?
+        <br>Whether the office has been notified under Rule 10(4) of the Official Languages Rules, 1976?
+    </h4>
 
- <!-- Section 2 - Staff Knowledge -->
+    <p><strong>स्थिति / Status:</strong>
+        {% if certificate.is_notified_rule_10_4 %}
+            हाँ / Yes
+        {% else %}
+            नहीं / No
+        {% endif %}
+    </p>
+
+    <h4>(ii) अधीनस्थ कार्यालयों (यदि कोई हों) की राजभाषा नियम, 1976 के नियम 10(4) के अंतर्गत अधिसूचना का विवरण:
+        <br>Details regarding notification of subordinate offices (if any) under Rule 10(4) of the Official Languages Rules, 1976:
+    </h4>
+
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th colspan="3">कुल कार्यालयों की संख्या<br>Total number of offices</th>
+                <th colspan="3">अधिसूचित कार्यालयों की कुल संख्या<br>Total number of notified offices</th>
+                <th style="color: red;">शेष कार्यालयों की संख्या व उनके नाम<br>Number and names of remaining offices</th>
+            </tr>
+            <tr>
+                <th style="color: red;">क क्षेत्र / Region A</th>
+                <th style="color: red;">ख क्षेत्र / Region B</th>
+                <th style="color: red;">ग क्षेत्र / Region C</th>
+                <th style="color: red;">क क्षेत्र / Region A</th>
+                <th style="color: red;">ख क्षेत्र / Region B</th>
+                <th style="color: red;">ग क्षेत्र / Region C</th>
+                <th style="color: red;">3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ certificate.total_sub_offices_region_a|default:"0" }}</td>
+                <td>{{ certificate.total_sub_offices_region_b|default:"0" }}</td>
+                <td>{{ certificate.total_sub_offices_region_c|default:"0" }}</td>
+                <td>{{ certificate.notified_sub_offices_region_a|default:"0" }}</td>
+                <td>{{ certificate.notified_sub_offices_region_b|default:"0" }}</td>
+                <td>{{ certificate.notified_sub_offices_region_c|default:"0" }}</td>
+                <td>{{ certificate.remaining_sub_offices_details|default:"-"|linebreaksbr }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+ <!-- Section 2(i) - Staff Knowledge -->
+<div class="qpr-section">
+    <p><strong>
+        2. (i) अधिकारियों/कर्मचारियों को राजभाषा हिन्दी का ज्ञान<br>
+        Officers/Employees possessing knowledge of Official Language Hindi
+    </strong></p>
+
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th rowspan="2"></th>
+                <th rowspan="2"></th>
+                <th colspan="2">अधिकारी / Officers</th>
+                <th colspan="2">कर्मचारी / Employees</th>
+                <th rowspan="2">कुल संख्या<br>Total No.</th>
+            </tr>
+            <tr>
+                <th>कार्यसाधक<br>Working</th>
+                <th>प्रवीणता प्राप्त<br>Proficient</th>
+                <th>कार्यसाधक<br>Working</th>
+                <th>प्रवीणता प्राप्त<br>Proficient</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in certificate.staff_knowledge.all %}
+                {% if item.category == 'total' %}
+                    <tr>
+                        <td>(क)<br>(a)</td>
+                        <td class="text-left">अधिकारियों तथा कर्मचारियों की कुल संख्या<br>Total number of Officers and Employees</td>
+                        <td colspan="2">{{ item.officers_total|default:"0" }}</td>
+                        <td colspan="2">{{ item.employees_total|default:"0" }}</td>
+                        <td>{{ item.total_count|default:"0" }}</td>
+                    </tr>
+                {% elif item.category == 'secretarial' %}
+                    <tr>
+                        <td>(ख)<br>(b)</td>
+                        <td class="text-left">अनुसचिवीय कार्य से संबंधित अधिकारी/कर्मचारियों की संख्या<br>Number of Officers/Employees engaged in non-secretarial work</td>
+                        <td colspan="2">{{ item.officers_total|default:"0" }}</td>
+                        <td colspan="2">{{ item.employees_total|default:"0" }}</td>
+                        <td>{{ item.total_count|default:"0" }}</td>
+                    </tr>
+                {% elif item.category == 'knowledge' %}
+                    <tr>
+                        <td>(ग)<br>(c)</td>
+                        <td class="text-left">उपर्युक्त (क) में से हिन्दी का ज्ञान प्राप्त अधिकारी/कर्मचारी<br>Out of (a), Officers/Employees possessing knowledge of Hindi</td>
+                        <td>{{ item.officers_working|default:"0" }}</td>
+                        <td>{{ item.officers_proficient|default:"0" }}</td>
+                        <td>{{ item.employees_working|default:"0" }}</td>
+                        <td>{{ item.employees_proficient|default:"0" }}</td>
+                        <td>{{ item.total_count|default:"0" }}</td>
+                    </tr>
+                {% elif item.category == 'being_trained' %}
+                    <tr>
+                        <td>(घ)<br>(d)</td>
+                        <td class="text-left">कितने कर्मी हिन्दी भाषा का प्रशिक्षण ले रहे हैं?<br>How many personnel are receiving training in Hindi?</td>
+                        <td>{{ item.officers_working|default:"0" }}</td>
+                        <td>{{ item.officers_proficient|default:"0" }}</td>
+                        <td>{{ item.employees_working|default:"0" }}</td>
+                        <td>{{ item.employees_proficient|default:"0" }}</td>
+                        <td>{{ item.total_count|default:"0" }}</td>
+                    </tr>
+                    <tr style="color: green;">
+                        <td></td>
+                        <td class="text-left">
+                            (i). उपर्युक्त में से नियमित हिन्दी प्रशिक्षण योजना माध्यम से प्रशिक्षण प्राप्त करने वाले अधिकारियों/कर्मचारियों की संख्या:-<br>
+                            (i). Number of Officers/Employees receiving training through the regular Hindi Training Scheme:
+                        </td>
+                        <td>{{ item.regular_officers_working|default:"0" }}</td>
+                        <td>{{ item.regular_officers_proficient|default:"0" }}</td>
+                        <td>{{ item.regular_employees_working|default:"0" }}</td>
+                        <td>{{ item.regular_employees_proficient|default:"0" }}</td>
+                        <td>{{ item.regular_total|default:"0" }}</td>
+                    </tr>
+                    <tr style="color: green;">
+                        <td></td>
+                        <td class="text-left">
+                            (ii). किसी अन्य माध्यम से प्रशिक्षण प्राप्त करने वाले अधिकारियों/कर्मचारियों की संख्या:-<br>
+                            (ii). Number of Officers/Employees receiving training through any other means:
+                        </td>
+                        <td>{{ item.other_officers_working|default:"0" }}</td>
+                        <td>{{ item.other_officers_proficient|default:"0" }}</td>
+                        <td>{{ item.other_employees_working|default:"0" }}</td>
+                        <td>{{ item.other_employees_proficient|default:"0" }}</td>
+                        <td>{{ item.other_total|default:"0" }}</td>
+                    </tr>
+                {% elif item.category == 'yet_to_be_trained' %}
+                    <tr>
+                        <td>(ङ)<br>(e)</td>
+                        <td class="text-left">हिन्दी में प्रशिक्षण के लिए शेष<br>Yet to be trained in Hindi</td>
+                        <td>{{ item.officers_working|default:"0" }}</td>
+                        <td>{{ item.officers_proficient|default:"0" }}</td>
+                        <td>{{ item.employees_working|default:"0" }}</td>
+                        <td>{{ item.employees_proficient|default:"0" }}</td>
+                        <td>{{ item.total_count|default:"0" }}</td>
+                    </tr>
+                {% endif %}
+            {% empty %}
+                <tr>
+                    <td colspan="7">कोई जानकारी उपलब्ध नहीं / No data available</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p style="color: red;">
+        कार्यालय में कार्यरत प्रत्येक अधिकारी/कर्मचारी जो फाइल कार्य/पत्राचार से जुड़ा है, अनुसचिवीय की श्रेणी में माना जाएगा।<br>
+        Every Officer/Employee working in the office who is connected with file work/correspondence shall be considered in the non-secretarial category.
+    </p>
+</div>
+
+<!-- Section 3 - Office Training Calendar and I-Got -->
+<div class="qpr-section">
+    <p><strong>
+        3. कार्यालय का प्रशिक्षण कैलेंडर एवं I-Got पर हिन्दी प्रशिक्षण<br>
+        Office Training Calendar and Hindi Training on I-Got
+    </strong></p>
+
+    <table class="qpr-table">
+        <tbody>
+            <tr>
+                <td class="text-left">
+                    <span style="color: red;">(i). कार्यालय का प्रशिक्षण कैलेंडर उपलब्ध है या नहीं।</span><br>
+                    <span style="color: red;">(i). Whether the office training calendar is available.</span>
+                </td>
+                <td>
+                    {% if certificate.training_calendar_available %}
+                        हाँ / Yes
+                    {% else %}
+                        नहीं / No
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td class="text-left">
+                    <span style="color: green;">(ii). कैलेंडर के अनुसार कितने प्रशिक्षण दिए गए:-</span><br>
+                    <span style="color: green;">(ii). Number of training sessions conducted according to the calendar:</span>
+                </td>
+                <td>{{ certificate.trainings_as_per_calendar|default:"0" }}</td>
+            </tr>
+            <tr>
+                <td class="text-left">
+                    <span style="color: red;">(iii). I-Got पर हिन्दी प्रशिक्षण:-</span><br>
+                    <span style="color: red;">(iii). Hindi training on I-Got:</span><br>
+                    <span style="color: green;">(क). आपके कार्यालय से कितने अधिकारियों/कर्मचारियों ने I-Got पर हिन्दी प्रशिक्षण प्राप्त किया है?</span><br>
+                    <span style="color: green;">(a). How many officers/employees from your office have received Hindi training on I-Got?</span>
+                </td>
+                <td>{{ certificate.igot_hindi_trained_staff|default:"0" }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<!-- Section 4(i) - Hindi Stenography/Typing Training -->
+<div class="qpr-section">
+    <h4>
+        4(i). हिन्दी आशुलिपि/टंकण प्रशिक्षण का ब्यौरा
+        <br>
+        Details of Hindi Stenography/Typing Training
+    </h4>
+
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th>श्रेणी<br>Category</th>
+                <th>कुल संख्या<br>Total No.</th>
+                <th>हिन्दी में प्रशिक्षित कार्मिकों की संख्या<br>No. of personnel trained in Hindi</th>
+                <th>प्रशिक्षितों में से हिन्दी में कार्य करने वाले<br>Out of trained how many work in Hindi</th>
+                <th>प्रशिक्षण शेष<br>Yet to be trained</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in certificate.typing_knowledge.all %}
+            <tr>
+                <td class="text-left">{{ item.get_category_display }}</td>
+                <td>{{ item.total_no|default:"0" }}</td>
+                <td>{{ item.trained_in_hindi|default:"0" }}</td>
+                <td>{{ item.work_in_hindi|default:"0" }}</td>
+                <td>{{ item.yet_to_be_trained|default:"0" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">कोई जानकारी उपलब्ध नहीं / No data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- Section 4(ii) - Knowledge of Translation -->
+<div class="qpr-section">
+    <h4>
+        4(ii). अनुवाद का ज्ञान
+        <br>
+        Knowledge of Translation
+    </h4>
+
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th>श्रेणी<br>Category</th>
+                <th>अधिकारी<br>Officers</th>
+                <th>कर्मचारी<br>Employees</th>
+                <th>कुल<br>Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in certificate.translation_knowledge.all %}
+            <tr>
+                <td class="text-left">
+                    {% if item.category == 'engaged' %}
+                        अनुवाद कार्य में लगे अधिकारी/कर्मचारी/राजभाषा अधिकारी
+                        <br>
+                        Officers/Employees/Rajbhasha Officers engaged in Translation Work
+
+                    {% elif item.category == 'trained' %}
+                        अनुवाद में प्रशिक्षण प्राप्त किया
+                        <br>
+                        Got training in Translation
+
+                    {% elif item.category == 'yet_to_be_trained' %}
+                        प्रशिक्षण दिया जाना शेष
+                        <br>
+                        Yet to be trained
+
+                    {% else %}
+                        {{ item.get_category_display }}
+                    {% endif %}
+                </td>
+
+                <td>{{ item.officers_count|default:"0" }}</td>
+                <td>{{ item.employees_count|default:"0" }}</td>
+                <td>{{ item.total_count|default:"0" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">
+                    कोई जानकारी उपलब्ध नहीं
+                    <br>
+                    No data available
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>```html
+<!-- Section 4(ii) - Knowledge of Translation -->
+<div class="qpr-section">
+    <h4>
+        4(ii). अनुवाद का ज्ञान
+        <br>
+        Knowledge of Translation
+    </h4>
+
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th>श्रेणी<br>Category</th>
+                <th>अधिकारी<br>Officers</th>
+                <th>कर्मचारी<br>Employees</th>
+                <th>कुल<br>Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in certificate.translation_knowledge.all %}
+            <tr>
+                <td class="text-left">
+                    {% if item.category == 'engaged' %}
+                        अनुवाद कार्य में लगे अधिकारी/कर्मचारी/राजभाषा अधिकारी
+                        <br>
+                        Officers/Employees/Rajbhasha Officers engaged in Translation Work
+
+                    {% elif item.category == 'trained' %}
+                        अनुवाद में प्रशिक्षण प्राप्त किया
+                        <br>
+                        Got training in Translation
+
+                    {% elif item.category == 'yet_to_be_trained' %}
+                        प्रशिक्षण दिया जाना शेष
+                        <br>
+                        Yet to be trained
+
+                    {% else %}
+                        {{ item.get_category_display }}
+                    {% endif %}
+                </td>
+
+                <td>{{ item.officers_count|default:"0" }}</td>
+                <td>{{ item.employees_count|default:"0" }}</td>
+                <td>{{ item.total_count|default:"0" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">
+                    कोई जानकारी उपलब्ध नहीं
+                    <br>
+                    No data available
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+```html
+<!-- Section 4(ii) - Knowledge of Translation -->
+<div class="qpr-section">
+    <h4>
+        4(ii). अनुवाद का ज्ञान
+        <br>
+        Knowledge of Translation
+    </h4>
+
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th>श्रेणी<br>Category</th>
+                <th>अधिकारी<br>Officers</th>
+                <th>कर्मचारी<br>Employees</th>
+                <th>कुल<br>Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in certificate.translation_knowledge.all %}
+            <tr>
+                <td class="text-left">
+                    {% if item.category == 'engaged' %}
+                        अनुवाद कार्य में लगे अधिकारी/कर्मचारी/राजभाषा अधिकारी
+                        <br>
+                        Officers/Employees/Rajbhasha Officers engaged in Translation Work
+
+                    {% elif item.category == 'trained' %}
+                        अनुवाद में प्रशिक्षण प्राप्त किया
+                        <br>
+                        Got training in Translation
+
+                    {% elif item.category == 'yet_to_be_trained' %}
+                        प्रशिक्षण दिया जाना शेष
+                        <br>
+                        Yet to be trained
+
+                    {% else %}
+                        {{ item.get_category_display }}
+                    {% endif %}
+                </td>
+
+                <td>{{ item.officers_count|default:"0" }}</td>
+                <td>{{ item.employees_count|default:"0" }}</td>
+                <td>{{ item.total_count|default:"0" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">
+                    कोई जानकारी उपलब्ध नहीं
+                    <br>
+                    No data available
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+ <!-- Section 5 - Details regarding Computers/Laptops -->
+<div class="qpr-section">
+    <h4>
+        5. कंप्यूटर/लैपटॉप संबंधी विवरण
+        <br>
+        Details regarding Computers/Laptops
+    </h4>
+
+   <p>
+        <strong>
+            आपके कार्यालय के सभी कंप्यूटर/लैपटॉप हिंदी भाषा में
+            यूनिकोड सक्षम हैं या नहीं?
+            <br>
+            Whether all computers/laptops in your office are
+            Unicode-enabled for Hindi?
+        </strong>
+    </p>
+
+    <p>
+        <strong>
+            {% if certificate.all_computers_unicode_enabled %}
+                हाँ / Yes
+            {% else %}
+                नहीं / No
+            {% endif %}
+        </strong>
+    </p>
+</div>
+
+<!-- Section 6 - Codes/Manuals -->
+<div class="qpr-section">
+    <h4>
+        6. कोड, मैनुअल, मानक प्रपत्र आदि
+        <br>
+        Code, Manuals, Standard Forms etc.
+    </h4>
+
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th>विवरण / Category</th>
+                <th>कुल संख्या / Total</th>
+                <th>द्विभाषी / Bilingual</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in certificate.codes_manuals.all %}
+            <tr>
+                <td>
+                    {% if item.category == 'acts_rules' %}
+                        अधिनियम/नियम/आधिकारिक कोड/मैनुअल/प्रक्रियात्मक साहित्य आदि
+                        <br>
+                        Acts/Rules/Official Codes/Manuals/Procedural Literature etc.
+                    {% elif item.category == 'standard_forms' %}
+                        मानक प्रपत्र
+                        <br>
+                        Standard Forms
+                    {% endif %}
+                </td>
+                <td>{{ item.total_no|default:"0" }}</td>
+                <td>{{ item.bilingual_no|default:"0" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">कोई डेटा उपलब्ध नहीं / No data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+ <!-- Section 8 - Training Programme -->
  <div class="qpr-section">
- <h4>{{ "2. (i) Officers/Employees possessing knowledge of Official Language Hindi"|t:current_lang }}</h4>
+ <h4>
+    8. प्रशिक्षण कार्यक्रम (केवल प्रशिक्षण संस्थानों के लिए)
+    <br>
+    8. Training Programme (only for training institutes)
+</h4>
  <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Category"|t:current_lang }}</th>
- <th>{{ "Officers"|t:current_lang }}</th>
- <th>{{ "Employees"|t:current_lang }}</th>
- <th>{{ "Total"|t:current_lang }}</th>
- </tr>
- </thead>
- <tbody>
- {% for item in certificate.staff_knowledge.all %}
- <tr>
- <td class="text-left">{{ item.get_category_display }}</td>
- <td>
- {% if item.category == 'knowledge' %}
- {{ "Working"|t:current_lang }}: {{ item.officers_working|default:"0" }}<br>
- {{ "Proficient"|t:current_lang }}: {{ item.officers_proficient|default:"0" }}
- {% else %}
- {{ item.officers_total|default:"0" }}
- {% endif %}
- </td>
- <td>
- {% if item.category == 'knowledge' %}
- {{ "Working"|t:current_lang }}: {{ item.employees_working|default:"0" }}<br>
- {{ "Proficient"|t:current_lang }}: {{ item.employees_proficient|default:"0" }}
- {% else %}
- {{ item.employees_total|default:"0" }}
- {% endif %}
- </td>
- <td>{{ item.total_count|default:"0" }}</td>
- </tr>
- {% empty %}
- <tr><td colspan="4">{{ "No data"|t:current_lang }}</td></tr>
- {% endfor %}
- </tbody>
- </table>
- </div>
-
- <!-- Section 3 - Typing Knowledge -->
- <div class="qpr-section">
- <h4>{{ "2. (ii) Knowledge of Hindi Stenography/Typing"|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Category"|t:current_lang }}</th>
- <th>{{ "Total No."|t:current_lang }}</th>
- <th>{{ "No. of personnel trained in Hindi"|t:current_lang }}</th>
- <th>{{ "Out of trained how many work in Hindi"|t:current_lang }}</th>
- <th>{{ "Yet to be trained"|t:current_lang }}</th>
- </tr>
- </thead>
- <tbody>
- {% for item in certificate.typing_knowledge.all %}
- <tr>
- <td class="text-left">{{ item.get_category_display }}</td>
- <td>{{ item.total_no|default:"0" }}</td>
- <td>{{ item.trained_in_hindi|default:"0" }}</td>
- <td>{{ item.work_in_hindi|default:"0" }}</td>
- <td>{{ item.yet_to_be_trained|default:"0" }}</td>
- </tr>
- {% empty %}
- <tr><td colspan="5">{{ "No data"|t:current_lang }}</td></tr>
- {% endfor %}
- </tbody>
- </table>
- </div>
-
- <!-- Section 4 - Translation -->
- <div class="qpr-section">
- <h4>{{ "2. (iii) Knowledge of Translation"|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Category"|t:current_lang }}</th>
- <th>{{ "Officers"|t:current_lang }}</th>
- <th>{{ "Employees"|t:current_lang }}</th>
- <th>{{ "Total"|t:current_lang }}</th>
- </tr>
- </thead>
- <tbody>
- {% for item in certificate.translation_knowledge.all %}
- <tr>
- <td class="text-left">{{ item.get_category_display }}</td>
- <td>{{ item.officers_count|default:"0" }}</td>
- <td>{{ item.employees_count|default:"0" }}</td>
- <td>{{ item.total_count|default:"0" }}</td>
- </tr>
- {% empty %}
- <tr><td colspan="4">{{ "No data"|t:current_lang }}</td></tr>
- {% endfor %}
- </tbody>
- </table>
- </div>
-
- <!-- Section 3 - Training in Hindi on Computers -->
- <div class="qpr-section">
- <h4>{{ "3. Training in Hindi on Computers"|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Total Officers/Employees"|t:current_lang }}</th>
- <th>{{ "No. trained in Hindi on Computer"|t:current_lang }}</th>
- <th>{{ "No. working in Hindi on Computer"|t:current_lang }}</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td>{{ certificate.computer_training_total_staff|default:"0" }}</td>
- <td>{{ certificate.computer_training_trained|default:"0" }}</td>
- <td>{{ certificate.computer_training_working|default:"0" }}</td>
- </tr>
- </tbody>
- </table>
- </div>
-
- <!-- Section 4 - Details regarding Computers/Laptops -->
- <div class="qpr-section">
- <h4>{{ "4. Details regarding Computers/Laptops"|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Total Computers"|t:current_lang }}</th>
- <th>{{ "Hindi Enabled"|t:current_lang }}</th>
- <th>{{ "% Work in Hindi"|t:current_lang }}</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td>{{ certificate.total_computers|default:"0" }}</td>
- <td>{{ certificate.hindi_enabled_computers|default:"0" }}</td>
- <td>{{ certificate.hindi_work_percentage|default:"0" }}</td>
- </tr>
- </tbody>
- </table>
- </div>
-
- <!-- Section 5 - Codes/Manuals -->
- <div class="qpr-section">
- <h4>{{ "5. Code, Manuals, Standard Forms etc."|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Category"|t:current_lang }}</th>
- <th>{{ "Total"|t:current_lang }}</th>
- <th>{{ "Bilingual"|t:current_lang }}</th>
- </tr>
- </thead>
- <tbody>
- {% for item in certificate.codes_manuals.all %}
- <tr>
- <td class="text-left">{{ item.category|t:current_lang }}</td>
- <td>{{ item.total_no|default:"0" }}</td>
- <td>{{ item.bilingual_no|default:"0" }}</td>
- </tr>
- {% empty %}
- <tr><td colspan="3">{{ "No data"|t:current_lang }}</td></tr>
- {% endfor %}
- </tbody>
- </table>
- </div>
-
- <!-- Section 6 - Rule 8(4) Orders -->
- <div class="qpr-section">
- <h4>{{ "6. No. of officials issued individual orders under Rule 8(4) of Official Language Rules, 1976 to perform whole work in Hindi"|t:current_lang }}</h4>
- <p><strong>{{ "No. of officials issued individual orders under Rule 8(4)"|t:current_lang }}:</strong> {{ certificate.officials_issued_rule_8_4_orders|default:"0" }}</p>
- </div>
-
- <!-- Section 7 - Training Programme -->
- <div class="qpr-section">
- <h4>{{ "7. Training Programme (only for training institutes)"|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Duration of Training (in hours)"|t:current_lang }}</th>
- <th>{{ "Training in Hindi"|t:current_lang }}</th>
- <th>{{ "Training in English"|t:current_lang }}</th>
- <th>{{ "Training in Mixed Mode"|t:current_lang }}</th>
- </tr>
- </thead>
+<thead>
+    <tr>
+        <th rowspan="2">
+            प्रशिक्षण कार्यक्रमों का कुल समय (घंटों में)
+            <br>
+            Total Duration of Training Programmes (in hours)
+        </th>
+        <th colspan="3">
+            प्रशिक्षण की अवधि (घंटों में)
+            <br>
+            Duration of Training (in hours)
+        </th>
+    </tr>
+    <tr>
+        <th>हिंदी में दिए गए प्रशिक्षण<br>Training in Hindi</th>
+        <th>अंग्रेज़ी में दिए गए प्रशिक्षण<br>Training in English</th>
+        <th>मिश्रित भाषा में दिए गए प्रशिक्षण<br>Training in Mixed Language</th>
+    </tr>
+    <tr>
+        <th>1</th>
+        <th>2</th>
+        <th>3</th>
+        <th>4</th>
+    </tr>
+</thead>
  <tbody>
  <tr>
  <td>{{ certificate.training_total_duration_hours|default:"0" }}</td>
@@ -315,222 +734,471 @@
  </table>
  </div>
 
- <!-- Section 8 - Inspections -->
  <div class="qpr-section">
- <h4>{{ "8. Inspections pertaining to Official Language"|t:current_lang }}</h4>
- <p><strong>{{ "(a)(i) Total No. of Sections"|t:current_lang }}:</strong> {{ certificate.sec8_total_sections|default:"0" }}</p>
- <p><strong>{{ "(a)(ii) No. of Sections inspected"|t:current_lang }}:</strong> {{ certificate.sec8_inspected_sections|default:"0" }}</p>
- <p><strong>{{ "(b)(i) Total No. of Subordinate Offices"|t:current_lang }}:</strong> {{ certificate.sec8_total_sub_offices|default:"0" }}</p>
- <p><strong>{{ "(b)(ii) No. of Offices inspected"|t:current_lang }}:</strong> {{ certificate.sec8_inspected_sub_offices|default:"0" }}</p>
- </div>
+    <h4>9. राजभाषा से संबंधित निरीक्षण<br>9. Inspections pertaining to Official Language</h4>
+    <p><strong>(क)(i) कुल अनुभागों की संख्या / (a)(i) Total number of sections:</strong>{{ certificate.sec8_total_sections|default:"0" }}</p>
+    <p><strong>(क)(ii) निरीक्षित अनुभागों की संख्या / (a)(ii) Number of sections inspected:</strong>{{ certificate.sec8_inspected_sections|default:"0" }}</p>
+    <p><strong>(ख)(i) कुल अधीनस्थ कार्यालयों की संख्या (यदि कोई हो) / (b)(i) Total number of subordinate offices (if any):</strong>{{ certificate.sec8_total_sub_offices|default:"0" }}</p>
+    <p><strong>(ख)(ii) निरीक्षित अधीनस्थ कार्यालयों की संख्या / (b)(ii) Number of subordinate offices inspected:</strong>{{ certificate.sec8_inspected_sub_offices|default:"0" }}</p>
+    <p><strong>(ग) हिंदी में कार्य करने हेतु निर्दिष्ट अनुभागों की संख्या / (c) Number of sections designated to perform work in Hindi:</strong>{{ certificate.sec8_hindi_work_sections|default:"0" }}</p>
+</div>
 
- <!-- Section 9 - Publication of Magazines -->
- <div class="qpr-section">
- <h4>{{ "9. Publication of Magazines etc."|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Total"|t:current_lang }}</th>
- <th>{{ "Hindi"|t:current_lang }}</th>
- <th>{{ "English"|t:current_lang }}</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td>{{ certificate.magazines_total|default:"0" }}</td>
- <td>{{ certificate.magazines_hindi|default:"0" }}</td>
- <td>{{ certificate.magazines_english|default:"0" }}</td>
- </tr>
- </tbody>
- </table>
- </div>
+<!-- Section 10 - Publication of Magazines -->
+<div class="qpr-section">
+    <h4>
+        10. पत्रिकाओं आदि का प्रकाशन
+        <br>
+         Publication of Magazines etc.
+    </h4>
 
- <!-- Section 10 - Hindi Books Purchase Expenditure -->
- <div class="qpr-section">
- <h4>{{ "10. Purchase of Hindi Books"|t:current_lang }}</h4>
- <p><strong>{{ "Total expenditure incurred on purchase of books"|t:current_lang }}:</strong> {{ "Rs."|t:current_lang }} {{ certificate.expenditure_total_books|default:"0" }}</p>
- <p><strong>{{ "Expenditure incurred on purchase of Hindi books"|t:current_lang }}:</strong> {{ "Rs."|t:current_lang }} {{ certificate.expenditure_hindi_books|default:"0" }}</p>
- </div>
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th>
+                    कुल संख्या<br>
+                    Total Number
+                </th>
+                <th>
+                    पत्रिका/ई-पत्रिका का नाम/यूआरएल<br>
+                    Name/URL of Magazine/E-magazine
+                </th>
+                <th>
+                    पत्रिका के प्रकाशन की अवधि<br>
+                    Publication Frequency
+                </th>
+                <th>
+                    हिंदी में<br>
+                    In Hindi
+                </th>
+                <th>
+                    अंग्रेज़ी में<br>
+                    In English
+                </th>
+            </tr>
+        </thead>
 
- <!-- Section 11 - Work in Hindi by Officers DS & Above -->
- <div class="qpr-section">
- <h4>{{ "11. Work done in Hindi by Deputy Secretary/Equivalent and Higher Officers"|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Total"|t:current_lang }}</th>
- <th>{{ "Knowledge"|t:current_lang }}</th>
- <th>{{ "Not Doing"|t:current_lang }}</th>
- <th>{{ "Upto 25%"|t:current_lang }}</th>
- <th>26-50%</th>
- <th>51-75%</th>
- <th>{{ "More than 76%"|t:current_lang }}</th>
- <th>100%</th>
- </tr>
- </thead>
- <tbody>
- {% for item in certificate.officers_work.all %}
- {% if item.level == 'ds_and_above' %}
- <tr>
- <td>{{ item.total_officers|default:"0" }}</td>
- <td>{{ item.knowledge_of_hindi|default:"0" }}</td>
- <td>{{ item.not_doing|default:"0" }}</td>
- <td>{{ item.doing_upto_25|default:"0" }}</td>
- <td>{{ item.doing_26_to_50|default:"0" }}</td>
- <td>{{ item.doing_51_to_75|default:"0" }}</td>
- <td>{{ item.doing_more_76|default:"0" }}</td>
- <td>{{ item.doing_cent_percent|default:"0" }}</td>
- </tr>
- {% endif %}
- {% endfor %}
- </tbody>
- </table>
- </div>
+        <tbody>
+            {% for item in certificate.magazine_publications.all %}
+            <tr>
+                <td>{{ item.total_no|default:"0" }}</td>
+                <td class="text-left">{{ item.publication_name_url|default:"-" }}</td>
+                <td>{{ item.publication_frequency|default:"-" }}</td>
+                <td>{{ item.hindi_no|default:"0" }}</td>
+                <td>{{ item.english_no|default:"0" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No data / कोई डेटा नहीं</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
- <!-- Section 12 - Work in Hindi by Staff Below DS -->
- <div class="qpr-section">
- <h4>{{ "12. Work done by Hindi knowing staff below the level of Deputy Secretary/Equivalent"|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Total"|t:current_lang }}</th>
- <th>{{ "Knowledge"|t:current_lang }}</th>
- <th>{{ "Not Doing"|t:current_lang }}</th>
- <th>{{ "Upto 25%"|t:current_lang }}</th>
- <th>26-50%</th>
- <th>51-75%</th>
- <th>{{ "More than 76%"|t:current_lang }}</th>
- <th>100%</th>
- </tr>
- </thead>
- <tbody>
- {% for item in certificate.officers_work.all %}
- {% if item.level == 'below_ds' %}
- <tr>
- <td>{{ item.total_officers|default:"0" }}</td>
- <td>{{ item.knowledge_of_hindi|default:"0" }}</td>
- <td>{{ item.not_doing|default:"0" }}</td>
- <td>{{ item.doing_upto_25|default:"0" }}</td>
- <td>{{ item.doing_26_to_50|default:"0" }}</td>
- <td>{{ item.doing_51_to_75|default:"0" }}</td>
- <td>{{ item.doing_more_76|default:"0" }}</td>
- <td>{{ item.doing_cent_percent|default:"0" }}</td>
- </tr>
- {% endif %}
- {% endfor %}
- </tbody>
- </table>
- </div>
+ <!-- Section 11 - Hindi Books Purchase Expenditure -->
+<div class="qpr-section">
+    <h4>
+        11. हिंदी पुस्तकों की खरीद (ई-बुक/डिजिटल माध्यम/ई-हिंदी समाचार पत्र/ई-बुलेटिन/ई-जर्नल/अन्य सहित)
+        <br>
+         Purchase of Hindi Books (including e-books/digital media/e-Hindi newspapers/e-bulletins/e-journals/others)
+    </h4>
+
+    <p>
+        <strong>
+            (क) तिमाही के दौरान पुस्तकों की खरीद पर कुल व्यय
+            <br>
+            (a) Total expenditure on purchase of books during the quarter:
+        </strong>
+        Rs. {{ certificate.expenditure_total_books|default:"0" }}
+    </p>
+
+    <p>
+        <strong>
+            (ख) हिंदी की पुस्तकों की खरीद पर कुल व्यय
+            <br>
+            (b) Total expenditure on purchase of Hindi books:
+        </strong>
+        Rs. {{ certificate.expenditure_hindi_books|default:"0" }}
+    </p>
+</div>
+
+<!-- Section 12 - Work done in Hindi by Officers/Employees -->
+<div class="qpr-section section-12">
+    <h4>
+        12. अधिकारियों/कर्मचारियों द्वारा हिंदी में किया गया कार्य
+        <br>
+        Work done in Hindi by Officers/Employees
+    </h4>
+
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th rowspan="2">
+                    विवरण<br>Details
+                </th>
+                <th rowspan="2">
+                    अधिकारियों/कर्मचारियों की कुल संख्या<br>
+                    Total number of Officers/Employees
+                </th>
+                <th rowspan="2">
+                    हिंदी का ज्ञान रखने वालों की संख्या<br>
+                    Number having knowledge of Hindi
+                </th>
+                <th colspan="7">
+                    हिंदी में कार्य करने का प्रतिशत<br>
+                    Percentage of work done in Hindi
+                </th>
+            </tr>
+            <tr>
+                <th>नहीं करते हैं<br>Not Doing</th>
+                <th>25% तक<br>Up to 25%</th>
+                <th>26%–54%</th>
+                <th>55%–79%</th>
+                <th>80%–89%</th>
+                <th>90%–99%</th>
+                <th>100%</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in certificate.officers_work.all %}
+
+                {% if item.level == 'ds_and_above' %}
+                <tr>
+                    <td class="text-left">
+                        (i) उप सचिव/उप महाप्रबंधक/समकक्ष एवं उनसे उच्च स्तर के अधिकारी
+                        <br>
+                        Deputy Secretary/Deputy General Manager/Equivalent and above
+                    </td>
+                    <td>{{ item.total_officers|default:"0" }}</td>
+                    <td>{{ item.knowledge_of_hindi|default:"0" }}</td>
+                    <td>{{ item.not_doing|default:"0" }}</td>
+                    <td>{{ item.doing_upto_25|default:"0" }}</td>
+                    <td>{{ item.doing_26_to_54|default:"0" }}</td>
+                    <td>{{ item.doing_55_to_79|default:"0" }}</td>
+                    <td>{{ item.doing_80_to_89|default:"0" }}</td>
+                    <td>{{ item.doing_90_to_99|default:"0" }}</td>
+                    <td>{{ item.doing_cent_percent|default:"0" }}</td>
+                </tr>
+                {% endif %}
+
+                {% if item.level == 'below_ds' %}
+                <tr>
+                    <td class="text-left">
+                        (ii) उप सचिव/उप महाप्रबंधक/समकक्ष से नीचे स्तर के कर्मचारी
+                        <br>
+                        Employees below the level of Deputy Secretary/Deputy General Manager/Equivalent
+                    </td>
+                    <td>{{ item.total_officers|default:"0" }}</td>
+                    <td>{{ item.knowledge_of_hindi|default:"0" }}</td>
+                    <td>{{ item.not_doing|default:"0" }}</td>
+                    <td>{{ item.doing_upto_25|default:"0" }}</td>
+                    <td>{{ item.doing_26_to_54|default:"0" }}</td>
+                    <td>{{ item.doing_55_to_79|default:"0" }}</td>
+                    <td>{{ item.doing_80_to_89|default:"0" }}</td>
+                    <td>{{ item.doing_90_to_99|default:"0" }}</td>
+                    <td>{{ item.doing_cent_percent|default:"0" }}</td>
+                </tr>
+                {% endif %}
+
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
  <!-- Section 13 - Hindi Posts -->
- <div class="qpr-section">
- <h4>{{ "13. Hindi Posts"|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Designation"|t:current_lang }}</th>
- <th colspan="2">{{ "Headquarters"|t:current_lang }}</th>
- <th colspan="2">{{ "Subordinate Office"|t:current_lang }}</th>
- </tr>
- <tr>
- <th></th>
- <th>{{ "Sanctioned"|t:current_lang }}</th>
- <th>{{ "Vacant"|t:current_lang }}</th>
- <th>{{ "Sanctioned"|t:current_lang }}</th>
- <th>{{ "Vacant"|t:current_lang }}</th>
- </tr>
- </thead>
- <tbody>
- {% for item in certificate.hindi_posts.all %}
- <tr>
- <td class="text-left">{{ item.designation }}</td>
- <td>{{ item.hq_sanctioned|default:"0" }}</td>
- <td>{{ item.hq_vacant|default:"0" }}</td>
- <td>{{ item.sub_sanctioned|default:"0" }}</td>
- <td>{{ item.sub_vacant|default:"0" }}</td>
- </tr>
- {% empty %}
- <tr><td colspan="5">{{ "No data"|t:current_lang }}</td></tr>
- {% endfor %}
- </tbody>
- </table>
- </div>
+<div class="qpr-section">
+    <h4>
+        13. हिंदी के पद
+        <br>
+        Hindi Posts
+    </h4>
 
- <!-- Section 14 - Website Status -->
- <div class="qpr-section">
- <h4>{{ "14. Website status (Tick mark in relevant column)"|t:current_lang }}</h4>
- <table class="qpr-table">
- <thead>
- <tr>
- <th>{{ "Website URL"|t:current_lang }}</th>
- <th>{{ "Only English"|t:current_lang }}</th>
- <th>{{ "Partially Bilingual"|t:current_lang }}</th>
- <th>{{ "Fully Bilingual"|t:current_lang }}</th>
- <th>{{ "Language Option"|t:current_lang }}</th>
- </tr>
- </thead>
- <tbody>
- {% for item in certificate.websites.all %}
- <tr>
- <td class="text-left" style="font-size: 10px;">{{ item.url }}</td>
- <td>{% if item.status == 'english_only' %}✓{% endif %}</td>
- <td>{% if item.status == 'partially_bilingual' %}✓{% endif %}</td>
- <td>{% if item.status == 'fully_bilingual' %}✓{% endif %}</td>
- <td>{% if item.has_language_option %}✓{% endif %}</td>
- </tr>
- {% empty %}
- <tr><td colspan="5">{{ "No data"|t:current_lang }}</td></tr>
- {% endfor %}
- </tbody>
- </table>
- </div>
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th rowspan="2">
+                    पदनाम
+                    <br>
+                    Designation
+                </th>
+                <th colspan="2">
+                    मुख्यालय
+                    <br>
+                    Headquarters
+                </th>
+                <th colspan="2">
+                    अधीनस्थ कार्यालय
+                    <br>
+                    Subordinate Office
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    स्वीकृत
+                    <br>
+                    Sanctioned
+                </th>
+                <th>
+                    रिक्त
+                    <br>
+                    Vacant
+                </th>
+                <th>
+                    स्वीकृत
+                    <br>
+                    Sanctioned
+                </th>
+                <th>
+                    रिक्त
+                    <br>
+                    Vacant
+                </th>
+            </tr>
+        </thead>
 
+        <tbody>
+            {% for item in certificate.hindi_posts.all %}
+            <tr>
+                <td class="text-left">{{ item.designation }}</td>
+                <td>{{ item.hq_sanctioned|default:"0" }}</td>
+                <td>{{ item.hq_vacant|default:"0" }}</td>
+                <td>{{ item.sub_sanctioned|default:"0" }}</td>
+                <td>{{ item.sub_vacant|default:"0" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">
+                    कोई डेटा उपलब्ध नहीं
+                    <br>
+                    No data available
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p style="margin-top: 12px;">
+        <strong>
+            (ख) हिंदी के पदों को भरने के लिए की गई कार्रवाई
+            <br>
+            Action taken to fill Hindi posts (Maximum 1000 characters):
+        </strong>
+    </p>
+
+    <p style="white-space: pre-wrap; margin-left: 15px;">
+        {{ certificate.hindi_posts_filling_action|default:"-" }}
+    </p>
+</div>
+
+<!-- Section 14 - Website Status -->
+<div class="qpr-section">
+    <h4>
+        14. वेबसाइट (संगत स्थान पर टिक चिन्ह करें)
+        <br>
+        Website (Tick mark in relevant column)
+    </h4>
+
+    <table class="qpr-table">
+        <thead>
+            <tr>
+                <th>वेबसाइट का पता<br>Website URL</th>
+                <th>केवल अंग्रेजी में<br>Only in English</th>
+                <th>आंशिक रूप से द्विभाषी<br>Partially Bilingual</th>
+                <th>पूरी तरह से द्विभाषी<br>Fully Bilingual</th>
+                <th>वेबसाइट में हिंदी व अंग्रेजी भाषा के चयन का विकल्प<br>Option to select Hindi and English</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for item in certificate.websites.all %}
+            <tr>
+                <td class="text-left" >
+                    {{ item.url }}
+                </td>
+                <td>
+                    {% if item.status == 'english_only' %}✓{% endif %}
+                </td>
+                <td>
+                    {% if item.status == 'partially_bilingual' %}✓{% endif %}
+                </td>
+                <td>
+                    {% if item.status == 'fully_bilingual' %}✓{% endif %}
+                </td>
+                <td>
+                    {% if item.has_language_option %}✓{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No data / कोई डेटा नहीं</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
  <!-- Section 15 - Other Outstanding Achievements -->
- <div class="qpr-section">
- <h4>{{ "15. Other Outstanding Achievements"|t:current_lang }}</h4>
- <p><strong>{{ "(a) Hindi Day/Week/Fortnight/Month"|t:current_lang }}:</strong></p>
- <p style="margin-left: 20px;">
- {{ "From"|t:current_lang }}: {{ certificate.hindi_event_start_date|date:"d M Y"|default:"-" }} 
- {{ "To"|t:current_lang }}: {{ certificate.hindi_event_end_date|date:"d M Y"|default:"-" }}
- </p>
- <p><strong>{{ "(b) Hindi Seminar (Date & Subject)"|t:current_lang }}:</strong></p>
- <p style="margin-left: 20px;">
- {{ "Date"|t:current_lang }}: {{ certificate.seminar_date|date:"d M Y"|default:"-" }} | 
- {{ "Subject"|t:current_lang }}: {{ certificate.seminar_subject|default:"-" }}
- </p>
- <p><strong>{{ "(c) Other Activities"|t:current_lang }}:</strong></p>
- <p style="margin-left: 20px;">
- {{ "Date"|t:current_lang }}: {{ certificate.other_activities_date|date:"d M Y"|default:"-" }} | 
- {{ "Description"|t:current_lang }}: {{ certificate.other_activities_subject|default:"-" }}
- </p>
- </div>
+<div class="qpr-section">
+    <h4>
+        15. अन्य उल्लेखनीय उपलब्धियाँ
+        <br>
+        Other Outstanding Achievements
+    </h4>
 
- <!-- Section 16 - Certificate Contact Information -->
- <div class="qpr-section">
- <h4>{{ "16. Certificate Contact Information"|t:current_lang }}</h4>
- <table class="qpr-table" style="font-size: 10px;">
- <tr>
- <th>{{ "Name of Chairperson"|t:current_lang }}</th>
- <td>{{ certificate.chairperson_name|default:"-" }}</td>
- </tr>
- <tr>
- <th>{{ "Designation"|t:current_lang }}</th>
- <td>{{ certificate.chairperson_designation|default:"-" }}</td>
- </tr>
- <tr>
- <th>{{ "Telephone No."|t:current_lang }}</th>
- <td>{{ certificate.chairperson_phone|default:"-" }}</td>
- </tr>
- <tr>
- <th>{{ "Fax No."|t:current_lang }}</th>
- <td>{{ certificate.chairperson_fax|default:"-" }}</td>
- </tr>
- <tr>
- <th>{{ "Email Address"|t:current_lang }}</th>
- <td>{{ certificate.chairperson_email|default:"-" }}</td>
- </tr>
- </table>
- </div>
+    <p>
+        <strong>
+            (क) हिंदी दिवस/सप्ताह/पखवाड़ा/माह
+            <br>
+            Hindi Day/Week/Fortnight/Month:
+        </strong>
+    </p>
+    <p style="margin-left: 20px;">
+        From: {{ certificate.hindi_event_start_date|date:"d M Y"|default:"-" }}
+        &nbsp; To: {{ certificate.hindi_event_end_date|date:"d M Y"|default:"-" }}
+    </p>
+
+    <p>
+        <strong>
+            (ख) हिंदी संगोष्ठी (तिथि एवं विषय)
+            <br>
+            Hindi Seminar (Date & Subject):
+        </strong>
+    </p>
+    <p style="margin-left: 20px;">
+        Date: {{ certificate.seminar_date|date:"d M Y"|default:"-" }}
+        &nbsp; | &nbsp;
+        Subject: {{ certificate.seminar_subject|default:"-" }}
+    </p>
+
+    <p>
+        <strong>
+            (ग) उपर्युक्त (क) के अलावा हिंदी में अन्य आयोजन
+            <br>
+            Other events conducted in Hindi apart from (a):
+        </strong>
+    </p>
+    <p style="margin-left: 20px;">
+        Date: {{ certificate.other_activities_date|date:"d M Y"|default:"-" }}
+        &nbsp; | &nbsp;
+        Description: {{ certificate.other_activities_subject|default:"-" }}
+    </p>
+
+    <p>
+        <strong>
+            (घ) मनोरंजक कार्य (यदि कोई हो)
+            <br>
+            Recreational activities (if any):
+        </strong>
+    </p>
+    <p style="margin-left: 20px; white-space: pre-wrap;">
+        {{ certificate.recreational_activities|default:"-" }}
+    </p>
+</div>
+<!-- Section 16: NARAKAS Information -->
+<div class="qpr-section">
+    <h4>
+        16. नगर राजभाषा कार्यान्वयन समिति (नराकास) के संबंध में जानकारी
+        <br>
+        Information regarding Town Official Language Implementation Committee (TOLIC)
+    </h4>
+
+    <table class="qpr-table">
+        <tr>
+            <th>
+                (क) क्या आपका कार्यालय नराकास का सदस्य है?
+                <br>
+                Is your office a member of NARAKAS?
+            </th>
+            <td>
+                {% if certificate.narakas_member %}हाँ / Yes{% else %}नहीं / No{% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>
+                (ख) पिछली बैठक के आयोजन की तारीख
+                <br>
+                Date of the last meeting
+            </th>
+            <td>
+                {{ certificate.narakas_last_meeting_date|date:"d M Y"|default:"-" }}
+            </td>
+        </tr>
+        <tr>
+            <th>
+                (ग) क्या विभागाध्यक्ष ने विचाराधीन वर्ष में नराकास की एक अथवा दोनों बैठकों में भाग लिया?
+                <br>
+                Did the Head of Department participate in one or both NARAKAS meetings during the year under review?
+            </th>
+            <td>
+                {% if certificate.narakas_meeting_participation %}हाँ / Yes{% else %}नहीं / No{% endif %}
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- Section 17: Certificate of Correctness -->
+<div class="qpr-section">
+    <h4>
+        17. उल्लिखित आंकड़ों की सत्यता के संबंध में प्रमाण-पत्र
+        <br>
+        Certificate regarding the correctness of the information furnished
+    </h4>
+
+    <table class="qpr-table">
+        <tr>
+            <th>
+                राजभाषा कार्यान्वयन समिति के अध्यक्ष का नाम
+                <br>
+                Name of the Chairperson of the Rajbhasha Implementation Committee
+            </th>
+            <td>{{ certificate.chairperson_name|default:"-" }}</td>
+        </tr>
+
+        <tr>
+            <th>
+                पदनाम
+                <br>
+                Designation
+            </th>
+            <td>{{ certificate.chairperson_designation|default:"-" }}</td>
+        </tr>
+
+        <tr>
+            <th>
+                दूरभाष संख्या
+                <br>
+                Telephone Number
+            </th>
+            <td>{{ certificate.chairperson_phone|default:"-" }}</td>
+        </tr>
+
+        <tr>
+            <th>
+                मोबाइल संख्या
+                <br>
+                Mobile Number
+            </th>
+            <td>{{ certificate.chairperson_mobile|default:"-" }}</td>
+        </tr>
+
+        <tr>
+            <th>
+                ई-मेल पता
+                <br>
+                Email Address
+            </th>
+            <td>{{ certificate.chairperson_email|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <p style="margin-top: 15px;">
+        <strong>
+            प्रमाणित किया जाता है कि उपर्युक्त दी गई जानकारी सही है।
+            <br>
+            It is certified that the information furnished above is correct.
+        </strong>
+    </p>
+</div>
 
  <!-- Signature -->
  <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #333;">

@@ -110,57 +110,32 @@
             </div>
         </div>
     </div>
-<div class="col-md-6">
-    <div class="card section-box">
-        <div class="card-body">
-            <h6 class="section-title">
-                5. अंग्रेजी में प्राप्त पत्रों के उत्तर हिंदी में दिए जाने
-                <span class="d-block small text-muted">
-                    (English letters received and details of replies in Hindi)
-                </span>
-            </h6>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-sm align-middle">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Region A</th>
-                            <th>Region B</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>English letters received</td>
-                            <td>{{ form.s5_region_a_english_letters }}</td>
-                            <td>{{ form.s5_region_b_english_letters }}</td>
-                            <td>{{ form.s5_total_english_letters }}</td>
-                        </tr>
-                        <tr>
-                            <td>Replied in Hindi</td>
-                            <td>{{ form.s5_region_a_replied_hindi }}</td>
-                            <td>{{ form.s5_region_b_replied_hindi }}</td>
-                            <td>{{ form.s5_total_replied_hindi }}</td>
-                        </tr>
-                        <tr>
-                            <td>Replied in English</td>
-                            <td>{{ form.s5_region_a_replied_english }}</td>
-                            <td>{{ form.s5_region_b_replied_english }}</td>
-                            <td>{{ form.s5_total_replied_english }}</td>
-                        </tr>
-                        <tr>
-                            <td>No reply required</td>
-                            <td>{{ form.s5_region_a_no_reply }}</td>
-                            <td>{{ form.s5_region_b_no_reply }}</td>
-                            <td>{{ form.s5_total_no_reply }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div class="col-md-6">
+        <div class="card section-box">
+            <div class="card-body">
+                <h6 class="section-title">5. अंग्रेजी में प्राप्त पत्रों के उत्तर हिंदी में दिए जाने/ क,ख क्षेत्र के लिये <span class="d-block small text-muted">(No.of letters received in English but replied in Hindi/For A and B Region)</span></h6>
+                <div class="lbl-row"><div class="lbl-text"><span class="lbl-hindi">'क' क्षेत्र से / From Region 'A'</span></div></div>
+                <div class="lbl-row">
+                    <div class="lbl-text"><span class="lbl-hindi">अंग्रेजी में प्राप्त पत्रों की संख्या</span><span class="lbl-eng">(No.of letters received in English)</span></div>
+                    <div class="lbl-input">{{ form.s5_region_a_english_letters }}</div>
+                </div>
+                <div class="lbl-row">
+                    <div class="lbl-text"><span class="lbl-hindi">इनमें से कितनों के उत्तर हिंदी में दिए गए</span><span class="lbl-eng">(No.of letters replied in Hindi)</span></div>
+                    <div class="lbl-input">{{ form.s5_region_a_replied_hindi }}</div>
+                </div>
+                <div class="lbl-row">
+                    <div class="lbl-text"><span class="lbl-hindi">इनमें से कितनों के उत्तर अंग्रेजी में दिए गए</span><span class="lbl-eng">(How Many letters replied against these in English)</span></div>
+                    <div class="lbl-input">{{ form.s5_region_a_replied_english }}</div>
+                </div>
+                <div class="lbl-row">
+                    <div class="lbl-text"><span class="lbl-hindi">इनमें से कितनों के उत्तर अपेक्षित नहीं थे</span><span class="lbl-eng">(No. of letters not expected to be replied)</span></div>
+                    <div class="lbl-input">{{ form.s5_region_a_no_reply }}</div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
     <div class="col-md-6">
         <div class="card section-box">
             <div class="card-body">

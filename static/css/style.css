@@ -523,23 +523,32 @@ html, body {
 }
 
 .header-title {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
 }
 
 /* ==============================
-    NAVBAR SINGLE LINE LOGIC (NORMAL MODE)
+   RESPONSIVE NAVBAR LOGIC
 ============================== */
 
-/* Only applies when NOT in medium or large font modes */
-body:not(.font-normal):not(.font-medium):not(.font-large) .navbar-custom .container-fluid,
-body:not(.font-normal):not(.font-medium):not(.font-large) .navbar-custom .container {
-    flex-wrap: nowrap !important;
-    overflow: visible  !important;
+/* Mobile and tablet: allow navbar contents to wrap */
+body .navbar-custom .container-fluid,
+body .navbar-custom .container {
+    flex-wrap: wrap !important;
+    overflow: visible !important;
 }
 
+/* Desktop: keep navbar contents on one line */
+@media (min-width: 1200px) {
+    body .navbar-custom .container-fluid,
+    body .navbar-custom .container {
+        flex-wrap: nowrap !important;
+    }
+}
+
+/* Navigation links */
 body:not(.font-medium):not(.font-large) .navbar-nav {
     display: flex !important;
-    flex-wrap: nowrap !important;
+    flex-wrap: wrap !important;
     align-items: center !important;
 }
 
@@ -551,11 +560,10 @@ body:not(.font-medium):not(.font-large) .navbar-nav .nav-link {
     white-space: nowrap !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
-    font-size: 15px !important; 
+    font-size: 15px !important;
     font-weight: 500 !important;
     line-height: 1.2 !important;
 }
-
 /* Right side controls compact logic */
 body:not(.font-medium):not(.font-large) .navbar-right-controls {
     display: flex !important;
@@ -4726,7 +4734,174 @@ a[href*="manager_employee_master_list"] {
         width: 22%;
     }
 }
-/* Keep the entire website visually scaled to 80% */
-html {
-    zoom: 0.8;
+
+/* =====================================
+   RESPONSIVE HEADER
+   ===================================== */
+
+.logo-img {
+    max-width: 100%;
+    width: auto;
+    height: 60px;
+    object-fit: contain;
+}
+
+.header-title-wrapper {
+    min-width: 0;
+}
+
+.header-title {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 767.98px) {
+    #topHeader {
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+    }
+
+    .logo-img {
+        height: 48px;
+        max-width: 42%;
+    }
+
+    .header-title {
+        flex-direction: column;
+        gap: 5px !important;
+    }
+
+    .english-title {
+        border-start: 0 !important;
+        border-left: 0 !important;
+        padding-left: 0 !important;
+        font-size: 12px;
+        text-align: center;
+    }
+}
+
+/* =====================================
+   RESPONSIVE NAVIGATION BAR
+   ===================================== */
+
+@media (max-width: 1199.98px) {
+
+    .navbar-custom .container-fluid {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    #mainNav {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    #mainNav .navbar-nav {
+        width: 100%;
+    }
+
+    #mainNav .nav-link {
+        padding: 10px 12px !important;
+    }
+
+    #mainNav > .d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 12px !important;
+        margin-left: 0 !important;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255,255,255,0.2);
+    }
+
+    #mainNav > .d-flex > a,
+    #mainNav > .d-flex > button,
+    #mainNav > .d-flex > select {
+        align-self: flex-start;
+    }
+
+    #mainNav > .d-flex > div:last-child {
+        border-left: 0 !important;
+        border-top: 1px solid rgba(255,255,255,0.2);
+        padding: 12px 0 0 !important;
+    }
+
+    #mainNav > .d-flex > div:last-child > div {
+        flex-wrap: wrap;
+    }
+}
+
+/* ==========================================
+   NAVBAR COLLAPSE — FINAL RESPONSIVE OVERRIDE
+   ========================================== */
+
+@media (max-width: 1199.98px) {
+
+    /* Keep navigation links vertically stacked */
+    body .navbar-custom .navbar-nav {
+        display: flex !important;
+        flex-direction: column !important;
+        flex-wrap: wrap !important;
+        align-items: stretch !important;
+        width: 100% !important;
+    }
+
+    body .navbar-custom .navbar-nav .nav-item {
+        width: 100% !important;
+    }
+
+    body .navbar-custom .navbar-nav .nav-link {
+        display: block !important;
+        white-space: normal !important;
+        padding: 10px 12px !important;
+    }
+
+    /* Keep the collapsed menu functional */
+    body .navbar-custom #mainNav.collapse:not(.show) {
+        display: none !important;
+    }
+
+    body .navbar-custom #mainNav.collapse.show {
+        display: block !important;
+    }
+
+    /* Stack language and accessibility controls */
+    body .navbar-custom #mainNav > .d-flex {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        width: 100% !important;
+    }
+}
+/* Prevent the main header from staying fixed on mobile */
+@media (max-width: 767.98px) {
+    #topHeader {
+        position: static !important;
+        top: auto !important;
+        z-index: auto !important;
+    }
+}
+/* =========================================
+   MOBILE NAVBAR WIDTH FIX
+========================================= */
+
+@media (max-width: 1199.98px) {
+
+    .navbar-custom .container-fluid {
+        flex-wrap: wrap !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .navbar-custom #mainNav {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .navbar-custom #mainNav .navbar-nav {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
 }

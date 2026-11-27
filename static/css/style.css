@@ -1776,7 +1776,7 @@ main {
     color: rgba(255, 255, 255, 0.92) !important;
     font-weight: 500;
     font-size: 0.93rem;
-    padding: 9px 13px !important;
+    padding: 9px 7px !important;
     border-radius: var(--rb-radius-sm);
     transition:
         background-color 0.2s ease,
@@ -4725,4 +4725,8 @@ a[href*="manager_employee_master_list"] {
     .office-edit-requests-table td:nth-child(5) {
         width: 22%;
     }
+}
+/* Keep the entire website visually scaled to 80% */
+html {
+    zoom: 0.8;
 }

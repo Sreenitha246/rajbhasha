@@ -36,7 +36,7 @@
 {% endif %}
 
 <div class="container-fluid px-4 mt-4 dashboard-page">
- 
+
  <div class="d-flex justify-content-between align-items-center mb-4">
  <div>
  <h2 class="fw-bold text-primary">
@@ -57,7 +57,7 @@
  {% endif %}
  </p>
  </div>
- 
+
  <div>
  <span class="badge bg-primary p-2">{{ role|default:user.role|upper }}</span>
  {% if role|default:user.role == 'hod' and hod_name %}
@@ -67,7 +67,7 @@
  </div>
 
  {% if role|default:user.role == 'admin' %}
- 
+
  <div class="card shadow-sm border-0 mb-4">
  <div class="card-body">
  <h5 class="card-title text-primary fw-bold mb-3">
@@ -97,7 +97,7 @@
  <td class="text-center text-primary">{{ stat.qpr_completed }}</td>
  <td class="text-center">
  <div class="progress" style="height: 20px;">
- <div class="progress-bar {% if stat.completion_percentage == 100 %}bg-success{% else %}bg-warning{% endif %}" 
+ <div class="progress-bar {% if stat.completion_percentage == 100 %}bg-success{% else %}bg-warning{% endif %}"
  role="progressbar" style="width: {{ stat.completion_percentage }}%;">
  {{ stat.completion_percentage }}%
  </div>
@@ -137,6 +137,9 @@
  <button type="button" class="btn btn-warning text-white" data-bs-toggle="modal" data-bs-target="#officeDetailsModal">
  <i class="fas fa-building"></i> {{ "Office Details"|t:current_lang }}
  </button>
+ <a href="{% url 'admin_correspondence' %}" class="btn btn-success text-white">
+    <i class="fas fa-envelope"></i> {{"Correspondence"|t:current_lang}}
+</a>
  </div>
  </div>
  </div>
@@ -395,7 +398,7 @@
     </table>
     </div>
     </div>
-    
+
  <div class="card shadow-sm border-0 mb-4">
  <div class="card-header bg-white fw-bold">{{ "Active System Users"|t:current_lang }}</div>
  <div class="card-body table-responsive">
@@ -421,7 +424,7 @@
  {% endif %}
  </td>
  <td>
- <a href="{% url 'archive_user' u.id %}" 
+ <a href="{% url 'archive_user' u.id %}"
  class="btn btn-sm btn-outline-danger"
  onclick="return confirm('{{ 'Are you sure you want to archive this user?'|t:current_lang }}')">
  <i class="fas fa-archive"></i> {{ "Archive"|t:current_lang }}
@@ -453,7 +456,7 @@
  <td>{{ au.username }}</td>
  <td>{{ au.archived_at|date:"Y-m-d H:i" }}</td>
  <td>
- <a href="{% url 'unarchive_user' au.id %}" 
+ <a href="{% url 'unarchive_user' au.id %}"
  class="btn btn-sm btn-success text-white"
  onclick="return confirm('{{ 'Restore this user?'|t:current_lang }}')">
  <i class="fas fa-trash-restore-alt"></i> {{ "Unarchive / Restore"|t:current_lang }}
@@ -469,7 +472,7 @@
  </div>
 
  {% elif role|default:user.role == 'manager' %}
- 
+
  <div class="d-flex justify-content-between align-items-center mb-4">
  <h2 class="fw-bold text-primary">{{ "Manager Dashboard"|t:current_lang }}</h2>
  <div class="d-flex gap-2">
@@ -484,9 +487,9 @@
  <li class="nav-item"><button class="nav-link fw-bold" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button"><i class="fas fa-user-lock me-2"></i>{{ "System Users"|t:current_lang }}</button></li>
  <li class="nav-item"><button class="nav-link fw-bold" id="qpr-tab" data-bs-toggle="tab" data-bs-target="#qpr-pane" type="button"><i class="fas fa-clipboard-check me-2"></i>{{ "QPR Status"|t:current_lang }}</button></li>
  </ul>
- 
+
  <div class="tab-content" id="managerTabsContent">
- 
+
  <div class="tab-pane fade show active" id="employees-pane">
  <div class="card shadow-sm border-0"><div class="card-body table-responsive">
  <div class="alert alert-info small py-2 mb-3">
@@ -509,7 +512,7 @@
  <td>{{ item.name }}</td>
  <td>
  <span class="badge bg-info text-dark">{{ item.designation|default:"-" }}</span>
- <button class="btn btn-sm btn-link text-secondary p-0 ms-2" 
+ <button class="btn btn-sm btn-link text-secondary p-0 ms-2"
  onclick="openDesignationModal('{{ item.empcode }}', '{{ item.name|escapejs }}', '{{ item.designation|default:'' }}')"
  title="Update Designation">
  <i class="bi bi-pencil-square"></i>
@@ -563,7 +566,7 @@
  </td>
  <td>
  {% if item.qpr_is_submitted and item.qpr_id %}
- <a href="{% url 'manage_user_action' item.qpr_id 'unlock_qpr' %}" 
+ <a href="{% url 'manage_user_action' item.qpr_id 'unlock_qpr' %}"
  class="btn btn-sm btn-info text-white"
  onclick="return confirm('Unlock QPR for {{ item.name }}?')">
  <i class="bi bi-unlock"></i> Unlock QPR
@@ -615,7 +618,7 @@
  </div>
  </div>
  </div>
- 
+
  <script id="user-lookup" type="application/json">
  {
  {% for u in users %}
@@ -631,16 +634,16 @@
  // Convert to string to ensure matching works
  return lookup[String(empCode).trim()];
  }
- 
+
  // 2. Handle Unlock Logic
  function triggerUnlock(empCode) {
  const userId = getUserId(empCode);
- 
- if (!userId) { 
- alert("Error: No User Account found for Employee Code " + empCode + ". They may not have registered yet."); 
- return; 
+
+ if (!userId) {
+ alert("Error: No User Account found for Employee Code " + empCode + ". They may not have registered yet.");
+ return;
  }
- 
+
  if(confirm("Unlock this record? The user will be able to edit their data again.")) {
  window.location.href = `/action/${userId}/unlock_record/`;
  }
@@ -649,23 +652,23 @@
  // 3. Handle Designation Update Logic
  function openDesignationModal(empCode, name, currentDesignation) {
  const userId = getUserId(empCode);
- 
- if (!userId) { 
- alert("Error: No User Account found for Employee Code " + empCode); 
- return; 
+
+ if (!userId) {
+ alert("Error: No User Account found for Employee Code " + empCode);
+ return;
  }
 
  const form = document.getElementById('designationForm');
  // Dynamically set the form action to include the User ID
  form.action = `/update-designation/${userId}/`;
- 
+
  document.getElementById('modalUsername').textContent = name + " (" + empCode + ")";
  document.getElementById('modalDesignationSelect').value = currentDesignation || "Scientist-B";
 
  new bootstrap.Modal(document.getElementById('designationModal')).show();
  }
  </script>
- 
+
  {% elif role|default:user.role == 'hod' %}
 
 <!-- HOD Statistics -->
@@ -871,13 +874,13 @@
  <div class="card-body">
  <h3 class="text-info">{{ "Backup Management"|t:current_lang }}</h3>
  <p>{{ "As a Backup User, you can download the latest encrypted database snapshot."|t:current_lang }}</p>
- 
+
  <div class="d-grid gap-2">
  <a href="{% url 'download_db_backup' %}" class="btn btn-info btn-lg text-white">
  <i class="bi bi-database-down"></i> {{ "Download Database Backup"|t:current_lang }}
  </a>
  </div>
- 
+
  <div class="mt-3 small text-muted">
  {{ "Note: The backup contains encrypted binary data. You need the ENCRYPTION_KEY to read PII."|t:current_lang }}
  </div>
@@ -1031,33 +1034,17 @@
 
                     <div class="d-grid gap-2">
 
-                        {% if disable_user_dashboard_actions %}
+                    <a href="{% url 'qpr_form' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i>
+                        {{ "Fill Report"|t:current_lang }}
+                    </a>
 
-                            <button class="btn btn-outline-primary" disabled>
-                                <i class="fas fa-edit"></i>
-                                {{ "Fill Report"|t:current_lang }}
-                            </button>
+                    <a href="{% url 'qpr_report_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-history"></i>
+                        {{ "View History"|t:current_lang }}
+                    </a>
 
-                            <button class="btn btn-outline-secondary" disabled>
-                                <i class="fas fa-history"></i>
-                                {{ "View History"|t:current_lang }}
-                            </button>
-
-                        {% else %}
-
-                            <a href="{% url 'qpr_form' %}" class="btn btn-outline-primary">
-                                <i class="fas fa-edit"></i>
-                                {{ "Fill Report"|t:current_lang }}
-                            </a>
-
-                            <a href="{% url 'qpr_report_list' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-history"></i>
-                                {{ "View History"|t:current_lang }}
-                            </a>
-
-                        {% endif %}
-
-                    </div>
+                </div>
 
                 {% endif %}
 
@@ -1070,27 +1057,45 @@
  </div>
 
 
- <!-- Role-Based QPR: show manager/admin QPR options in addition to existing QPR card -->
- <div class="row mt-3 user-role-qpr">
- <div class="col-md-12">
- <div class="card h-100 border-secondary shadow-sm">
- <div class="card-body text-center">
- <h5 class="card-title text-secondary"><i class="fas fa-clipboard-list"></i> {{ "Role-Based QPR"|t:current_lang }}</h5>
- <div class="my-3">
- <div class="d-grid gap-2 d-sm-flex justify-content-center">
- {% if has_manager %}
- <a href="{% url 'manager_qpr_form' %}" class="btn btn-outline-primary me-2"><i class="fas fa-edit"></i> {{ "Fill Manager QPR"|t:current_lang }}</a>
- {% endif %}
- {% if has_admin %}
- <a href="{% url 'admin_qpr_form' %}" class="btn btn-outline-secondary"><i class="fas fa-edit"></i> {{ "Fill Admin QPR"|t:current_lang }}</a>
- {% endif %}
- </div>
- </div>
- </div>
- </div>
- </div>
- </div>
+ {% if has_manager or has_admin %}
 
+<!-- Role-Based QPR: show manager/admin QPR options in addition to existing QPR card -->
+<div class="row mt-3 user-role-qpr">
+    <div class="col-md-12">
+        <div class="card h-100 border-secondary shadow-sm">
+            <div class="card-body text-center">
+
+                <h5 class="card-title text-secondary">
+                    <i class="fas fa-clipboard-list"></i>
+                    {{ "Role-Based QPR"|t:current_lang }}
+                </h5>
+
+                <div class="my-3">
+                    <div class="d-grid gap-2 d-sm-flex justify-content-center">
+
+                        {% if has_manager %}
+                        <a href="{% url 'manager_qpr_form' %}" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-edit"></i>
+                            {{ "Fill Manager QPR"|t:current_lang }}
+                        </a>
+                        {% endif %}
+
+                        {% if has_admin %}
+                        <a href="{% url 'admin_qpr_form' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-edit"></i>
+                            {{ "Fill HOD/HO QPR"|t:current_lang }}
+                        </a>
+                        {% endif %}
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
  {% endif %}
 
 <!-- Admin: Create Office Modal -->
@@ -1147,7 +1152,7 @@
                             required
                             placeholder="{{ 'Enter office code'|t:current_lang }}"
                         >
-                        
+
                     </div>
 
                     <!-- English Office Name -->

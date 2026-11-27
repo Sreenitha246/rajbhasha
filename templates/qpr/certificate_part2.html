@@ -64,201 +64,296 @@
     <!-- Ensure CSRF token is available for AJAX POSTs -->
     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
     <div class="qpr-section">
-        <p><strong>1. (i) Whether the Office has been notified under Rule 10(4) of Official Languages Rules, 1976</strong>
+        <p><strong>
+            1. (i) क्या कार्यालय राजभाषा नियम, 1976 के नियम 10(4) के अंतर्गत अधिसूचित है?
+            <br>Whether the office has been notified under Rule 10(4) of the Official Languages Rules, 1976?
+        </strong>
             <select class="form-control" name="is_notified_rule_10_4" style="width: auto; display: inline-block;">
-                <option value="true">Yes</option>
-                <option value="false">No</option>
+                <option value="true">हाँ / Yes</option>
+                <option value="false">नहीं / No</option>
             </select>
         </p>
-        <p>(ii) Details regarding notification of subordinate offices (if any) under Rule 10(4) of the Official Languages Rules, 1976:</p>
+
+        <p><strong>
+            (ii) अधीनस्थ कार्यालयों (यदि कोई हों) की राजभाषा नियम, 1976 के नियम 10(4) के अंतर्गत अधिसूचना का विवरण:
+            <br>Details regarding notification of subordinate offices (if any) under Rule 10(4) of the Official Languages Rules, 1976:
+        </strong></p>
+
         <table class="qpr-table">
             <thead>
                 <tr>
-                    <th>Total No. of Offices</th>
-                    <th>No. of Offices Notified</th>
+                    <th colspan="3">कुल कार्यालयों की संख्या<br>Total number of offices</th>
+                    <th colspan="3">अधिसूचित कार्यालयों की कुल संख्या<br>Total number of notified offices</th>
+                    <th style="color: red;">शेष कार्यालयों की संख्या व उनके नाम<br>Number and names of remaining offices</th>
                 </tr>
                 <tr>
-                    <th>1</th>
-                    <th>2</th>
+                    <th style="color: red;">क क्षेत्र / Region A</th>
+                    <th style="color: red;">ख क्षेत्र / Region B</th>
+                    <th style="color: red;">ग क्षेत्र / Region C</th>
+                    <th style="color: red;">क क्षेत्र / Region A</th>
+                    <th style="color: red;">ख क्षेत्र / Region B</th>
+                    <th style="color: red;">ग क्षेत्र / Region C</th>
+                    <th style="color: red;">3</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><input type="number" class="form-control" name="total_sub_offices"></td>
-                    <td><input type="number" class="form-control" name="notified_sub_offices"></td>
+                    <td><input type="number" class="form-control" name="total_sub_offices_region_a" min="0"></td>
+                    <td><input type="number" class="form-control" name="total_sub_offices_region_b" min="0"></td>
+                    <td><input type="number" class="form-control" name="total_sub_offices_region_c" min="0"></td>
+                    <td><input type="number" class="form-control" name="notified_sub_offices_region_a" min="0"></td>
+                    <td><input type="number" class="form-control" name="notified_sub_offices_region_b" min="0"></td>
+                    <td><input type="number" class="form-control" name="notified_sub_offices_region_c" min="0"></td>
+                    <td><textarea class="form-control" name="remaining_sub_offices_details"></textarea></td>
                 </tr>
             </tbody>
         </table>
     </div>
 
+    <!-- SECTION 2(i) -->
     <div class="qpr-section">
-        <p><strong>2. (i) Officers/Employees possessing knowledge of Official Language Hindi</strong></p>
+        <p><strong>
+            2. (i) अधिकारियों/कर्मचारियों को राजभाषा हिन्दी का ज्ञान<br>
+            Officers/Employees possessing knowledge of Official Language Hindi
+        </strong></p>
+
         <table class="qpr-table">
             <thead>
                 <tr>
-                    <th></th>
-                    <th></th>
-                    <th>Officers</th>
-                    <th>Employees</th>
-                    <th>Total No.</th>
+                    <th rowspan="2"></th>
+                    <th rowspan="2"></th>
+                    <th colspan="2">अधिकारी / Officers</th>
+                    <th colspan="2">कर्मचारी / Employees</th>
+                    <th rowspan="2">कुल संख्या<br>Total</th>
                 </tr>
                 <tr>
-                    <th></th>
-                    <th></th>
-                    <th>1</th>
-                    <th>2</th>
-                    <th>3</th>
+                    <th>कार्यसाधक / Working</th>
+                    <th>प्रवीण / Proficient</th>
+                    <th>कार्यसाधक / Working</th>
+                    <th>प्रवीण / Proficient</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td>(a)</td>
-                    <td class="text-left">Total No. of Officers and Employees</td>
-                    <td><input type="number" class="form-control" name="staff_total_officers" data-field="officers"></td>
-                    <td><input type="number" class="form-control" name="staff_total_employees" data-field="employees"></td>
-                    <td><input type="number" class="form-control" name="staff_total_total" data-field="total"></td>
-                </tr>
+                {% for item in part2.staff_knowledge.all %}
+                    {% if item.category == 'total' %}
+                    <tr>
+                        <td>(क) (a)</td>
+                        <td class="text-left">अधिकारियों/कर्मचारियों की कुल संख्या<br>Total Officers/Employees</td>
+                        <td colspan="2">{{ item.officers_total|default:"0" }}</td>
+                        <td colspan="2">{{ item.employees_total|default:"0" }}</td>
+                        <td>{{ item.total_count|default:"0" }}</td>
+                    </tr>
+                    {% elif item.category == 'secretarial' %}
+                    <tr>
+                        <td>(ख) (b)</td>
+                        <td class="text-left">अनुसचिवीय कार्य से संबंधित अधिकारी/कर्मचारी<br>Officers/Employees engaged in non-secretarial work</td>
+                        <td colspan="2">{{ item.officers_total|default:"0" }}</td>
+                        <td colspan="2">{{ item.employees_total|default:"0" }}</td>
+                        <td>{{ item.total_count|default:"0" }}</td>
+                    </tr>
+                    {% elif item.category == 'knowledge' %}
+                    <tr>
+                        <td>(ग) (c)</td>
+                        <td class="text-left">उपर्युक्त (क) में से हिन्दी का ज्ञान रखने वाले<br>Out of (a), possessing knowledge of Hindi</td>
+                        <td>{{ item.officers_working|default:"0" }}</td>
+                        <td>{{ item.officers_proficient|default:"0" }}</td>
+                        <td>{{ item.employees_working|default:"0" }}</td>
+                        <td>{{ item.employees_proficient|default:"0" }}</td>
+                        <td>{{ item.total_count|default:"0" }}</td>
+                    </tr>
+                    {% elif item.category == 'being_trained' %}
+                    <tr>
+                        <td>(घ) (d)</td>
+                        <td class="text-left">हिन्दी में प्रशिक्षण प्राप्त कर रहे अधिकारी/कर्मचारी<br>Officers/Employees being trained in Hindi</td>
+                        <td>{{ item.officers_working|default:"0" }}</td>
+                        <td>{{ item.officers_proficient|default:"0" }}</td>
+                        <td>{{ item.employees_working|default:"0" }}</td>
+                        <td>{{ item.employees_proficient|default:"0" }}</td>
+                        <td>{{ item.total_count|default:"0" }}</td>
+                    </tr>
+                    <tr style="color: green;">
+                        <td></td>
+                        <td class="text-left">(i) नियमित हिन्दी प्रशिक्षण योजना के माध्यम से प्रशिक्षण प्राप्त करने वाले<br>Receiving training through the regular Hindi Training Scheme</td>
+                        <td>{{ item.regular_officers_working|default:"0" }}</td>
+                        <td>{{ item.regular_officers_proficient|default:"0" }}</td>
+                        <td>{{ item.regular_employees_working|default:"0" }}</td>
+                        <td>{{ item.regular_employees_proficient|default:"0" }}</td>
+                        <td>{{ item.regular_total|default:"0" }}</td>
+                    </tr>
+                    <tr style="color: green;">
+                        <td></td>
+                        <td class="text-left">(ii) अन्य माध्यमों से प्रशिक्षण प्राप्त करने वाले<br>Receiving training through other means</td>
+                        <td>{{ item.other_officers_working|default:"0" }}</td>
+                        <td>{{ item.other_officers_proficient|default:"0" }}</td>
+                        <td>{{ item.other_employees_working|default:"0" }}</td>
+                        <td>{{ item.other_employees_proficient|default:"0" }}</td>
+                        <td>{{ item.other_total|default:"0" }}</td>
+                    </tr>
+                    {% elif item.category == 'yet_to_be_trained' %}
+                    <tr>
+                        <td>(ङ) (e)</td>
+                        <td class="text-left">हिन्दी में प्रशिक्षण प्राप्त करना शेष<br>Yet to be trained in Hindi</td>
+                        <td>{{ item.officers_working|default:"0" }}</td>
+                        <td>{{ item.officers_proficient|default:"0" }}</td>
+                        <td>{{ item.employees_working|default:"0" }}</td>
+                        <td>{{ item.employees_proficient|default:"0" }}</td>
+                        <td>{{ item.total_count|default:"0" }}</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
+    <!-- SECTION 3 - Office Training Calendar and Hindi Training on I-Got -->
+    <div class="qpr-section">
+
+        <h4>
+            3. कार्यालय का प्रशिक्षण कैलेंडर एवं I-Got पर हिन्दी प्रशिक्षण<br>
+            3. Office Training Calendar and Hindi Training on I-Got
+        </h4>
+
+        <table class="qpr-table">
+            <tbody>
                 <tr>
-                    <td>(b)</td>
-                    <td class="text-left">Out of (a) above No. of Officers/ Employees possessing knowledge of Hindi..</td>
-                    <td>
-                        <div style="margin-bottom:6px;"><label style="font-weight:normal;">Proficient:</label> <input type="number" class="form-control" data-group="staff_knowledge" data-category="proficient" data-field="officers" style="width:120px; display:inline-block; margin-left:8px;"></div>
-                        <div><label style="font-weight:normal;">Working Knowledge:</label> <input type="number" class="form-control" data-group="staff_knowledge" data-category="working_knowledge" data-field="officers" style="width:120px; display:inline-block; margin-left:8px;"></div>
+                    <td class="text-left">
+                        <span style="color:red;">
+                            (i). कार्यालय का प्रशिक्षण कैलेंडर उपलब्ध है या नहीं।
+                        </span><br>
+                        <span style="color:red;">
+                            (i). Whether the office training calendar is available.
+                        </span>
                     </td>
                     <td>
-                        <div style="margin-bottom:6px;"><label style="font-weight:normal;">Proficient:</label> <input type="number" class="form-control" data-group="staff_knowledge" data-category="proficient" data-field="employees" style="width:120px; display:inline-block; margin-left:8px;"></div>
-                        <div><label style="font-weight:normal;">Working Knowledge:</label> <input type="number" class="form-control" data-group="staff_knowledge" data-category="working_knowledge" data-field="employees" style="width:120px; display:inline-block; margin-left:8px;"></div>
-                    </td>
-                    <td>
-                        <input type="number" class="form-control" data-group="staff_knowledge" data-category="b_row_total" data-field="total" style="width:140px;">
+                        {% if part2.training_calendar_available %}
+                            हाँ / Yes
+                        {% else %}
+                            नहीं / No
+                        {% endif %}
                     </td>
                 </tr>
 
                 <tr>
-                    <td>(c)</td>
-                    <td class="text-left">No. of personnel being trained in Hindi</td>
-                    <td><input type="number" class="form-control" data-group="staff_knowledge" data-category="being_trained" data-field="officers"></td>
-                    <td><input type="number" class="form-control" data-group="staff_knowledge" data-category="being_trained" data-field="employees"></td>
-                    <td><input type="number" class="form-control" data-group="staff_knowledge" data-category="being_trained" data-field="total"></td>
+                    <td class="text-left">
+                        <span style="color:green;">
+                            (ii). कैलेंडर के अनुसार कितने प्रशिक्षण दिए गए:-
+                        </span><br>
+                        <span style="color:green;">
+                            (ii). Number of training sessions conducted according to the calendar:
+                        </span>
+                    </td>
+                    <td>{{ part2.trainings_as_per_calendar|default:"0" }}</td>
                 </tr>
 
                 <tr>
-                    <td>(d)</td>
-                    <td class="text-left">Yet to be trained in Hindi</td>
-                    <td><input type="number" class="form-control" data-group="staff_knowledge" data-category="yet_to_be_trained" data-field="officers"></td>
-                    <td><input type="number" class="form-control" data-group="staff_knowledge" data-category="yet_to_be_trained" data-field="employees"></td>
-                    <td><input type="number" class="form-control" data-group="staff_knowledge" data-category="yet_to_be_trained" data-field="total"></td>
+                    <td class="text-left">
+                        <span style="color:red;">
+                            (iii). I-Got पर हिन्दी प्रशिक्षण:-
+                        </span><br>
+                        <span style="color:red;">
+                            (iii). Hindi training on I-Got:
+                        </span><br>
+                        <span style="color:green;">
+                            (क). आपके कार्यालय से कितने अधिकारियों/कर्मचारियों ने I-Got पर हिन्दी प्रशिक्षण प्राप्त किया है?
+                        </span><br>
+                        <span style="color:green;">
+                            (a). How many officers/employees from your office have received Hindi training on I-Got?
+                        </span>
+                    </td>
+                    <td>{{ part2.igot_hindi_trained_staff|default:"0" }}</td>
                 </tr>
             </tbody>
         </table>
-    </div>
-    
 
+    </div>
+
+
+    <!-- SECTION 4(i) - Hindi Stenography/Typing Training -->
     <div class="qpr-section">
-        <p><strong>2. (ii) Knowledge of Hindi Stenography/Typing</strong></p>
+
+        <h4>
+            4(i) हिन्दी आशुलिपि/टंकण प्रशिक्षण का ब्यौरा<br>
+            4(i) Details of Hindi Stenography/Typing Training
+        </h4>
+
         <table class="qpr-table">
             <thead>
                 <tr>
                     <th></th>
-                    <th>Total No.</th>
-                    <th>No. of personnel trained in Hindi</th>
-                    <th>Out of trained how many work in Hindi</th>
-                    <th>Yet to be trained</th>
-                </tr>
-                <tr>
-                    <th></th>
-                    <th>1</th>
-                    <th>2</th>
-                    <th>3</th>
-                    <th>4</th>
+                    <th>कुल संख्या<br>Total No.</th>
+                    <th>हिन्दी में प्रशिक्षित कार्मिकों की संख्या<br>No. of personnel trained in Hindi</th>
+                    <th>प्रशिक्षितों में से हिन्दी में कार्य करने वाले<br>Out of trained, how many work in Hindi</th>
+                    <th>प्रशिक्षण शेष<br>Yet to be trained</th>
                 </tr>
             </thead>
+
             <tbody>
+                {% for item in part2.typing_knowledge.all %}
                 <tr>
-                    <td>(a) Stenographer</td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="stenographer" data-field="total_no"></td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="stenographer" data-field="trained_in_hindi"></td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="stenographer" data-field="work_in_hindi"></td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="stenographer" data-field="yet_to_be_trained"></td>
+                    <td class="text-left">{{ item.get_category_display }}</td>
+                    <td>{{ item.total_no|default:"0" }}</td>
+                    <td>{{ item.trained_in_hindi|default:"0" }}</td>
+                    <td>{{ item.work_in_hindi|default:"0" }}</td>
+                    <td>{{ item.yet_to_be_trained|default:"0" }}</td>
                 </tr>
-                <tr>
-                    <td>(b) Typists/Clerks/ASO</td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="typist_clerk" data-field="total_no"></td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="typist_clerk" data-field="trained_in_hindi"></td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="typist_clerk" data-field="work_in_hindi"></td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="typist_clerk" data-field="yet_to_be_trained"></td>
-                </tr>
-                <tr>
-                    <td>(c) Tax/Postal Asstt. etc.</td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="tax_postal" data-field="total_no"></td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="tax_postal" data-field="trained_in_hindi"></td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="tax_postal" data-field="work_in_hindi"></td>
-                    <td><input type="number" class="form-control" data-group="typing_knowledge" data-category="tax_postal" data-field="yet_to_be_trained"></td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
+
     </div>
 
+
+    <!-- SECTION 4(ii) - Knowledge of Translation -->
     <div class="qpr-section">
-        <p><strong>2. (iii) Knowledge of Translation</strong></p>
+
+        <h4>
+            4(ii) अनुवाद का ज्ञान<br>
+            4(ii) Knowledge of Translation
+        </h4>
+
         <table class="qpr-table">
             <thead>
                 <tr>
                     <th></th>
-                    <th>Officers</th>
-                    <th>Employees</th>
-                    <th>Total</th>
+                    <th>अधिकारी<br>Officers</th>
+                    <th>कर्मचारी<br>Employees</th>
+                    <th>कुल<br>Total</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr>
-                    <td>(a) Total No. engaged in Translation Work</td>
-                    <td><input type="number" class="form-control" data-group="translation_knowledge" data-category="engaged" data-field="officers"></td>
-                    <td><input type="number" class="form-control" data-group="translation_knowledge" data-category="engaged" data-field="employees"></td>
-                    <td><input type="number" class="form-control" data-group="translation_knowledge" data-category="engaged" data-field="total"></td>
-                </tr>
-                <tr>
-                    <td>(b) Out of (a) trained in Translation</td>
-                    <td><input type="number" class="form-control" data-group="translation_knowledge" data-category="trained" data-field="officers"></td>
-                    <td><input type="number" class="form-control" data-group="translation_knowledge" data-category="trained" data-field="employees"></td>
-                    <td><input type="number" class="form-control" data-group="translation_knowledge" data-category="trained" data-field="total"></td>
-                </tr>
-                <tr>
-                    <td>(c) No. of Officials yet to be trained</td>
-                    <td><input type="number" class="form-control" data-group="translation_knowledge" data-category="yet_to_be_trained" data-field="officers"></td>
-                    <td><input type="number" class="form-control" data-group="translation_knowledge" data-category="yet_to_be_trained" data-field="employees"></td>
-                    <td><input type="number" class="form-control" data-group="translation_knowledge" data-category="yet_to_be_trained" data-field="total"></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
 
-    <div class="qpr-section">
-        <h4>Section 3: Training for doing work in Hindi on Computer</h4>
-        <table class="qpr-table">
-            <thead><tr><th>Total Officers/Employees</th><th>No. trained in Hindi on Computer</th><th>No. working in Hindi on Computer</th></tr></thead>
             <tbody>
+                {% for item in part2.translation_knowledge.all %}
                 <tr>
-                    <td><input type="number" class="form-control" name="computer_training_total_staff"></td>
-                    <td><input type="number" class="form-control" name="computer_training_trained"></td>
-                    <td><input type="number" class="form-control" name="computer_training_working"></td>
+                    <td class="text-left">{{ item.get_category_display }}</td>
+                    <td>{{ item.officers_count|default:"0" }}</td>
+                    <td>{{ item.employees_count|default:"0" }}</td>
+                    <td>{{ item.total_count|default:"0" }}</td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
-    </div>
 
+    </div>
     <div class="qpr-section">
-        <h4>Section 4: Details regarding Computers/Laptops</h4>
-        <table class="qpr-table">
-            <thead><tr><th>Total No. of Computers/Laptops</th><th>Number of Hindi enabled Computers/Laptops</th></tr></thead>
-            <tbody>
-                <tr>
-                    <td><input type="number" class="form-control" name="total_computers"></td>
-                    <td><input type="number" class="form-control" name="hindi_enabled_computers"></td>
-                </tr>
-            </tbody>
-        </table>
+        <h4>
+            5. कंप्यूटर/लैपटॉप संबंधी विवरण<br>
+            Details regarding Computers/Laptops
+        </h4>
+
+        <p>
+            आपके कार्यालय के सभी कंप्यूटर/लैपटॉप हिंदी भाषा में
+            यूनिकोड सक्षम हैं या नहीं?
+            <br>
+            Whether all computers/laptops in your office are
+            Unicode-enabled for Hindi?
+        </p>
+
+        <select class="form-control"
+                name="all_computers_unicode_enabled"
+                style="width: 150px;">
+            <option value="true">हाँ / Yes</option>
+            <option value="false">नहीं / No</option>
+        </select>
     </div>
 
     <div class="qpr-section">
@@ -519,10 +614,15 @@
     function collectFormData() {
         const payload = {};
 
-        // Section 1
+        /// Section 1
         payload.is_notified_rule_10_4 = document.querySelector('[name="is_notified_rule_10_4"]').value === 'true';
-        payload.total_sub_offices = parseInt(document.querySelector('[name="total_sub_offices"]').value) || 0;
-        payload.notified_sub_offices = parseInt(document.querySelector('[name="notified_sub_offices"]').value) || 0;
+        payload.total_sub_offices_region_a = parseInt(document.querySelector('[name="total_sub_offices_region_a"]').value) || 0;
+        payload.total_sub_offices_region_b = parseInt(document.querySelector('[name="total_sub_offices_region_b"]').value) || 0;
+        payload.total_sub_offices_region_c = parseInt(document.querySelector('[name="total_sub_offices_region_c"]').value) || 0;
+        payload.notified_sub_offices_region_a = parseInt(document.querySelector('[name="notified_sub_offices_region_a"]').value) || 0;
+        payload.notified_sub_offices_region_b = parseInt(document.querySelector('[name="notified_sub_offices_region_b"]').value) || 0;
+        payload.notified_sub_offices_region_c = parseInt(document.querySelector('[name="notified_sub_offices_region_c"]').value) || 0;
+        payload.remaining_sub_offices_details = document.querySelector('[name="remaining_sub_offices_details"]').value.trim();
 
         // Section 2(i) Staff knowledge
         payload.staff_knowledge = [];
@@ -579,8 +679,7 @@
         payload.computer_training_total_staff = parseInt(document.querySelector('[name="computer_training_total_staff"]').value) || 0;
         payload.computer_training_trained = parseInt(document.querySelector('[name="computer_training_trained"]').value) || 0;
         payload.computer_training_working = parseInt(document.querySelector('[name="computer_training_working"]').value) || 0;
-        payload.total_computers = parseInt(document.querySelector('[name="total_computers"]').value) || 0;
-        payload.hindi_enabled_computers = parseInt(document.querySelector('[name="hindi_enabled_computers"]').value) || 0;
+        payload.all_computers_unicode_enabled =document.querySelector('[name="all_computers_unicode_enabled"]').value === 'true';
         payload.officials_issued_rule_8_4_orders = parseInt(document.querySelector('[name="officials_issued_rule_8_4_orders"]').value) || 0;
         payload.training_total_duration_hours = parseInt(document.querySelector('[name="training_total_duration_hours"]').value) || 0;
         payload.training_imparted_hindi = parseInt(document.querySelector('[name="training_imparted_hindi"]').value) || 0;
@@ -659,10 +758,10 @@
     document.addEventListener('DOMContentLoaded', function() {
         var initial = JSON.parse('{{ part2_json|default:"{}"|escapejs }}');
         if (initial && Object.keys(initial).length > 0) {
-            if (initial.is_notified_rule_10_4) document.querySelector('[name="is_notified_rule_10_4"]').value = 'true';
-            else document.querySelector('[name="is_notified_rule_10_4"]').value = 'false';
-            if (initial.total_sub_offices !== undefined) document.querySelector('[name="total_sub_offices"]').value = initial.total_sub_offices;
-            if (initial.notified_sub_offices !== undefined) document.querySelector('[name="notified_sub_offices"]').value = initial.notified_sub_offices;
+            document.querySelector('[name="is_notified_rule_10_4"]').value = initial.is_notified_rule_10_4 ? 'true' : 'false';
+            ['total_sub_offices_region_a','total_sub_offices_region_b','total_sub_offices_region_c','notified_sub_offices_region_a','notified_sub_offices_region_b','notified_sub_offices_region_c','remaining_sub_offices_details'].forEach(function(k) {
+                if (initial[k] !== undefined && document.querySelector(`[name="${k}"]`)) document.querySelector(`[name="${k}"]`).value = initial[k];
+            });
 
             // staff knowledge
             if (initial.staff_knowledge) initial.staff_knowledge.forEach(function(item){
@@ -689,7 +788,7 @@
             });
 
             // scalar fields
-            ['computer_training_total_staff','computer_training_trained','computer_training_working','total_computers','hindi_enabled_computers','officials_issued_rule_8_4_orders','training_total_duration_hours','training_imparted_hindi','training_imparted_english','training_imparted_mixed','sec8_total_sections','sec8_inspected_sections','sec8_total_sub_offices','sec8_inspected_sub_offices','magazines_total','magazines_hindi','magazines_english','expenditure_total_books','expenditure_hindi_books','hindi_event_start_date','hindi_event_end_date','seminar_date','seminar_subject','other_activities_date','other_activities_subject'].forEach(function(k){
+            ['computer_training_total_staff','computer_training_trained','computer_training_working','all_computers_unicode_enabled','officials_issued_rule_8_4_orders','training_total_duration_hours','training_imparted_hindi','training_imparted_english','training_imparted_mixed','sec8_total_sections','sec8_inspected_sections','sec8_total_sub_offices','sec8_inspected_sub_offices','magazines_total','magazines_hindi','magazines_english','expenditure_total_books','expenditure_hindi_books','hindi_event_start_date','hindi_event_end_date','seminar_date','seminar_subject','other_activities_date','other_activities_subject'].forEach(function(k){
                 if (initial[k] !== undefined && document.querySelector(`[name=\"${k}\"]`)) document.querySelector(`[name=\"${k}\"]`).value = initial[k];
             });
 

@@ -25,7 +25,7 @@ class ParichayService:
     """
 
     @staticmethod
-    def build_authorization_url(code_challenge, state):
+    def auth_parichay_url(code_challenge, state):
         """
         Build the Parichay Authorization URL.
         """
@@ -41,14 +41,14 @@ class ParichayService:
         }
 
         return f"{settings.PARICHAY_AUTHORIZATION_URL}?{urlencode(params)}"
-    
+
     @staticmethod
     def generate_state():
         """
         Generate a random state value for CSRF protection.
         """
         return secrets.token_urlsafe(32)
-    
+
     @staticmethod
     def exchange_code_for_token(code, code_verifier):
         """
@@ -82,7 +82,7 @@ class ParichayService:
         response.raise_for_status()
 
         return response.json()
-    
+
     @staticmethod
     def get_user_details(access_token):
 
@@ -104,9 +104,9 @@ class ParichayService:
         )
 
         response.raise_for_status()
-        
+
         return response.json()
-    
+
     @staticmethod
     def revoke_token(access_token):
         """
@@ -123,12 +123,12 @@ class ParichayService:
             },
             timeout=30,
         )
-        
+
         revoke_log.info(
             "Parichay revoke endpoint response: %s",
             response.status_code
         )
-        
+
         try:
             response_data = response.json()
         except ValueError:
@@ -146,7 +146,7 @@ class ParichayService:
 
         response.raise_for_status()
         return response.json()
-    
+
 
     @staticmethod
     def refresh_access_token(refresh_token):
@@ -180,7 +180,7 @@ class ParichayService:
 
         response.raise_for_status()
         return response.json()
-    
+
 
     @staticmethod
     def is_token_expired(expires_at):
@@ -191,7 +191,7 @@ class ParichayService:
             return True
 
         return timezone.now().timestamp() >= float(expires_at)
-    
+
     @staticmethod
     def refresh_if_expired(access_token, refresh_token, expires_at):
         """
@@ -218,7 +218,7 @@ class ParichayService:
             raise ValueError(
                 "Access token not received from Parichay refresh API."
             )
-        
+
         new_expires_at = timezone.now().timestamp() + (7 * 24 * 60 * 60)
 
         return (
@@ -226,4 +226,3 @@ class ParichayService:
             new_refresh_token,
             new_expires_at,
         )
-        

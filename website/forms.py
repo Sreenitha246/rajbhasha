@@ -1,7 +1,12 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import authenticate
+from django.core.cache import cache
+from captcha.fields import CaptchaField
+
 from .models import CustomUser
 from .templatetags.translate_tags import translate_text
+
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils import timezone
@@ -11,7 +16,7 @@ class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
 
     consent = forms.BooleanField(
-        required=True, 
+        required=True,
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         error_messages={'required': 'You must agree to the Privacy Policy to proceed.'}
     )
@@ -27,8 +32,8 @@ class CustomUserCreationForm(UserCreationForm):
         if self.request and hasattr(self.request, 'session'):
             self.lang = self.request.session.get('lang', 'en')
         else:
-            self.lang = 'en'    
-        
+            self.lang = 'en'
+
         lang = self.request.session.get('lang', 'en') if (self.request and hasattr(self.request, 'session')) else 'en'
         consent_error = translate_text("You must agree to the Privacy Policy to proceed.", lang)
         self.fields['consent'].error_messages['required'] = consent_error
@@ -51,7 +56,7 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields['password2'].label = translate_text("Confirm Password", lang)
         existing_user_msg = translate_text("A user with that username already exists.", lang)
         self.fields['username'].error_messages['unique'] = existing_user_msg
-        
+
         required_msg = translate_text("This field is required.", lang)
         for field in self.fields.values():
             field.error_messages['required'] = required_msg
@@ -70,7 +75,7 @@ class CustomUserCreationForm(UserCreationForm):
                     'class': 'form-control',
                     'placeholder': field.label  # Only text labels work as placeholders
                 })
-        
+
         self.error_messages['password_mismatch'] = translate_text(
             "The two password fields didn't match.", lang
         )
@@ -78,19 +83,55 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields['password2'].widget.attrs['autocomplete'] = 'new-password'
 
 
+
     def clean_username(self):
-        username = self.cleaned_data.get('username')
-        from .models import CustomUser, UserProfile
-        
-        # Check if the user exists
+        username = self.cleaned_data.get('username', '').strip()
+
+        from .models import CustomUser, UserProfile, EmployeeMaster
+
+        # Employee codes in EmployeeMaster are stored as integers.
+        if not username.isdigit():
+            raise forms.ValidationError(
+                translate_text(
+                    "Please enter a valid numeric Employee Code.",
+                    self.lang
+                )
+            )
+
+        # Check whether the employee exists in the master registry.
+        employee = EmployeeMaster.objects.filter(
+            empcode=int(username),
+            is_active=True
+        ).first()
+
+        if not employee:
+            raise forms.ValidationError(
+                translate_text(
+                    "Invalid Employee Code. Please enter a registered active Employee Code.",
+                    self.lang
+                )
+            )
+
+        # Check whether an account already exists.
         if CustomUser.objects.filter(username=username).exists():
-            raise forms.ValidationError(translate_text("A user with this employee code already exists.", self.lang))
-            
-        # Check if an orphaned profile exists
+            raise forms.ValidationError(
+                translate_text(
+                    "An account with this Employee Code already exists.",
+                    self.lang
+                )
+            )
+
+        # Check whether an employee profile already exists.
         if UserProfile.objects.filter(employee_code=username).exists():
-            raise forms.ValidationError(translate_text("This employee code is already registered in a profile.", self.lang))
-            
+            raise forms.ValidationError(
+                translate_text(
+                    "This Employee Code is already registered in a profile.",
+                    self.lang
+                )
+            )
+
         return username
+
     def clean_email(self):
         email = self.cleaned_data.get('email').lower().strip()
         # TEMPORARY FOR TESTING: Skip email uniqueness check so duplicate emails can be used in tests.
@@ -100,17 +141,139 @@ class CustomUserCreationForm(UserCreationForm):
         #     error_msg = translate_text("A user with this email already exists.", self.lang)
         #     raise forms.ValidationError(error_msg)
         return email
-    
+
     def save(self, commit=True):
         user = super().save(commit=False)
         # DPDP: Encrypt email before saving
         user.set_email(self.cleaned_data["email"])
         # Log exact time of consent for compliance
         user.consent_given_at = timezone.now()
-        
+
         if commit:
             user.save()
         return user
+
+class CustomLoginForm(AuthenticationForm):
+
+    captcha = CaptchaField(
+        label="Enter the characters shown"
+    )
+
+    def __init__(self, request=None, *args, **kwargs):
+        self.request = request
+        super().__init__(request=request, *args, **kwargs)
+
+        self.lang = (
+            request.session.get('lang', 'en')
+            if request and hasattr(request, 'session')
+            else 'en'
+        )
+
+        self.fields['username'].label = translate_text(
+            "Employee Code", self.lang
+        )
+        self.fields['password'].label = translate_text(
+            "Password", self.lang
+        )
+        self.fields['captcha'].label = translate_text(
+            "Enter the characters shown", self.lang
+        )
+
+        self.error_messages['invalid_login'] = translate_text(
+            "Please enter a correct employee code and password.",
+            self.lang
+        )
+
+        self.error_messages['inactive'] = translate_text(
+            "This account is inactive.",
+            self.lang
+        )
+
+        for field in self.fields.values():
+            field.help_text = ""
+
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': self.fields['username'].label,
+            'autocomplete': 'username'
+        })
+
+        self.fields['password'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': self.fields['password'].label,
+            'autocomplete': 'current-password'
+        })
+
+        self.fields['captcha'].widget.attrs.update({
+            'class': 'form-control'
+        })
+
+    def clean(self):
+        cleaned_data = super(AuthenticationForm, self).clean()
+
+        emp_code = cleaned_data.get('username')
+        password = cleaned_data.get('password')
+
+        if not emp_code or not password:
+            return cleaned_data
+
+        cache_key = f"login_attempts_{emp_code}"
+        attempts = cache.get(cache_key, 0)
+
+        if attempts >= 3:
+            raise forms.ValidationError(
+                translate_text(
+                    "Account locked due to 3 incorrect attempts. "
+                    "Please try again after 2 hours.",
+                    self.lang
+                )
+            )
+
+        from .models import UserProfile
+
+        try:
+            profile = UserProfile.objects.select_related(
+                'user'
+            ).get(employee_code=emp_code)
+
+        except UserProfile.DoesNotExist:
+            cache.set(cache_key, attempts + 1, 7200)
+
+            raise forms.ValidationError(
+                translate_text("Invalid Employee Code", self.lang)
+            )
+
+        user = authenticate(
+            request=self.request,
+            username=profile.user.username,
+            password=password
+        )
+
+        if user is None:
+            attempts += 1
+            cache.set(cache_key, attempts, 7200)
+
+            if attempts >= 3:
+                raise forms.ValidationError(
+                    translate_text(
+                        "Account locked for 2 hours due to 3 incorrect attempts.",
+                        self.lang
+                    )
+                )
+
+            raise forms.ValidationError(
+                translate_text(
+                    f"Invalid login. {3 - attempts} attempts remaining.",
+                    self.lang
+                )
+            )
+
+        self.confirm_login_allowed(user)
+        self.user_cache = user
+
+        cache.delete(cache_key)
+
+        return cleaned_data
 
 class CertificateDataForm(forms.Form):
     """Form for manager to select financial year and quarter ending"""
@@ -132,17 +295,17 @@ class CertificateDataForm(forms.Form):
         years = kwargs.pop('years', [])
         quarters = kwargs.pop('quarters', [])
         super().__init__(*args, **kwargs)
-        
+
         # Set choices with empty option first
         year_choices = [('', '--- Select Financial Year ---')]
         for y in years:
             year_choices.append((y, y))
-        
+
         quarter_choices = [('', '--- Select Quarter Ending ---')]
         for q in quarters:
             if q:  # Only add non-empty quarters
                 quarter_choices.append((q, q))
-        
+
         self.fields['financial_year'].choices = year_choices
         self.fields['quarter_ending'].choices = quarter_choices
 
@@ -166,15 +329,25 @@ def _current_financial_year_bounds():
 def _financial_year_choices():
     start, end = _current_financial_year_bounds()
     current_label = f"{start}-{end}"
-    labels = ['2024-2025', '2025-2026', current_label]
+
+    labels = [current_label, '2025-2026', '2024-2025']
+
     try:
-        FinancialYear.objects.get_or_create(start_year=start, end_year=end)
-        for fy in FinancialYear.objects.filter(is_active=True).order_by('-start_year', '-end_year'):
+        FinancialYear.objects.get_or_create(
+            start_year=start,
+            end_year=end
+        )
+
+        for fy in FinancialYear.objects.filter(
+            is_active=True
+        ).order_by('-start_year', '-end_year'):
             label = str(fy)
             if label not in labels:
                 labels.append(label)
+
     except Exception:
         pass
+
     return [(label, label) for label in labels]
 
 
@@ -273,7 +446,7 @@ class ManagerQPRForm(forms.ModelForm):
             # Section 4
             's4_total_letters', 's4_no_reply_letters', 's4_replied_hindi_letters', 's4_replied_english_letters',
             # Section 5 (region A sample)
-            's5_region_a_english_letters', 's5_region_a_replied_hindi', 's5_region_a_replied_english', 's5_region_a_no_reply',
+            's5_region_a_english_letters', 's5_region_a_replied_hindi', 's5_region_a_replied_english', 's5_region_a_no_reply','s5_region_b_english_letters', 's5_region_b_replied_hindi','s5_region_b_replied_english', 's5_region_b_no_reply',
             # Section 6 (region totals)
             's6_region_a_hindi_bilingual', 's6_region_a_english_only', 's6_region_a_total',
             's6_region_b_hindi_bilingual', 's6_region_b_english_only', 's6_region_b_total',
@@ -300,6 +473,17 @@ class ManagerQPRForm(forms.ModelForm):
         if 's9_agenda_hindi' in self.fields:
             # Represent Yes/No question as a select with Yes/No choices
             self.fields['s9_agenda_hindi'] = forms.ChoiceField(required=False, choices=[('', ''), ('Yes', 'Yes'), ('No', 'No')], widget=forms.Select())
+        correspondence_fields = [
+            's5_region_a_english_letters', 's5_region_a_replied_hindi',
+            's5_region_a_replied_english', 's5_region_a_no_reply',
+            's5_region_b_english_letters', 's5_region_b_replied_hindi',
+            's5_region_b_replied_english', 's5_region_b_no_reply',
+            's6_region_a_hindi_bilingual', 's6_region_a_english_only', 's6_region_a_total',
+            's6_region_b_hindi_bilingual', 's6_region_b_english_only', 's6_region_b_total',
+            's6_region_c_hindi_bilingual', 's6_region_c_english_only', 's6_region_c_total',
+        ]
+        for name in correspondence_fields:
+            self.fields[name].disabled = True
         _configure_manager_admin_period_fields(self)
         for name, field in self.fields.items():
             # add bootstrap small inputs for numeric/text/date fields
@@ -319,7 +503,7 @@ class AdminQPRForm(forms.ModelForm):
             # Section 4
             'a_s4_total_letters', 'a_s4_no_reply_letters', 'a_s4_replied_hindi_letters', 'a_s4_replied_english_letters',
             # Section 5
-            'a_s5_region_a_english_letters', 'a_s5_region_a_replied_hindi', 'a_s5_region_a_replied_english', 'a_s5_region_a_no_reply',
+            'a_s5_region_a_english_letters', 'a_s5_region_a_replied_hindi', 'a_s5_region_a_replied_english', 'a_s5_region_a_no_reply','a_s5_region_b_english_letters', 'a_s5_region_b_replied_hindi','a_s5_region_b_replied_english', 'a_s5_region_b_no_reply',
             # Section 6
             'a_s6_region_a_hindi_bilingual', 'a_s6_region_a_english_only', 'a_s6_region_a_total',
             'a_s6_region_b_hindi_bilingual', 'a_s6_region_b_english_only', 'a_s6_region_b_total',
@@ -333,9 +517,20 @@ class AdminQPRForm(forms.ModelForm):
         for name, field in self.fields.items():
             existing = field.widget.attrs.get('class', '')
             field.widget.attrs['class'] = (existing + ' form-control form-control-sm').strip()
+        correspondence_fields = [
+            'a_s5_region_a_english_letters', 'a_s5_region_a_replied_hindi',
+            'a_s5_region_a_replied_english', 'a_s5_region_a_no_reply',
+            'a_s5_region_b_english_letters', 'a_s5_region_b_replied_hindi',
+            'a_s5_region_b_replied_english', 'a_s5_region_b_no_reply',
+            'a_s6_region_a_hindi_bilingual', 'a_s6_region_a_english_only', 'a_s6_region_a_total',
+            'a_s6_region_b_hindi_bilingual', 'a_s6_region_b_english_only', 'a_s6_region_b_total',
+            'a_s6_region_c_hindi_bilingual', 'a_s6_region_c_english_only', 'a_s6_region_c_total',
+        ]
+        for name in correspondence_fields:
+            self.fields[name].disabled = True
 
         _configure_manager_admin_period_fields(self)
-        
+
 class EmployeeMasterForm(forms.ModelForm):
     dropdown_fields = ('designation', 'state', 'division')
     class Meta:

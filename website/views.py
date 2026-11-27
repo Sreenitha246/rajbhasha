@@ -2,12 +2,15 @@ import csv
 import hashlib
 import io
 import ipaddress
+import secrets
 import json
 import logging
 import os
 import re
 import subprocess
 import json as _json
+import string
+from io import BytesIO
 
 # Django / stdlib
 from django.conf import settings
@@ -15,8 +18,9 @@ from django.utils.html import escape
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib import messages
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login as auth_login
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -33,10 +37,14 @@ from website.models import QPRFinalization
 from .forms import ManagerQPRForm
 from .forms import AdminQPRForm
 from .forms import EmployeeMasterForm
+from .forms import CustomUserCreationForm
 from .audit import log_audit
 from datetime import date, datetime, timedelta
 from typing import Any, cast
 from urllib.parse import urlencode
+from django.utils.http import url_has_allowed_host_and_scheme
+from PIL import Image, ImageDraw, ImageFont
+from django.views.decorators.http import require_GET
 
 # Third-party
 from reportlab.pdfgen import canvas
@@ -48,6 +56,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import mm
+
 
 # Local App Imports
 from .services.parichay import ParichayService
@@ -74,8 +83,8 @@ from .models import (
     Section7NotingsData, Section8WorkshopsData,
     Section9ImplementationCommitteeData, Section10HindiAdvisoryData,
     Section11SpecificAchievementsData, StaffHindiKnowledge,
-    TranslationKnowledge, TypingStenographyKnowledge,
-    UserProfile, WebsiteDetail, WeeklyFill, WeeklySnapshot, Employee, ManagerQPR, AdminQPR, Office,OfficeEditRequest
+    TranslationKnowledge, TypingStenographyKnowledge,OfficeCorrespondence,
+    UserProfile, WebsiteDetail,MagazinePublication, WeeklyFill, WeeklySnapshot, Employee, ManagerQPR, AdminQPR, Office,OfficeEditRequest
 )
 from website.models import OfficersWorkInHindi
 
@@ -125,16 +134,16 @@ def is_valid_phone_number(value):
 def get_employee_details_form(request):
     if request.method == "POST":
         empcode = request.POST.get('empcode', '').strip()
-       
+
         if not empcode:
             return JsonResponse({'status': 'error', 'message': 'Employee code required'})
-       
+
         try:
             master_employee = EmployeeMaster.objects.filter(empcode=empcode, is_active=True).first()
 
             if not master_employee:
                 return JsonResponse({'status': 'error', 'message': 'Invalid Employee Code'})
-           
+
             return JsonResponse({
                 'status': 'success',
                 'name': master_employee.name or '',
@@ -147,11 +156,11 @@ def get_employee_details_form(request):
                 'office_name': '',
                 'email': '',
             })
-       
+
         except Exception:
             logger.exception("Failed to get employee details")
             return JsonResponse({'status': 'error', 'message': 'Unable to retrieve employee details'})
-   
+
     return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
 @login_required
@@ -333,14 +342,14 @@ def get_event_images(request, folder):
 
     if request.method != 'POST':
         return JsonResponse({'images': []}, status=400)
-   
+
     try:
         events = get_all_events()
         event = next((e for e in events if e['folder'] == folder), None)
-       
+
         if not event:
             return JsonResponse({'images': []})
-       
+
         return JsonResponse({'images': event['images']})
     except Exception:
         logger.exception("Failed to retrieve images")
@@ -355,19 +364,19 @@ def update_event_titles(request):
 
     if request.method != 'POST':
         return redirect('admin_events_dashboard')
-   
+
     folder = request.POST.get('folder')
     title_en = request.POST.get('title_en')
     title_hi = request.POST.get('title_hi')
-   
-   
+
+
     try:
         update_event_meta(folder, title_en, title_hi)
         messages.success(request, "Titles updated")
     except Exception:
         logger.exception("Failed to upload file")
         messages.error(request, 'Unable to upload file. Please try again.')
-   
+
     return redirect('admin_events_dashboard')
 
 
@@ -409,7 +418,7 @@ def admin_events_dashboard(request):
             "can_add_event": can_add_event,
         }
     )
- 
+
 @login_required
 def admin_upload_new_event(request):
     require_event_manager(request.user)
@@ -466,13 +475,13 @@ def admin_upload_event(request):
         return HttpResponseBadRequest("Upload folder must not be supplied in the URL.")
 
     folder = request.session.get(EVENT_UPLOAD_SESSION_KEY)
- 
+
     if request.method == "POST":
         event_date   = request.POST.get("event_date")
         event_name   = request.POST.get("event_name")
         event_name_hi = request.POST.get("event_name_hi", "")
         images       = request.FILES.getlist("images")
- 
+
         try:
             if folder:
                 upload_images_to_existing_event(folder, images)
@@ -490,11 +499,11 @@ def admin_upload_event(request):
         except ValidationError as exc:
             message = "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc)
             return JsonResponse({"status": "error", "message": message}, status=400)
- 
+
         except Exception:
             logger.exception("Failed to upload event")
             return JsonResponse({"status": "error", "message": "Unable to upload event"})
- 
+
     return_to = request.session.get(
         'events_dashboard_return_to',
         'admin_events_dashboard'
@@ -514,8 +523,8 @@ def admin_upload_event(request):
             "events_dashboard_url": reverse(return_to),
         }
     )
-    
- 
+
+
 @login_required
 def admin_delete_event(request, folder):
     require_event_manager(request.user)
@@ -537,8 +546,8 @@ def admin_delete_event(request, folder):
         safe_error_msg = "Failed to delete event. Please try again."
         messages.error(request, safe_error_msg)
     return redirect("admin_events_dashboard")
- 
- 
+
+
 @login_required
 def admin_edit_event_titles(request):
     require_event_manager(request.user)
@@ -551,17 +560,17 @@ def admin_edit_event_titles(request):
             folder   = data.get("folder", "").strip()
             title_en = data.get("title_en", "").strip()
             title_hi = data.get("title_hi", "").strip()
- 
+
             if not folder or not title_en:
                 return JsonResponse({"status": "error", "message": "folder and title_en are required"})
- 
+
             update_event_meta(folder, title_en, title_hi)
             return JsonResponse({"status": "success"})
- 
+
         except Exception:
             logger.exception("Failed to edit event titles")
             return JsonResponse({"status": "error", "message": "Unable to update event"})
- 
+
     return JsonResponse({"status": "error", "message": "POST only"})
 
 @login_required
@@ -573,21 +582,21 @@ def set_thumbnail(request, folder):
 
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'POST required'}, status=400)
-   
+
     try:
         data = json.loads(request.body)
         thumbnail = data.get('thumbnail')
-       
+
         if not thumbnail:
             return JsonResponse({'status': 'error', 'message': 'Thumbnail filename required'})
-       
+
         update_event_meta(folder, None, None, thumbnail=thumbnail)
-       
+
         return JsonResponse({'status': 'success'})
     except Exception:
         logger.exception("Failed to get office list")
         return JsonResponse({'status': 'error', 'message': 'Unable to retrieve offices'})
-   
+
 def user_has_role(user, role_name):
     profile = getattr(user, 'profile', None)
     if isinstance(role_name, (list, tuple)):
@@ -602,7 +611,7 @@ def user_has_role(user, role_name):
 def user_role(user):
     if user is None or not user.is_authenticated:
         return None
-   
+
     priority_roles = ['admin', 'manager', 'hod', 'user', 'backup_user']
     profile = getattr(user, 'profile', None)
     for role in priority_roles:
@@ -709,7 +718,7 @@ def get_quarter_end_dates():
     today = date.today()
     month = today.month
     year = today.year
-   
+
     if month <= 3:
         current_end = date(year, 3, 31)
         next_end = date(year, 6, 30)
@@ -722,7 +731,7 @@ def get_quarter_end_dates():
     else:
         current_end = date(year, 12, 31)
         next_end = date(year + 1, 3, 31)
-   
+
     return {'current': current_end, 'next': next_end}
 
 
@@ -756,24 +765,51 @@ def _save_section_data(record, details):
     s4.replied_hindi_letters = _convert_to_int(details.get('s4_replied_hindi'))
     s4.replied_english_letters = _convert_to_int(details.get('s4_replied_eng'))
     s4.save()
-    # Section 5
-    s5, _ = Section5EnglishRepliedHindiData.objects.get_or_create(qpr_record=record)
+    # Section 5 - Incoming English Correspondence
+    s5, _ = Section5EnglishRepliedHindiData.objects.get_or_create(
+        qpr_record=record
+    )
+
+    # Region A
     s5.region_a_english_letters = _convert_to_int(details.get('s5_total'))
     s5.region_a_replied_hindi = _convert_to_int(details.get('s5_hindi'))
     s5.region_a_replied_english = _convert_to_int(details.get('s5_english'))
     s5.region_a_no_reply = _convert_to_int(details.get('s5_noreply'))
+
+    # Region B
+    s5.region_b_english_letters = _convert_to_int(details.get('s5_b_total'))
+    s5.region_b_replied_hindi = _convert_to_int(details.get('s5_b_hindi'))
+    s5.region_b_replied_english = _convert_to_int(details.get('s5_b_english'))
+    s5.region_b_no_reply = _convert_to_int(details.get('s5_b_noreply'))
+
     s5.save()
-    # Section 6
-    s6, _ = Section6IssuedLettersData.objects.get_or_create(qpr_record=record)
+
+    # Section 6 - Outgoing Correspondence
+    s6, _ = Section6IssuedLettersData.objects.get_or_create(
+        qpr_record=record
+    )
+
+    # Region A
     s6.region_a_hindi_bilingual = _convert_to_int(details.get('s6_a_hindi'))
     s6.region_a_english_only = _convert_to_int(details.get('s6_a_eng'))
-    s6.region_a_total = _convert_to_int(details.get('s6_a_total'))
+    s6.region_a_total = (
+        s6.region_a_hindi_bilingual + s6.region_a_english_only
+    )
+
+    # Region B
     s6.region_b_hindi_bilingual = _convert_to_int(details.get('s6_b_hindi'))
     s6.region_b_english_only = _convert_to_int(details.get('s6_b_eng'))
-    s6.region_b_total = _convert_to_int(details.get('s6_b_total'))
+    s6.region_b_total = (
+        s6.region_b_hindi_bilingual + s6.region_b_english_only
+    )
+
+    # Region C
     s6.region_c_hindi_bilingual = _convert_to_int(details.get('s6_c_hindi'))
     s6.region_c_english_only = _convert_to_int(details.get('s6_c_eng'))
-    s6.region_c_total = _convert_to_int(details.get('s6_c_total'))
+    s6.region_c_total = (
+        s6.region_c_hindi_bilingual + s6.region_c_english_only
+    )
+
     s6.save()
     # Section 7
     s7, _ = Section7NotingsData.objects.get_or_create(qpr_record=record)
@@ -848,7 +884,7 @@ def get_clipped_week_bounds(date_val, quarter_label, year_label):
     q_start, q_end = _quarter_label_to_daterange(quarter_label, year_label)
     clipped_start = max(week_start, q_start)
     clipped_end = min(week_end, q_end)
-   
+
     return (clipped_start, clipped_end)
 
 
@@ -947,6 +983,10 @@ def _serialize_managerqpr(obj):
         's5_hindi': value('s5_region_a_replied_hindi', default=0),
         's5_english': value('s5_region_a_replied_english', default=0),
         's5_noreply': value('s5_region_a_no_reply', default=0),
+        's5_b_total': value('s5_region_b_english_letters', default=0),
+        's5_b_hindi': value('s5_region_b_replied_hindi', default=0),
+        's5_b_english': value('s5_region_b_replied_english', default=0),
+        's5_b_noreply': value('s5_region_b_no_reply', default=0),
         's6_a_hindi': value('s6_region_a_hindi_bilingual', default=0),
         's6_a_eng': value('s6_region_a_english_only', default=0),
         's6_a_total': value('s6_region_a_total', default=0),
@@ -971,7 +1011,19 @@ def _serialize_managerqpr(obj):
         's11_innovative_work': value('s11_innovative_work', default=''),
         's11_special_events': value('s11_special_events', default=''),
         's11_hindi_medium_works': value('s11_hindi_medium_works', default=''),
+        's12_1': value('s11_innovative_work', default=''),
+        's12_2': value('s11_special_events', default=''),
+        's12_3': value('s11_hindi_medium_works', default=''),
     }
+
+    # Calculate Hindi percentage for each region
+    for region in ('a', 'b', 'c'):
+        hindi = float(payload.get(f's6_{region}_hindi') or 0)
+        total = float(payload.get(f's6_{region}_total') or 0)
+
+        payload[f's6_{region}_percentage'] = (
+            round((hindi / total) * 100, 2) if total else 0
+        )
 
     # Convert dates and other non-JSON values safely.
     for key, item in list(payload.items()):
@@ -1065,6 +1117,10 @@ def _serialize_adminqpr(obj):
         's5_hindi': value('a_s5_region_a_replied_hindi', 'a_s5_hindi', default=0),
         's5_english': value('a_s5_region_a_replied_english', 'a_s5_english', default=0),
         's5_noreply': value('a_s5_region_a_no_reply', 'a_s5_noreply', default=0),
+        's5_b_total': value('a_s5_region_b_english_letters', default=0),
+        's5_b_hindi': value('a_s5_region_b_replied_hindi', default=0),
+        's5_b_english': value('a_s5_region_b_replied_english', default=0),
+        's5_b_noreply': value('a_s5_region_b_no_reply', default=0),
         's6_a_hindi': value('a_s6_region_a_hindi_bilingual', 'a_s6_a_hindi', default=0),
         's6_a_eng': value('a_s6_region_a_english_only', 'a_s6_a_eng', default=0),
         's6_a_total': value('a_s6_region_a_total', 'a_s6_a_total', default=0),
@@ -1080,6 +1136,14 @@ def _serialize_adminqpr(obj):
         's7_eoffice': value('a_s7_eoffice_notings', 'a_s7_eoffice', default=0),
     }
 
+    # Calculate Hindi percentage for each region
+    for region in ('a', 'b', 'c'):
+        hindi = float(payload.get(f's6_{region}_hindi') or 0)
+        total = float(payload.get(f's6_{region}_total') or 0)
+
+        payload[f's6_{region}_percentage'] = (
+            round((hindi / total) * 100, 2) if total else 0
+        )
     # Convert dates and other non-JSON values safely.
     for key, item in list(payload.items()):
         if isinstance(item, (date, datetime)):
@@ -1727,7 +1791,7 @@ def _allowed_frequencies_for_date(user, selected_date, allow_future_days=True):
                 next_month_year, next_month_month = today.year + 1, 1
             else:
                 next_month_year, next_month_month = today.year, today.month + 1
-           
+
             try:
                 max_date = date(next_month_year, next_month_month, today.day)
             except ValueError:
@@ -1774,10 +1838,10 @@ def _allowed_frequencies_for_date(user, selected_date, allow_future_days=True):
     missing_quarter = [d for d in quarter_days if d not in submitted_quarter and d >= min_date and d <= max_date]
 
     allowed = ['daily']
-   
+
     month_last = _last_working_before(month_end)
     quarter_last = _last_working_before(q_end)
-   
+
     if len(missing_week) > 0 and week_end <= today:
         allowed.append('weekly')
     if len(missing_month) > 0 and selected_date >= month_last:
@@ -1802,7 +1866,133 @@ def _allowed_frequencies_for_date(user, selected_date, allow_future_days=True):
         'default_date': timezone.localdate().isoformat()
     }
 
+def get_office_correspondence(office_code, financial_year, quarter):
+    """
+    Retrieve central correspondence for an office and financial quarter.
+    Converts the QPR's displayed quarter label into Q1-Q4.
+    """
 
+    quarter_mapping = {
+        '30 जून / Jun 30': 'Q1',
+        '30 सितंबर / Sep 30': 'Q2',
+        '31 दिसंबर / Dec 31': 'Q3',
+        '31 मार्च / Mar 31': 'Q4',
+    }
+
+    quarter_code = quarter_mapping.get(
+        (quarter or '').strip(),
+        (quarter or '').strip()
+    )
+
+    office_code = (office_code or '').strip()
+    financial_year = (financial_year or '').strip()
+
+    if not office_code or not financial_year or not quarter_code:
+        return None
+
+    office = Office.objects.filter(code=office_code).first()
+
+    if not office:
+        return None
+
+    return OfficeCorrespondence.objects.filter(
+        office=office,
+        financial_year=financial_year,
+        quarter=quarter_code
+    ).first()
+
+@login_required
+def employee_office_correspondence(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'GET request required'}, status=405)
+
+    profile = getattr(request.user, 'profile', None)
+
+    if (
+        not profile
+        or not profile.profile_updated
+        or profile.approval_status != 'approved'
+    ):
+        return JsonResponse({'error': 'Access denied'}, status=403)
+
+    financial_year = request.GET.get('year', '').strip()
+    quarter = request.GET.get('quarter', '').strip()
+
+    correspondence = get_office_correspondence(
+        office_code=profile.office_code,
+        financial_year=financial_year,
+        quarter=quarter
+    )
+
+    fields = [
+        's5_a_total', 's5_a_hindi', 's5_a_english', 's5_a_no_reply',
+        's5_b_total', 's5_b_hindi', 's5_b_english', 's5_b_no_reply',
+        's6_a_hindi', 's6_a_english', 's6_a_total',
+        's6_b_hindi', 's6_b_english', 's6_b_total',
+        's6_c_hindi', 's6_c_english', 's6_c_total',
+    ]
+
+    data = {
+        field: getattr(correspondence, field, 0) if correspondence else 0
+        for field in fields
+    }
+
+    data.update({
+        's6_a_percentage': correspondence.s6_a_hindi_percentage if correspondence else 0,
+        's6_b_percentage': correspondence.s6_b_hindi_percentage if correspondence else 0,
+        's6_c_percentage': correspondence.s6_c_hindi_percentage if correspondence else 0,
+    })
+
+    return JsonResponse(data)
+
+def apply_office_correspondence_to_details(record, details):
+    """
+    Replace Section 5 and Section 6 values with centrally
+    maintained office correspondence data.
+    """
+
+    correspondence = get_office_correspondence(
+        office_code=record.officeCode,
+        financial_year=record.year,
+        quarter=record.quarter
+    )
+
+    if not correspondence:
+        return False
+
+    details.update({
+        # Section 5 - Region A
+        's5_total': correspondence.s5_a_total,
+        's5_hindi': correspondence.s5_a_hindi,
+        's5_english': correspondence.s5_a_english,
+        's5_noreply': correspondence.s5_a_no_reply,
+
+        # Section 5 - Region B
+        's5_b_total': correspondence.s5_b_total,
+        's5_b_hindi': correspondence.s5_b_hindi,
+        's5_b_english': correspondence.s5_b_english,
+        's5_b_noreply': correspondence.s5_b_no_reply,
+
+        # Section 6 - Region A
+        's6_a_hindi': correspondence.s6_a_hindi,
+        's6_a_eng': correspondence.s6_a_english,
+        's6_a_total': correspondence.s6_a_total,
+        's6_a_percentage': correspondence.s6_a_hindi_percentage,
+
+        # Section 6 - Region B
+        's6_b_hindi': correspondence.s6_b_hindi,
+        's6_b_eng': correspondence.s6_b_english,
+        's6_b_total': correspondence.s6_b_total,
+        's6_b_percentage': correspondence.s6_b_hindi_percentage,
+
+        # Section 6 - Region C
+        's6_c_hindi': correspondence.s6_c_hindi,
+        's6_c_eng': correspondence.s6_c_english,
+        's6_c_total': correspondence.s6_c_total,
+        's6_c_percentage': correspondence.s6_c_hindi_percentage,
+    })
+
+    return True
 def serialize_qpr_record(record):
     """Serialize a QPRRecord with all related sections."""
     office_name_display = record.officeName or ''
@@ -1856,6 +2046,11 @@ def serialize_qpr_record(record):
         's5_hindi': getattr(record.section5, 'region_a_replied_hindi', '') if hasattr(record, 'section5') else '',
         's5_english': getattr(record.section5, 'region_a_replied_english', '') if hasattr(record, 'section5') else '',
         's5_noreply': getattr(record.section5, 'region_a_no_reply', '') if hasattr(record, 'section5') else '',
+        # Section 5 - Region B
+        's5_b_total': getattr(record.section5, 'region_b_english_letters', '') if hasattr(record, 'section5') else '',
+        's5_b_hindi': getattr(record.section5, 'region_b_replied_hindi', '') if hasattr(record, 'section5') else '',
+        's5_b_english': getattr(record.section5, 'region_b_replied_english', '') if hasattr(record, 'section5') else '',
+        's5_b_noreply': getattr(record.section5, 'region_b_no_reply', '') if hasattr(record, 'section5') else '',
         # Section 6
         's6_a_hindi': getattr(record.section6, 'region_a_hindi_bilingual', '') if hasattr(record, 'section6') else '',
         's6_a_eng': getattr(record.section6, 'region_a_english_only', '') if hasattr(record, 'section6') else '',
@@ -1902,6 +2097,10 @@ def serialize_qpr_record(record):
         details = {}
         for k in NUMERIC_KEYS:
             details[k] = data.get(k, 0)
+        details['s5_b_total'] = data.get('s5_b_total', 0)
+        details['s5_b_hindi'] = data.get('s5_b_hindi', 0)
+        details['s5_b_english'] = data.get('s5_b_english', 0)
+        details['s5_b_noreply'] = data.get('s5_b_noreply', 0)
         details['s9_date'] = data.get('s9_date', '')
         details['s10_date'] = data.get('s10_date', '')
         details['s12_1'] = data.get('s12_1', '')
@@ -1910,6 +2109,52 @@ def serialize_qpr_record(record):
         data['details'] = details
     except Exception:
         data['details'] = {}
+
+    # Display centrally maintained correspondence for all employee QPRs.
+    try:
+        correspondence = get_office_correspondence(
+            office_code=record.officeCode,
+            financial_year=record.year,
+            quarter=record.quarter
+        )
+
+        if correspondence:
+            correspondence_fields = {
+                's5_total': correspondence.s5_a_total,
+                's5_hindi': correspondence.s5_a_hindi,
+                's5_english': correspondence.s5_a_english,
+                's5_noreply': correspondence.s5_a_no_reply,
+
+                's5_b_total': correspondence.s5_b_total,
+                's5_b_hindi': correspondence.s5_b_hindi,
+                's5_b_english': correspondence.s5_b_english,
+                's5_b_noreply': correspondence.s5_b_no_reply,
+
+                's6_a_hindi': correspondence.s6_a_hindi,
+                's6_a_eng': correspondence.s6_a_english,
+                's6_a_total': correspondence.s6_a_total,
+                's6_a_percentage': correspondence.s6_a_hindi_percentage,
+
+                's6_b_hindi': correspondence.s6_b_hindi,
+                's6_b_eng': correspondence.s6_b_english,
+                's6_b_total': correspondence.s6_b_total,
+                's6_b_percentage': correspondence.s6_b_hindi_percentage,
+
+                's6_c_hindi': correspondence.s6_c_hindi,
+                's6_c_eng': correspondence.s6_c_english,
+                's6_c_total': correspondence.s6_c_total,
+                's6_c_percentage': correspondence.s6_c_hindi_percentage,
+            }
+
+            data.update(correspondence_fields)
+            data['details'].update(correspondence_fields)
+
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception(
+            'Failed to load central correspondence for QPR %s',
+            record.id
+        )
     return data
 
 @require_POST
@@ -1920,7 +2165,7 @@ def custom_logout(request):
 
     if access_token:
         try:
-            ParichayService.revoke_token(access_token)  
+            ParichayService.revoke_token(access_token)
         except Exception as e:
             print("PARICHAY REVOKE FAILED:", e)
 
@@ -1952,7 +2197,7 @@ def rajbhasha_activities(request):
         request,
         "rajbhasha_activities.html",
         {"current_lang": lang}
-    )   
+    )
 
 def event_detail(request, folder):
     events = get_all_events()
@@ -1984,11 +2229,11 @@ def error_500(request): return universal_error_view(request, None, 500)
 
 @login_required
 def dashboard(request):
-    
+
     # Get the list of roles we set up previously
-    from .views import user_get_all_roles 
-    roles = user_get_all_roles(request.user) 
-    
+    from .views import user_get_all_roles
+    roles = user_get_all_roles(request.user)
+
     # Priority Routing: Drop them in the highest dashboard they have access to
     if 'admin' in roles:
         return redirect('qpr_admin_dashboard')
@@ -1996,7 +2241,7 @@ def dashboard(request):
         return redirect('qpr_hod_dashboard')
     elif 'manager' in roles:
         return redirect('manager_dashboard')
-    elif 'backup_user' in roles:               
+    elif 'backup_user' in roles:
         return redirect('backup_user_dashboard')
     else:
         return redirect('qpr_user_dashboard')
@@ -2009,24 +2254,255 @@ def toggle_language(request):
     request.session['lang'] = 'hi' if current == 'en' else 'en'
     return redirect(request.META.get('HTTP_REFERER', 'home'))
 
+AUTH_CAPTCHA_SESSION_KEY = "rajbhasha_auth_captcha_answer"
+
+CAPTCHA_CHARACTERS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
+
+
+def _validate_auth_captcha(request):
+    expected = request.session.pop(
+        AUTH_CAPTCHA_SESSION_KEY, None
+    )
+
+    supplied = (
+        request.POST.get("captcha_answer") or ""
+    ).strip()
+
+    return bool(
+        expected
+        and supplied
+        and secrets.compare_digest(str(expected), supplied)
+    )
+
+
+def _auth_page_context(request, **extra):
+    context = {
+        "current_lang": request.session.get("lang", "en"),
+    }
+
+    context.update(extra)
+    return context
+
+
+@require_GET
+def auth_captcha_image(request):
+
+    code = "".join(
+        secrets.choice(CAPTCHA_CHARACTERS)
+        for _ in range(6)
+    )
+
+    request.session[AUTH_CAPTCHA_SESSION_KEY] = code
+
+    width, height = 220, 75
+
+    image = Image.new(
+        "RGBA",
+        (width, height),
+        (245, 247, 250, 255)
+    )
+
+    draw = ImageDraw.Draw(image)
+
+    # Background noise lines
+    for _ in range(9):
+        draw.line(
+            (
+                secrets.randbelow(width),
+                secrets.randbelow(height),
+                secrets.randbelow(width),
+                secrets.randbelow(height)
+            ),
+            fill=(150, 160, 180, 180),
+            width=1
+        )
+
+    # Draw individually rotated characters
+    for index, character in enumerate(code):
+
+        char_image = Image.new(
+            "RGBA",
+            (50, 55),
+            (255, 255, 255, 0)
+        )
+
+        char_draw = ImageDraw.Draw(char_image)
+
+        font = ImageFont.load_default(size=32)
+
+        char_draw.text(
+            (7, 5),
+            character,
+            font=font,
+            fill=(
+                secrets.randbelow(100),
+                secrets.randbelow(100),
+                secrets.randbelow(100),
+                255
+            )
+        )
+
+        char_image = char_image.rotate(
+            secrets.randbelow(31) - 15,
+            resample=Image.Resampling.BICUBIC
+        )
+
+        image.alpha_composite(
+            char_image,
+            (
+                5 + index * 35,
+                secrets.randbelow(12) + 5
+            )
+        )
+
+    # Add random dots
+    draw = ImageDraw.Draw(image)
+
+    for _ in range(100):
+        x = secrets.randbelow(width)
+        y = secrets.randbelow(height)
+
+        draw.point(
+            (x, y),
+            fill=(120, 130, 150, 180)
+        )
+
+    buffer = io.BytesIO()
+
+    image.convert("RGB").save(buffer, format="PNG")
+
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type="image/png"
+    )
+
+    response["Cache-Control"] = (
+        "no-store, no-cache, must-revalidate, max-age=0"
+    )
+
+    return response
+
+
 class CustomLoginView(View):
 
+    template_name = "registration/login.html"
+
     def get(self, request, *args, **kwargs):
+
         if request.user.is_authenticated:
             return redirect("dashboard")
 
-        lang = request.session.get("lang", "en")
+        form = AuthenticationForm(request=request)
 
         return render(
             request,
-            "registration/login.html",
-            {
-                "current_lang": lang,
-            }
+            self.template_name,
+            _auth_page_context(
+                request,
+                form=form,
+                next=request.GET.get("next", "")
+            )
         )
 
+    def post(self, request, *args, **kwargs):
+
+        if request.user.is_authenticated:
+            return redirect("dashboard")
+
+        form = AuthenticationForm(
+            request=request,
+            data=request.POST
+        )
+
+        captcha_valid = _validate_auth_captcha(request)
+        form_valid = form.is_valid()
+
+        if captcha_valid and form_valid:
+
+            auth_login(request, form.get_user())
+
+            next_url = (
+                request.POST.get("next")
+                or request.GET.get("next")
+            )
+
+            if next_url and url_has_allowed_host_and_scheme(
+                next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure()
+            ):
+                return redirect(next_url)
+
+            return redirect("dashboard")
+
+        if not captcha_valid:
+            form.add_error(
+                None,
+                "CAPTCHA verification failed. Please try again."
+            )
+
+        return render(
+            request,
+            self.template_name,
+            _auth_page_context(
+                request,
+                form=form,
+                next=request.POST.get("next", "")
+            ),
+            status=400 if not captcha_valid else 200
+        )
+
+
 def signup(request):
-    return redirect("parichay_login")
+
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+
+    if request.method == "POST":
+
+        form = CustomUserCreationForm(
+            request.POST,
+            request=request
+        )
+
+        captcha_valid = _validate_auth_captcha(request)
+        form_valid = form.is_valid()
+
+        if captcha_valid and form_valid:
+
+            with transaction.atomic():
+
+                user = form.save()
+
+                default_role, _ = Role.objects.get_or_create(
+                    name="user"
+                )
+
+                user.roles.add(default_role)
+
+            messages.success(
+                request,
+                "Your account has been created. Please log in."
+            )
+
+            return redirect("login")
+
+        if not captcha_valid:
+            form.add_error(
+                None,
+                "CAPTCHA verification failed. Please try again."
+            )
+
+    else:
+
+        form = CustomUserCreationForm(request=request)
+
+    return render(
+        request,
+        "registration/signup.html",
+        _auth_page_context(request, form=form),
+        status=400 if request.method == "POST" and not captcha_valid else 200
+    )
 @login_required
 def export_user_data(request):
     user = request.user
@@ -2053,26 +2529,26 @@ def download_privacy_audit(request):
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
-   
+
     p.setFont("HindiFont", 16)
     p.drawString(50, height - 50, "DPDP Privacy Audit Report")
-   
+
     y = height - 100
     logs = DataAccessLog.objects.all().order_by('-access_time')
-   
+
     for log in logs:
         p.setFont("HindiFont", 10)
-       
+
         log_text = f"{log.access_time.strftime('%Y-%m-%d')}: {log.accessed_by.username} accessed {log.target_user.username}"
         p.drawString(50, y, log_text)
-       
+
         y -= 20
         if y < 50:
             p.showPage()
             p.setFont("HindiFont", 10)
             y = height - 50
     p.setFont("HindiFont", 20)
-    p.drawString(100, 100, "रिकी टेस्ट")        
+    p.drawString(100, 100, "रिकी टेस्ट")
     p.save()
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename=f'privacy_audit_{timezone.now().date()}.pdf')
@@ -2121,9 +2597,9 @@ def download_db_backup(request):
 
 @login_required
 @user_passes_test(is_admin)
-def archive_user(request, user_id):  
+def archive_user(request, user_id):
     user_to_archive = get_object_or_404(CustomUser, id=user_id)
-   
+
     if getattr(user_to_archive, 'id', None) == getattr(request.user, 'id', None):
         messages.error(request, "You cannot archive yourself.")
         return redirect('dashboard')
@@ -2162,8 +2638,8 @@ def archive_user(request, user_id):
         original_user_id=user_to_archive.pk,
         employee_snapshot=json.dumps(snapshot)
     )
-   
-    user_to_archive.is_active = False    
+
+    user_to_archive.is_active = False
     user_to_archive.is_archived = True
     user_to_archive.save()
     log_audit(
@@ -2179,13 +2655,13 @@ def archive_user(request, user_id):
 @user_passes_test(is_admin)
 def unarchive_user(request, archive_id):
     archived_record = get_object_or_404(ArchivedUser, id=archive_id)
-   
+
     try:
         user_to_restore = CustomUser.objects.get(id=archived_record.original_user_id)
         user_to_restore.is_active = True
         user_to_restore.is_archived = False
         user_to_restore.save()
-       
+
         archived_record.delete()
         log_audit(
             request,
@@ -2195,11 +2671,11 @@ def unarchive_user(request, archive_id):
         )
         messages.success(request, f"User {user_to_restore.username} has been unarchived/restored.")
         return redirect('dashboard')
-       
+
     except CustomUser.DoesNotExist:
         messages.error(request, "Original user record not found. Cannot restore.")
         return redirect('dashboard')
-   
+
 def _can_edit_profile(user, profile, pending_change_request=None):
     if user_has_role(user, ['manager', 'admin']):
         return True
@@ -2238,7 +2714,7 @@ def profile_view(request):
         or user_has_role(user, 'admin')
         or user_has_role(user, 'manager')
     )
-   
+
     pending_change_request = ProfileChangeRequest.objects.filter(
         profile=profile,
         status='pending'
@@ -2261,7 +2737,7 @@ def profile_view(request):
 
     if request.method == 'GET':
             forbidden_form_params = {
-                'csrfmiddlewaretoken', 'empcode', 'username', 'email', 'phone', 
+                'csrfmiddlewaretoken', 'empcode', 'username', 'email', 'phone',
                 'alternate_email', 'hname', 'ename', 'designation', 'super_annuation_date'
             }
             # Only reject if the GET request contains actual hidden form payload fields
@@ -2381,26 +2857,50 @@ def profile_view(request):
         # submitted code and derive office_name/office_state from that real
         # record, rather than saving whatever office_name/office_state the
         # browser happened to send.
-        office_code_post = request.POST.get('office_code', '').strip()
-
+        # Office assignment is optional initially for privileged users.
+        # Once assigned, their office cannot be changed through Profile.
         selected_office = None
 
-        if office_code_post:
-            selected_office = Office.objects.filter(code=office_code_post).first()
+        existing_office_code = (
+            (profile.office_code or '').strip()
+            if profile else ''
+        )
+
+        if privileged_user and existing_office_code:
+            # Always retain the already assigned office.
+            selected_office = Office.objects.filter(
+                code=existing_office_code
+            ).first()
 
             if not selected_office:
                 messages.error(
                     request,
-                    "The selected office is invalid. Please choose a valid office from the list."
+                    "Your assigned office could not be found. Please contact the system administrator."
                 )
                 return redirect('profile')
 
-        elif not privileged_user:
-            messages.error(
-                request,
-                "Please select your Place of Posting (Office Name)."
-            )
-            return redirect('profile')
+        else:
+            # First-time assignment or regular employee office selection.
+            office_code_post = request.POST.get('office_code', '').strip()
+
+            if office_code_post:
+                selected_office = Office.objects.filter(
+                    code=office_code_post
+                ).first()
+
+                if not selected_office:
+                    messages.error(
+                        request,
+                        "The selected office is invalid. Please choose a valid office from the list."
+                    )
+                    return redirect('profile')
+
+            elif not privileged_user:
+                messages.error(
+                    request,
+                    "Please select your Place of Posting (Office Name)."
+                )
+                return redirect('profile')
 
         with transaction.atomic():
             user.set_email(new_email)
@@ -2616,13 +3116,13 @@ def request_edit(request):
     lang = request.session.get('lang', 'en')
     user = request.user
     if not user.is_frozen: return redirect('dashboard')
-   
+
     pending_request = EditRequest.objects.filter(
         user=request.user,
         request_type='profile',
         status='pending'
     ).exists()
-   
+
     if pending_request:
         messages.warning(request, translate_text("You already have a pending profile edit request.", lang))
     else:
@@ -2658,7 +3158,7 @@ def request_edit(request):
             if admin:
                 msg = f"User {user.username} has requested permission to edit their profile."
                 #send_system_email(admin, request, 'manager_alert', extra_context={'body_text': msg})
-   
+
     return redirect('dashboard')
 
 @login_required
@@ -2689,9 +3189,9 @@ def user_dashboard(request):
     qpr_records = QPRRecord.objects.filter(user=request.user)
     today = timezone.localdate()
     submitted_qprs = QPRRecord.objects.filter(user=request.user, is_submitted=True, frequency__iexact='daily', period_start=today).count()
-   
+
     available_hods = get_active_hods(profile.office_code)
-   
+
     is_hod_or_manager = user_has_role(request.user, ['hod', 'manager'])
     roles = set(user_get_all_roles(request.user))
     roles_up = {r.upper() for r in roles}
@@ -2700,9 +3200,6 @@ def user_dashboard(request):
     has_admin = 'ADMIN' in roles_up
     has_hod = 'HOD' in roles_up
 
-    disable_user_dashboard_actions = (
-        has_user and (has_manager or has_admin) and (not has_hod)
-    )
 
     context = {
         'role': 'user',
@@ -2714,7 +3211,6 @@ def user_dashboard(request):
         'available_hods': available_hods,
         'current_hod': profile.hod_name or '',
         'is_hod_or_manager': is_hod_or_manager,
-        'disable_user_dashboard_actions': disable_user_dashboard_actions,
         'has_manager': has_manager,
         'has_admin': has_admin,
     }
@@ -2754,12 +3250,56 @@ def manager_qpr_view(request, id=None):
         else:
             form = ManagerQPRForm(request.POST)
 
+        if not instance:
+            profile = getattr(request.user, 'profile', None)
+            office_code = getattr(profile, 'office_code', '')
+            correspondence = get_office_correspondence(
+                office_code, form.data.get('financial_year'),
+                form.data.get('quarter')
+            )
+
+            if correspondence:
+                form.initial.update({
+                    's5_region_a_english_letters': correspondence.s5_a_total,
+                    's5_region_a_replied_hindi': correspondence.s5_a_hindi,
+                    's5_region_a_replied_english': correspondence.s5_a_english,
+                    's5_region_a_no_reply': correspondence.s5_a_no_reply,
+                    's5_region_b_english_letters': correspondence.s5_b_total,
+                    's5_region_b_replied_hindi': correspondence.s5_b_hindi,
+                    's5_region_b_replied_english': correspondence.s5_b_english,
+                    's5_region_b_no_reply': correspondence.s5_b_no_reply,
+                    's6_region_a_hindi_bilingual': correspondence.s6_a_hindi,
+                    's6_region_a_english_only': correspondence.s6_a_english,
+                    's6_region_a_total': correspondence.s6_a_total,
+                    's6_region_b_hindi_bilingual': correspondence.s6_b_hindi,
+                    's6_region_b_english_only': correspondence.s6_b_english,
+                    's6_region_b_total': correspondence.s6_b_total,
+                    's6_region_c_hindi_bilingual': correspondence.s6_c_hindi,
+                    's6_region_c_english_only': correspondence.s6_c_english,
+                    's6_region_c_total': correspondence.s6_c_total,
+                })
+
         if form.is_valid():
             quarter = form.cleaned_data.get('quarter')
             financial_year = form.cleaned_data.get('financial_year')
             if not instance and ManagerQPR.objects.filter(user=request.user, quarter=quarter, financial_year=financial_year).exists():
                 messages.error(request, "Manager QPR for this quarter and financial year has already been filled.")
             else:
+                if not instance and not get_office_correspondence(
+                    getattr(getattr(request.user, 'profile', None), 'office_code', ''),
+                    financial_year,
+                    quarter
+                ):
+                    messages.error(
+                        request,
+                        "Office correspondence has not been entered for this quarter. Please contact your Admin."
+                    )
+                    return render(
+                        request,
+                        'qpr/manager_qpr_form.html',
+                        {'form': form, 'instance': instance}
+                    )
+
                 obj = form.save(commit=False)
                 obj.user = request.user
                 obj.is_submitted = True
@@ -2778,6 +3318,38 @@ def manager_qpr_view(request, id=None):
             form = ManagerQPRForm(instance=instance)
         else:
             form = ManagerQPRForm()
+
+            profile = getattr(request.user, 'profile', None)
+            office_code = getattr(profile, 'office_code', '')
+
+            financial_year = form['financial_year'].value()
+            quarter = form['quarter'].value()
+
+            correspondence = get_office_correspondence(
+                office_code, financial_year, quarter
+            )
+
+            if correspondence:
+                form.initial.update({
+                    's5_region_a_english_letters': correspondence.s5_a_total,
+                    's5_region_a_replied_hindi': correspondence.s5_a_hindi,
+                    's5_region_a_replied_english': correspondence.s5_a_english,
+                    's5_region_a_no_reply': correspondence.s5_a_no_reply,
+                    's5_region_b_english_letters': correspondence.s5_b_total,
+                    's5_region_b_replied_hindi': correspondence.s5_b_hindi,
+                    's5_region_b_replied_english': correspondence.s5_b_english,
+                    's5_region_b_no_reply': correspondence.s5_b_no_reply,
+                    's6_region_a_hindi_bilingual': correspondence.s6_a_hindi,
+                    's6_region_a_english_only': correspondence.s6_a_english,
+                    's6_region_a_total': correspondence.s6_a_total,
+                    's6_region_b_hindi_bilingual': correspondence.s6_b_hindi,
+                    's6_region_b_english_only': correspondence.s6_b_english,
+                    's6_region_b_total': correspondence.s6_b_total,
+                    's6_region_c_hindi_bilingual': correspondence.s6_c_hindi,
+                    's6_region_c_english_only': correspondence.s6_c_english,
+                    's6_region_c_total': correspondence.s6_c_total,
+                })
+
 
     return render(request, 'qpr/manager_qpr_form.html', {'form': form, 'instance': instance})
 
@@ -2913,7 +3485,7 @@ def manager_section11_select_texts(request, manager_qpr_id=None):
 
     if request.method == 'POST':
         selected_user_ids = request.POST.getlist('selected_users')
-       
+
         office_users = CustomUser.objects.filter(
             profile__office_code=manager_office,
             is_active=True
@@ -2997,7 +3569,7 @@ def admin_qpr_view(request, id=None):
         instance = get_object_or_404(AdminQPR, pk=id)
     if request.method == 'GET':
         forbidden_qpr_params = {
-            'csrfmiddlewaretoken', 'form_type', 'quarter', 'financial_year', 
+            'csrfmiddlewaretoken', 'form_type', 'quarter', 'financial_year',
             'a_s2_meetings_count', 'a_s2_hindi_minutes', 'a_s3_total_documents',
             'a_s4_total_letters', 'a_s5_region_a_english_letters', 'role_form'
         }
@@ -3013,12 +3585,57 @@ def admin_qpr_view(request, id=None):
         else:
             form = AdminQPRForm(request.POST)
 
+        if not instance:
+            profile = getattr(request.user, 'profile', None)
+            office_code = getattr(profile, 'office_code', '')
+            correspondence = get_office_correspondence(
+                office_code,
+                form.data.get('financial_year'),
+                form.data.get('quarter')
+            )
+
+            if correspondence:
+                form.initial.update({
+                    'a_s5_region_a_english_letters': correspondence.s5_a_total,
+                    'a_s5_region_a_replied_hindi': correspondence.s5_a_hindi,
+                    'a_s5_region_a_replied_english': correspondence.s5_a_english,
+                    'a_s5_region_a_no_reply': correspondence.s5_a_no_reply,
+                    'a_s5_region_b_english_letters': correspondence.s5_b_total,
+                    'a_s5_region_b_replied_hindi': correspondence.s5_b_hindi,
+                    'a_s5_region_b_replied_english': correspondence.s5_b_english,
+                    'a_s5_region_b_no_reply': correspondence.s5_b_no_reply,
+                    'a_s6_region_a_hindi_bilingual': correspondence.s6_a_hindi,
+                    'a_s6_region_a_english_only': correspondence.s6_a_english,
+                    'a_s6_region_a_total': correspondence.s6_a_total,
+                    'a_s6_region_b_hindi_bilingual': correspondence.s6_b_hindi,
+                    'a_s6_region_b_english_only': correspondence.s6_b_english,
+                    'a_s6_region_b_total': correspondence.s6_b_total,
+                    'a_s6_region_c_hindi_bilingual': correspondence.s6_c_hindi,
+                    'a_s6_region_c_english_only': correspondence.s6_c_english,
+                    'a_s6_region_c_total': correspondence.s6_c_total,
+                })
+
         if form.is_valid():
             quarter = form.cleaned_data.get('quarter')
             financial_year = form.cleaned_data.get('financial_year')
             if not instance and AdminQPR.objects.filter(user=request.user, quarter=quarter, financial_year=financial_year).exists():
                 messages.error(request, "Admin QPR for this quarter and financial year has already been filled.")
             else:
+                if not instance and not get_office_correspondence(
+                    getattr(getattr(request.user, 'profile', None), 'office_code', ''),
+                    financial_year,
+                    quarter
+                ):
+                    messages.error(
+                        request,
+                        "Office correspondence has not been entered for this quarter. Please contact your Admin."
+                    )
+                    return render(
+                        request,
+                        'qpr/admin_qpr_form.html',
+                        {'form': form, 'instance': instance}
+                    )
+
                 obj = form.save(commit=False)
                 obj.user = request.user
                 obj.is_submitted = True
@@ -3037,6 +3654,37 @@ def admin_qpr_view(request, id=None):
             form = AdminQPRForm(instance=instance)
         else:
             form = AdminQPRForm()
+
+            profile = getattr(request.user, 'profile', None)
+            office_code = getattr(profile, 'office_code', '')
+
+            financial_year = form['financial_year'].value()
+            quarter = form['quarter'].value()
+
+            correspondence = get_office_correspondence(
+                office_code, financial_year, quarter
+            )
+
+            if correspondence:
+                form.initial.update({
+                    'a_s5_region_a_english_letters': correspondence.s5_a_total,
+                    'a_s5_region_a_replied_hindi': correspondence.s5_a_hindi,
+                    'a_s5_region_a_replied_english': correspondence.s5_a_english,
+                    'a_s5_region_a_no_reply': correspondence.s5_a_no_reply,
+                    'a_s5_region_b_english_letters': correspondence.s5_b_total,
+                    'a_s5_region_b_replied_hindi': correspondence.s5_b_hindi,
+                    'a_s5_region_b_replied_english': correspondence.s5_b_english,
+                    'a_s5_region_b_no_reply': correspondence.s5_b_no_reply,
+                    'a_s6_region_a_hindi_bilingual': correspondence.s6_a_hindi,
+                    'a_s6_region_a_english_only': correspondence.s6_a_english,
+                    'a_s6_region_a_total': correspondence.s6_a_total,
+                    'a_s6_region_b_hindi_bilingual': correspondence.s6_b_hindi,
+                    'a_s6_region_b_english_only': correspondence.s6_b_english,
+                    'a_s6_region_b_total': correspondence.s6_b_total,
+                    'a_s6_region_c_hindi_bilingual': correspondence.s6_c_hindi,
+                    'a_s6_region_c_english_only': correspondence.s6_c_english,
+                    'a_s6_region_c_total': correspondence.s6_c_total,
+                })
 
     return render(request, 'qpr/admin_qpr_form.html', {'form': form, 'instance': instance})
 
@@ -3291,7 +3939,7 @@ def manager_dashboard(request):
     if manager_office:
         edit_requests = EditRequest.objects.filter(
             request_type='qpr',
-            status__in=['pending', 'approved']  
+            status__in=['pending', 'approved']
         ).select_related('user').filter(
             user__profile__office_code=manager_office
         )
@@ -3564,7 +4212,7 @@ def manager_request_office_edit(request):
         )
     )
 
-    return redirect('manager_dashboard') 
+    return redirect('manager_dashboard')
 
 @login_required
 @require_POST
@@ -3733,6 +4381,18 @@ def _can_manage_employee_master(user):
         user_has_role(user, ['manager', 'admin']) or user.is_superuser
     )
 
+def _get_employee_master_queryset(user):
+    employees = EmployeeMaster.objects.all()
+
+    profile = getattr(user, 'profile', None)
+    user_state = (
+        (getattr(profile, 'office_state', '') or '').strip()
+    )
+
+    if not user_state:
+        return employees.none()
+
+    return employees.filter(state__iexact=user_state)
 
 @login_required
 def manager_employee_master_list(request):
@@ -3744,7 +4404,7 @@ def manager_employee_master_list(request):
     state = (request.GET.get('state') or '').strip()
     status_filter = (request.GET.get('status') or 'active').strip().lower()
 
-    employees = EmployeeMaster.objects.all().order_by('empcode')
+    employees = _get_employee_master_queryset(request.user).order_by('empcode')
 
     if query:
         query_filter = (
@@ -3781,11 +4441,9 @@ def manager_employee_master_list(request):
         ).exclude(
             designation__exact=''
         ).values_list('designation', flat=True).distinct().order_by('designation'),
-        'state_options': EmployeeMaster.objects.exclude(
-            state__isnull=True
-        ).exclude(
-            state__exact=''
-        ).values_list('state', flat=True).distinct().order_by('state'),
+        'state_options': employees.order_by().values_list(
+            'state', flat=True
+        ).distinct().order_by('state'),
     }
     return render(request, 'manager_employee_master_list.html', context)
 
@@ -3798,7 +4456,7 @@ def manager_employee_master_add(request):
     if request.method == 'GET':
         form_indicators = ['empcode', 'name', 'mobile', 'designation', 'state']
         if any(param in request.GET for param in form_indicators):
-            return HttpResponseBadRequest("Bad Request: Form data parameters cannot be accepted via query string link.")    
+            return HttpResponseBadRequest("Bad Request: Form data parameters cannot be accepted via query string link.")
 
     if request.method == 'POST':
         querystring_error = reject_querystring_on_post(request)
@@ -3935,13 +4593,13 @@ def admin_dashboard(request):
     if not admin_state:
         messages.warning(request, "Mandatory: You must set your Office State in your profile before accessing the Admin Dashboard.")
         return redirect('profile')
-   
+
     users = CustomUser.objects.filter(is_active=True, is_archived=False, profile__office_state=admin_state).order_by('-date_joined')
-   
+
     archived_users = ArchivedUser.objects.all().order_by('-archived_at')
 
     today = timezone.localdate()
-   
+
     hod_stats = []
     hods = UserProfile.objects.filter(
         Q(roles__name='hod') | Q(user__roles__name='hod'),
@@ -4061,7 +4719,7 @@ def admin_dashboard(request):
             approval_status='pending_admin',
             office_state=admin_state,
         ).select_related('user', 'employee').order_by('-created_at')
-    
+
     pending_office_edit_requests = (
         OfficeEditRequest.objects
         .filter(
@@ -4089,6 +4747,183 @@ def admin_dashboard(request):
     response['Pragma'] = 'no-cache'
     response['Expires'] = '0'
     return response
+
+@login_required
+def admin_correspondence(request):
+    """
+    Admin manages office-wise quarterly correspondence figures.
+    Office is derived from the logged-in Admin's profile.
+    """
+
+    # Admin-only access
+    if not user_has_role(request.user, 'admin'):
+        return redirect('/')
+
+    # Get the Admin's assigned office
+    profile = getattr(request.user, 'profile', None)
+    office_code = (
+        (profile.office_code or '').strip()
+        if profile else ''
+    )
+
+    if not office_code:
+        messages.warning(
+            request,
+            "Please assign an office in your profile before managing correspondence. / "
+            "पत्राचार प्रबंधन से पहले कृपया अपनी प्रोफ़ाइल में कार्यालय निर्धारित करें।"
+        )
+        return redirect('profile')
+
+    office = Office.objects.filter(code=office_code).first()
+
+    if not office:
+        messages.error(
+            request,
+            "Your assigned office could not be found. Please contact the administrator. / "
+            "आपका निर्धारित कार्यालय नहीं मिला। कृपया प्रशासक से संपर्क करें।"
+        )
+        return redirect('profile')
+
+    # Financial year options
+    today = timezone.localdate()
+    current_start = today.year if today.month >= 4 else today.year - 1
+
+    financial_years = [
+        f"{year}-{year + 1}"
+        for year in range(current_start, current_start - 6, -1)
+    ]
+
+    quarter_choices = [
+        ('Q1', 'Q1 (April – June) / अप्रैल – जून'),
+        ('Q2', 'Q2 (July – September) / जुलाई – सितंबर'),
+        ('Q3', 'Q3 (October – December) / अक्टूबर – दिसंबर'),
+        ('Q4', 'Q4 (January – March) / जनवरी – मार्च'),
+    ]
+
+    financial_year = request.GET.get(
+        'financial_year',
+        f"{current_start}-{current_start + 1}"
+    ).strip()
+
+    quarter = request.GET.get(
+        'quarter',
+        'Q1'
+    ).strip()
+
+    if request.method == 'POST':
+        financial_year = request.POST.get(
+            'financial_year', ''
+        ).strip()
+
+        quarter = request.POST.get(
+            'quarter', ''
+        ).strip()
+
+        if financial_year not in financial_years:
+            messages.error(
+                request,
+                "Invalid financial year. / अमान्य वित्तीय वर्ष।"
+            )
+
+        elif quarter not in dict(quarter_choices):
+            messages.error(
+                request,
+                "Invalid quarter. / अमान्य तिमाही।"
+            )
+
+        else:
+            field_names = [
+                's5_a_total',
+                's5_a_hindi',
+                's5_a_english',
+                's5_a_no_reply',
+                's5_b_total',
+                's5_b_hindi',
+                's5_b_english',
+                's5_b_no_reply',
+                's6_a_hindi',
+                's6_a_english',
+                's6_b_hindi',
+                's6_b_english',
+                's6_c_hindi',
+                's6_c_english',
+            ]
+
+            values = {}
+            validation_error = False
+
+            for field in field_names:
+                raw_value = request.POST.get(field, '').strip()
+
+                try:
+                    value = int(raw_value)
+
+                    if value < 0:
+                        raise ValueError
+
+                    values[field] = value
+
+                except (TypeError, ValueError):
+                    validation_error = True
+                    break
+
+            if validation_error:
+                messages.error(
+                    request,
+                    "Please enter valid non-negative whole numbers in all fields. / "
+                    "कृपया सभी फ़ील्ड में शून्य या उससे अधिक पूर्णांक दर्ज करें।"
+                )
+
+            else:
+                correspondence, created = (
+                    OfficeCorrespondence.objects.update_or_create(
+                        office=office,
+                        financial_year=financial_year,
+                        quarter=quarter,
+                        defaults=values
+                    )
+                )
+
+                action = (
+                    "saved successfully"
+                    if created else "updated successfully"
+                )
+
+                action_hi = (
+                    "सफलतापूर्वक सहेजा गया"
+                    if created else "सफलतापूर्वक अपडेट किया गया"
+                )
+
+                messages.success(
+                    request,
+                    f"Correspondence data {action}. / "
+                    f"पत्राचार डेटा {action_hi}।"
+                )
+
+                return redirect(
+                    f"{request.path}?financial_year={financial_year}&quarter={quarter}"
+                )
+
+    correspondence = OfficeCorrespondence.objects.filter(
+        office=office,
+        financial_year=financial_year,
+        quarter=quarter
+    ).first()
+
+    context = {
+        'office': office,
+        'financial_years': financial_years,
+        'quarter_choices': quarter_choices,
+        'selected_financial_year': financial_year,
+        'selected_quarter': quarter,
+        'correspondence': correspondence,
+    }
+
+    return render(
+        request,
+        'admin_correspondence.html',
+        context
+    )
 
 @login_required
 def admin_create_hod(request):
@@ -4187,10 +5022,10 @@ def admin_create_manager(request):
 def admin_api_get_employee_details(request):
     admin_state = request.user.profile.office_state
     emp_code = request.GET.get('emp_code', '').strip()
-   
+
     if not emp_code:
         return JsonResponse({'error': 'Employee code is required'}, status=400)
-   
+
     try:
         profile = UserProfile.objects.get(employee_code=emp_code, office_state=admin_state)
         roles = list(profile.roles.values_list('name', flat=True))
@@ -4216,7 +5051,7 @@ def api_create_office(request):
     if not user_has_role(request.user, 'admin'):
         messages.error(request, 'Permission denied')
         return redirect('qpr_admin_dashboard')
-   
+
     admin_state = getattr(request.user.profile, 'office_state', '').strip()
     if not admin_state:
         messages.error(request, "Your profile is missing a state. Please update your profile first.")
@@ -4282,7 +5117,7 @@ def admin_employee_list(request):
         office_state=admin_state
     ).select_related('user').distinct().order_by('name')
     hod_groups = []
-   
+
     for hod_profile in hods:
         hod_employee_master = None
         try:
@@ -4379,7 +5214,7 @@ def admin_employee_list(request):
                 'user_count': len(user_details),
                 'users': user_details
             })
-   
+
     context = {
         'hod_groups': hod_groups,
         'employee_code_filter': employee_code_filter,
@@ -4424,7 +5259,7 @@ def manage_user_action(request, user_id, action):
         target_user = profile.user
 
     lang = request.session.get('lang', 'en')
-   
+
     if action in ['archive', 'unarchive']:
         if not (user_has_role(request.user, ['admin']) or request.user.is_superuser):
             messages.error(request, translate_text("Only Admins can perform this action.", lang))
@@ -4435,7 +5270,7 @@ def manage_user_action(request, user_id, action):
             if admin_state != target_state:
                 messages.error(request, translate_text("You can only manage users within your own state.", lang))
                 return redirect('dashboard')
-       
+
         if action == 'archive':
             target_user.is_active = False
             target_user.is_archived = True
@@ -4471,9 +5306,9 @@ def qpr_form(request):
             "Please complete your profile and wait for approval before accessing QPR."
         )
         return redirect('dashboard')
-   
+
     ensure_current_financial_year()
-   
+
     profile_office_name = profile.office_name if profile and profile.office_name else ''
     profile_office_code = profile.office_code if profile and profile.office_code else ''
     profile_phone = profile.phone if profile and profile.phone else ''
@@ -4488,7 +5323,7 @@ def qpr_form(request):
             'record_id': r.pk,
         })
 
-   
+
 
     context = {
         'profile_office_name': profile_office_name,
@@ -4507,7 +5342,7 @@ def qpr_form(request):
 
     today = timezone.localdate()
     month = today.month
-   
+
     if 4 <= month <= 6:
         current_quarter = '30 जून / Jun 30'
     elif 7 <= month <= 9:
@@ -4761,7 +5596,7 @@ def report_list(request):
         weekly = []
         monthly = []
         quarterly = None
-       
+
         if q_start and q_end:
             all_daily_recs_full = list(QPRRecord.objects.filter(
                 user=target_user,
@@ -4769,14 +5604,14 @@ def report_list(request):
                 frequency__iexact='daily',
                 period_start__range=[q_start, q_end]
             ))
-           
+
             all_daily_recs = list(QPRRecord.objects.filter(
                 user=target_user,
                 is_submitted=True,
                 frequency__iexact='daily',
                 period_start__range=[q_start, q_end]
             ).values('period_start', 'region'))
-           
+
             all_weekly_snaps = list(WeeklySnapshot.objects.filter(
                 user=target_user,
                 quarter=quarter,
@@ -4784,7 +5619,7 @@ def report_list(request):
                 period_start__gte=q_start - timedelta(days=7),
                 period_end__lte=q_end + timedelta(days=7)
             ))
-           
+
             all_weekly_fills = list(WeeklyFill.objects.filter(
                 user=target_user,
                 quarter=quarter,
@@ -4805,7 +5640,7 @@ def report_list(request):
                 quarter=quarter,
                 year=year
             ))
-           
+
             all_monthly_snaps = list(MonthlySnapshot.objects.filter(
                 user=target_user,
                 quarter=quarter,
@@ -4813,13 +5648,13 @@ def report_list(request):
                 period_start__gte=q_start - timedelta(days=31),
                 period_end__lte=q_end + timedelta(days=31)
             ))
-           
+
             quarterly_snap = QuarterlySnapshot.objects.filter(
                 user=target_user,
                 quarter=quarter,
                 year=year
             ).first()
-           
+
             all_daily_records = QPRRecord.objects.filter(
                 user=target_user,
                 is_submitted=True,
@@ -4847,19 +5682,19 @@ def report_list(request):
                 period_start__lte=q_end,
                 period_end__gte=q_start
             )
-                       
+
             daily_by_date_full = {}
             for rec in all_daily_recs_full:
                 daily_by_date_full[rec.period_start] = rec
-           
+
             daily_by_date = {}
             for rec in all_daily_recs:
                 daily_by_date[rec['period_start']] = rec
-           
+
             weekly_by_range = {}
             for snap in all_weekly_snaps:
                 weekly_by_range[(snap.period_start, snap.period_end)] = snap
-           
+
             weekly_fill_by_range = {}
             for fill in all_weekly_fills:
                 weekly_fill_by_range[(fill.period_start, fill.period_end)] = fill
@@ -4939,7 +5774,7 @@ def report_list(request):
                         first_quarterly_fill_day = cur_fill_day
                         break
                     cur_fill_day = cur_fill_day + timedelta(days=1)
-           
+
             cur = q_start
             daily_debug = []
             while cur <= q_end:
@@ -4959,7 +5794,7 @@ def report_list(request):
                     quarterly_record_id = None
                     exists_daily = False
                     region = ''
-                   
+
                     daily_rec = daily_by_date_full.get(cur)
                     daily_record_id = None
                     if daily_rec:
@@ -4978,11 +5813,11 @@ def report_list(request):
                                 weekly_fill_record_id = getattr(weekly_fill, 'id', None)
                                 weekly_record = weekly_record_by_range.get((w_start, w_end))
                                 weekly_record_id = getattr(weekly_record, 'id', None) if weekly_record else None
-                               
+
                                 is_first_fill_day = (
                                     first_weekly_fill_day_by_id.get(weekly_fill_record_id) == cur
                                 )
-                               
+
                                 daily_debug.append(f"{cur}: WEEKLY_FILL is_first={is_first_fill_day} (s1_total={totals.get('s1_total', 0)})")
                                 break
 
@@ -5022,7 +5857,7 @@ def report_list(request):
                             quarterly_record_id = getattr(quarterly_record, 'id', None) if quarterly_record else None
                             is_first_quarterly_fill_day = (first_quarterly_fill_day == cur)
                             daily_debug.append(f"{cur}: QUARTERLY_FILL is_first={is_first_quarterly_fill_day} (s1_total={totals.get('s1_total', 0)})")
-                   
+
                     covered_by = None
                     if not exists_daily and not filled_by_weekly and not filled_by_monthly and not filled_by_quarterly:
                         for w_start, w_end in weekly_ranges:
@@ -5039,7 +5874,7 @@ def report_list(request):
                                 if q_start_r is not None and q_end_r is not None and q_start_r <= cur <= q_end_r:
                                     covered_by = 'quarterly'
                                     break
-                   
+
                     daily.append({
                         'period_start': cur.isoformat(),
                         'period_end': cur.isoformat(),
@@ -5071,9 +5906,9 @@ def report_list(request):
                 w_end = w_start + timedelta(days=5)
                 display_start = max(w_start, q_start)
                 display_end = min(w_end, q_end)
-               
+
                 clipped_ws, clipped_we = get_clipped_week_bounds(w_start, quarter, year)
-               
+
                 weekly_snap = weekly_by_range.get((clipped_ws, clipped_we))
                 if weekly_snap and not getattr(weekly_snap, 'is_overwritten', False):
                     weekly_snap, _ = _rebuild_weekly_snapshot_from_source(
@@ -5083,18 +5918,18 @@ def report_list(request):
                     totals = {k: getattr(weekly_snap, k, 0) or 0 for k in NUMERIC_KEYS}
                 else:
                     totals = {k: 0 for k in NUMERIC_KEYS}
-               
+
                 daily_count = sum(1 for d in all_daily_recs
                                  if display_start <= d['period_start'] <= display_end)
-               
+
                 expected_days = 0
                 for d in range((display_end - display_start).days + 1):
                     dt = display_start + timedelta(days=d)
                     if dt.weekday() <= 5 and q_start <= dt <= q_end:
                         expected_days += 1
-               
+
                 missing_days = max(0, expected_days - daily_count)
-               
+
                 weekly_submitted = any(
                     (r.period_start is not None and r.period_start <= display_start and r.period_end is not None and r.period_end >= display_end)
                     for r in all_weekly_records
@@ -5110,7 +5945,7 @@ def report_list(request):
                     (r.period_start is not None and r.period_start <= display_end and r.period_end is not None and r.period_end >= display_start)
                     for r in all_quarterly_records
                 )
-               
+
                 region_week = ''
                 if weekly_snap:
                     region_week = getattr(weekly_snap, 'region', '') or ''
@@ -5119,7 +5954,7 @@ def report_list(request):
                         if display_start <= rec['period_start'] <= display_end:
                             region_week = rec.get('region', '')
                             break
-               
+
                 weekly.append({
                     'period_start': display_start.isoformat(),
                     'period_end': display_end.isoformat(),
@@ -5132,7 +5967,7 @@ def report_list(request):
                     'region': region_week or default_region or ''
                 })
                 w_start = w_start + timedelta(days=7)
-           
+
             m = q_start
             while m <= q_end:
                 month_start = date(m.year, m.month, 1)
@@ -5144,7 +5979,7 @@ def report_list(request):
                     month_end = q_end
                 if month_start < q_start:
                     month_start = q_start
-               
+
                 monthly_snap = monthly_by_range.get((month_start, month_end))
                 if monthly_snap and not getattr(monthly_snap, 'is_overwritten', False):
                     monthly_snap, _ = _rebuild_monthly_snapshot_from_source(
@@ -5158,10 +5993,10 @@ def report_list(request):
                     totals = {k: getattr(monthly_snap, k, 0) or 0 for k in NUMERIC_KEYS}
                 else:
                     totals = {k: 0 for k in NUMERIC_KEYS}
-               
+
                 daily_count = sum(1 for d in all_daily_recs
                                  if month_start <= d['period_start'] <= month_end)
-               
+
                 monthly_submitted = any(
                     (r.period_start is not None and r.period_start <= month_start and r.period_end is not None and r.period_end >= month_end)
                     for r in all_monthly_records
@@ -5170,7 +6005,7 @@ def report_list(request):
                     (r.period_start is not None and r.period_start <= month_start and r.period_end is not None and r.period_end >= month_end)
                     for r in all_quarterly_records
                 )
-               
+
                 region_month = ''
                 if monthly_snap:
                     region_month = getattr(monthly_snap, 'region', '') or ''
@@ -5179,7 +6014,7 @@ def report_list(request):
                         if month_start <= rec['period_start'] <= month_end:
                             region_month = rec.get('region', '')
                             break
-               
+
                 monthly.append({
                     'period_start': month_start.isoformat(),
                     'period_end': month_end.isoformat(),
@@ -5189,12 +6024,12 @@ def report_list(request):
                     'covered_by': 'quarterly' if covered_by_quarterly else '',
                     'region': region_month or default_region or ''
                 })
-               
+
                 if m.month == 12:
                     m = date(m.year + 1, 1, 1)
                 else:
                     m = date(m.year, m.month + 1, 1)
-           
+
             if quarterly_snap and not getattr(quarterly_snap, 'is_overwritten', False):
                 quarterly_snap, _ = _rebuild_quarterly_snapshot_from_source(target_user, quarter, year)
             elif not quarterly_snap:
@@ -5277,11 +6112,11 @@ def _qpr_filter_quarter_options():
 def finalize_qpr(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid method'}, status=400)
-   
-    try:        
+
+    try:
         quarter = get_current_quarter()
         year = get_current_year_label()
-       
+
         finalization, created = QPRFinalization.objects.get_or_create(
             user=request.user,
             quarter=quarter,
@@ -5293,7 +6128,7 @@ def finalize_qpr(request):
             'QPRFinalization',
             f"{request.user.username} finalized QPR for {quarter} {year}",
         )
-       
+
         return JsonResponse({
             'success': True,
             'message': f'QPR finalized for {quarter} {year}'
@@ -5455,7 +6290,7 @@ def report_detail(request, record_id):
         aggregated['s12_1'] = ''
         aggregated['s12_2'] = ''
         aggregated['s12_3'] = ''
-       
+
         try:
             record_count = 0
             processed_user_ids = set()
@@ -5574,7 +6409,7 @@ def report_detail(request, record_id):
                         if view_as == 'weekly' or view_as == 'weekly' or True:
                             try:
                                 wk_start, wk_end = get_clipped_week_bounds(ps, rec.quarter, rec.year)
-                               
+
                                 weekly_snap = WeeklySnapshot.objects.filter(
                                     user=rec.user,
                                     quarter=rec.quarter,
@@ -5586,12 +6421,12 @@ def report_detail(request, record_id):
                                     weekly_snap, _ = _rebuild_weekly_snapshot_from_source(
                                         rec.user, wk_start, wk_end, rec.quarter, rec.year
                                     )
-                               
+
                                 if weekly_snap:
                                     wk_tot = {k: getattr(weekly_snap, k, 0) or 0 for k in NUMERIC_KEYS}
                                 else:
                                     wk_tot = _aggregate_records_with_fallback(rec.user, wk_start, wk_end, preferred='weekly')
-                               
+
                                 record_data['cumulative']['weekly'] = wk_tot
                                 try:
                                     s12_1_txt = _aggregate_section11_text_for_range(rec.user, wk_start, wk_end, 'innovative_work', source_frequency='all')
@@ -5609,7 +6444,7 @@ def report_detail(request, record_id):
                                 m_end = date(ps.year, 12, 31)
                             else:
                                 m_end = date(ps.year, ps.month + 1, 1) - timedelta(days=1)
-                           
+
                             monthly_snap = MonthlySnapshot.objects.filter(
                                 user=rec.user,
                                 quarter=rec.quarter,
@@ -5625,12 +6460,12 @@ def report_detail(request, record_id):
                                 monthly_snap, _ = _rebuild_monthly_snapshot_from_source(
                                     rec.user, m_start, m_end, rec.quarter, rec.year
                                 )
-                           
+
                             if monthly_snap:
                                 m_tot = {k: getattr(monthly_snap, k, 0) or 0 for k in NUMERIC_KEYS}
                             else:
                                 m_tot = _aggregate_records_with_fallback(rec.user, m_start, m_end, preferred='monthly')
-                           
+
                             record_data['cumulative']['monthly'] = m_tot
                             try:
                                 s12_1_txt = _aggregate_section11_text_for_range(rec.user, m_start, m_end, 'innovative_work', source_frequency='all')
@@ -5643,7 +6478,7 @@ def report_detail(request, record_id):
                         except Exception:
                             pass
                         try:
-                            q_start, q_end = _quarter_label_to_daterange(rec.quarter, rec.year or get_current_year_label())                            
+                            q_start, q_end = _quarter_label_to_daterange(rec.quarter, rec.year or get_current_year_label())
                             quarter_snap = QuarterlySnapshot.objects.filter(
                                 user=rec.user,
                                 quarter=rec.quarter,
@@ -5653,12 +6488,12 @@ def report_detail(request, record_id):
                                 quarter_snap, _ = _rebuild_quarterly_snapshot_from_source(
                                     rec.user, rec.quarter, rec.year or get_current_year_label()
                                 )
-                           
+
                             if quarter_snap:
                                 q_tot = {k: getattr(quarter_snap, k, 0) or 0 for k in NUMERIC_KEYS}
                             else:
                                 q_tot = _aggregate_records_with_fallback(rec.user, q_start, q_end, preferred='quarterly')
-                           
+
                             record_data['cumulative']['quarterly'] = q_tot
                             try:
                                 s12_1_txt = _aggregate_section11_text_for_range(rec.user, q_start, q_end, 'innovative_work', source_frequency='all')
@@ -5689,7 +6524,7 @@ def report_detail(request, record_id):
 def hod_detail_list(request):
     if not user_has_role(request.user, 'hod'):
         return redirect('/')
-   
+
     hod_profile = getattr(request.user, 'profile', None)
     hod_name = (hod_profile.hod_name or hod_profile.name) if hod_profile else None
     hod_name = hod_name.strip() if hod_name else None
@@ -5702,7 +6537,7 @@ def hod_detail_list(request):
         users_under_hod = UserProfile.objects.filter(id__in = user_ids).select_related('user')
     else:
         users_under_hod = UserProfile.objects.filter(user=request.user, approval_status__iexact='approved').select_related('user')
-   
+
     selected_quarter = (request.GET.get('quarter') or get_current_quarter()).strip()
     selected_year = (request.GET.get('year') or get_current_year_label()).strip()
     try:
@@ -5766,7 +6601,7 @@ def hod_detail_list(request):
             'has_pending_edit_request': has_pending,
             'submitted_today': submitted_today,
         })
-   
+
     profile_change_requests = ProfileChangeRequest.objects.filter(
         hod=request.user,
         status__in=['pending', 'approved', 'rejected']
@@ -5775,7 +6610,7 @@ def hod_detail_list(request):
     all_users_ids = list(set([up.user.id for up in users_under_hod if getattr(up, 'user', None)]))
     if user_has_role(request.user, 'user') and request.user.id not in all_users_ids:
         all_users_ids.append(request.user.id)
-   
+
     total_users = len(all_users_ids)
     finalized_count = 0
     if total_users > 0:
@@ -5784,7 +6619,7 @@ def hod_detail_list(request):
             quarter=current_quarter,
             year=current_year
         ).values('user_id').distinct().count()
-   
+
     all_finalized = (total_users > 0 and finalized_count == total_users)
     today = timezone.localdate()
     q_start, q_end = _quarter_label_to_daterange(current_quarter, current_year)
@@ -5820,7 +6655,7 @@ def hod_detail_list(request):
         'can_freeze_division': can_freeze_division,
         'freeze_disabled_reason': freeze_disabled_reason,
     }
-   
+
     response = render(request, 'qpr/hod_detail_list.html', context)
     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     response['Pragma'] = 'no-cache'
@@ -5831,29 +6666,29 @@ def hod_detail_list(request):
 def toggle_freeze_qpr(request, qpr_record_id):
     if not user_has_role(request.user, 'hod'):
         return redirect('/')
-   
+
     if request.method != 'POST':
         return redirect('qpr_hod_detail_list')
-   
+
     try:
         qpr_record = QPRRecord.objects.get(id=qpr_record_id, frequency='quarterly')
     except QPRRecord.DoesNotExist:
         return JsonResponse({'error': 'Quarterly record not found'}, status=404)
-   
+
     hod_profile = getattr(request.user, 'profile', None)
     hod_name = (hod_profile.hod_name or hod_profile.name) if hod_profile else None
-   
+
     if hod_name:
         user_profile = getattr(qpr_record.user, 'profile', None)
         record_hod_name = (user_profile.hod_name or user_profile.name) if user_profile else None
         if record_hod_name != hod_name.strip():
             return JsonResponse({'error': 'Unauthorized'}, status=403)
-   
+
     today = date.today()
     quarter_end_dates = get_quarter_end_dates()
-   
+
     is_at_quarter_end = today >= quarter_end_dates['current']
-   
+
     if qpr_record.is_quarterly_frozen:
         qpr_record.is_quarterly_frozen = False
         message = 'Quarterly report unfrozen'
@@ -5865,7 +6700,7 @@ def toggle_freeze_qpr(request, qpr_record_id):
             days_until_end = (quarter_end_dates['current'] - today).days
             message = f'Can only freeze at quarter end (in {days_until_end} days)'
             return JsonResponse({'error': message}, status=400)
-   
+
     qpr_record.save()
     log_audit(
         request,
@@ -5873,7 +6708,7 @@ def toggle_freeze_qpr(request, qpr_record_id):
         'QPRRecord',
         f"{request.user.username} {'froze' if qpr_record.is_quarterly_frozen else 'unfroze'} QPR record {qpr_record.id}",
     )
-   
+
     return redirect('qpr_hod_detail_list')
 
 @login_required
@@ -6031,13 +6866,13 @@ def freeze_division_snapshot(request):
 def _get_missing_days_context(user, frequency, selected_date, quarter=None, year=None):
     if frequency not in ['weekly', 'monthly', 'quarterly']:
         return {'missing_days': [], 'has_fill': False, 'fill_fields_count': 0, 'message': ''}
-   
+
     try:
         period_start, period_end = compute_period(frequency, selected_date, quarter, year)
         missing_days = _get_missing_days_in_range(user, period_start, period_end)
         has_fill = False
         fill_fields_count = 0
-       
+
         if frequency == 'weekly':
             fill = WeeklyFill.objects.filter(
                 user=user,
@@ -6051,7 +6886,7 @@ def _get_missing_days_context(user, frequency, selected_date, quarter=None, year
                 for key in NUMERIC_KEYS:
                     if getattr(fill, key, None):
                         fill_fields_count += 1
-       
+
         elif frequency == 'monthly':
             fill = MonthlyFill.objects.filter(
                 user=user,
@@ -6065,7 +6900,7 @@ def _get_missing_days_context(user, frequency, selected_date, quarter=None, year
                 for key in NUMERIC_KEYS:
                     if getattr(fill, key, None):
                         fill_fields_count += 1
-       
+
         elif frequency == 'quarterly':
             fill = QuarterlyFill.objects.filter(
                 user=user,
@@ -6077,13 +6912,13 @@ def _get_missing_days_context(user, frequency, selected_date, quarter=None, year
                 for key in NUMERIC_KEYS:
                     if getattr(fill, key, None):
                         fill_fields_count += 1
-       
+
         if missing_days:
             day_names = [d.strftime('%a') for d in missing_days]
             message = f"Filling {len(missing_days)} missing day{'s' if len(missing_days) != 1 else ''} ({', '.join(day_names)}) for {frequency} of {period_start.strftime('%d-%m-%Y')}"
         else:
             message = f"All days covered for this {frequency}. No missing days to fill."
-       
+
         return {
             'missing_days': [d.isoformat() for d in missing_days],
             'has_fill': has_fill,
@@ -6092,7 +6927,7 @@ def _get_missing_days_context(user, frequency, selected_date, quarter=None, year
             'period_start': period_start.isoformat(),
             'period_end': period_end.isoformat()
         }
-   
+
     except Exception:
         logger.error("Failed to get missing days context.")
         return {'missing_days': [], 'has_fill': False, 'fill_fields_count': 0, 'message': '', 'error': "An unexpected error occurred."}
@@ -6153,14 +6988,14 @@ def _missing_days_client_source(user):
 def _validate_details_for_missing_dates(user, period_start, period_end, details, entry_type):
     try:
         missing_dates = _get_missing_days_in_range(user, period_start, period_end)
-       
+
         if not missing_dates:
             error_msg = (
                 f"Cannot submit {entry_type} entry: No missing dates in this period. "
                 f"All working days {period_start} to {period_end} already have daily submissions."
             )
             return False, [], error_msg
-       
+
         has_values = any(
             details.get(key) for key in NUMERIC_KEYS
             if details.get(key)
@@ -6171,9 +7006,9 @@ def _validate_details_for_missing_dates(user, period_start, period_end, details,
                 f"Please enter values for at least one field."
             )
             return False, missing_dates, error_msg
-       
+
         return True, missing_dates, ""
-       
+
     except Exception:
         logger.exception("Validation error for entry")
         error_msg = f"An error occurred while validating {entry_type} entry"
@@ -6187,14 +7022,14 @@ def _create_or_update_weekly_fill(user, period_start, period_end, details, quart
         else:
             normalized_start = period_start
             normalized_end = period_end
-       
+
         is_valid, missing_dates, error_msg = _validate_details_for_missing_dates(
             user, normalized_start, normalized_end, details, 'weekly'
         )
         if not is_valid:
             logger.warning("Weekly Fill validation failed for user %s", user.id)
             return None, error_msg
-       
+
         fill, _ = WeeklyFill.objects.get_or_create(
             user=user,
             period_start=normalized_start,
@@ -6202,7 +7037,7 @@ def _create_or_update_weekly_fill(user, period_start, period_end, details, quart
             quarter=quarter,
             year=year
         )
-       
+
         for key in NUMERIC_KEYS:
             value = details.get(key)
             try:
@@ -6211,7 +7046,7 @@ def _create_or_update_weekly_fill(user, period_start, period_end, details, quart
                 value = None
             if hasattr(fill, key):
                 setattr(fill, key, value)
-       
+
         fill.save()
         logger.info("Weekly Fill created for user %s", user.id)
         return fill, ""
@@ -6228,7 +7063,7 @@ def _create_or_update_monthly_fill(user, period_start, period_end, details, quar
         if not is_valid:
             logger.warning("Monthly Fill validation failed for user %s", user.id)
             return None, error_msg
-       
+
         fill, _ = MonthlyFill.objects.get_or_create(
             user=user,
             period_start=period_start,
@@ -6236,7 +7071,7 @@ def _create_or_update_monthly_fill(user, period_start, period_end, details, quar
             quarter=quarter,
             year=year
         )
-       
+
         for key in NUMERIC_KEYS:
             value = details.get(key)
             try:
@@ -6245,7 +7080,7 @@ def _create_or_update_monthly_fill(user, period_start, period_end, details, quar
                 value = None
             if hasattr(fill, key):
                 setattr(fill, key, value)
-       
+
         fill.save()
         logger.info("Monthly Fill created for user %s", user.id)
         return fill, ""
@@ -6260,14 +7095,14 @@ def _create_or_update_quarterly_fill(user, details, quarter, year, period_start=
             error_msg = "Cannot create quarterly fill: period_start and period_end required"
             logger.error("Failed to determine period dates for quarterly fill")
             return None, error_msg
-       
+
         is_valid, missing_dates, error_msg = _validate_details_for_missing_dates(
             user, period_start, period_end, details, 'quarterly'
         )
         if not is_valid:
             logger.warning("Quarterly Fill validation failed for user %s", user.id)
             return None, error_msg
-       
+
         fill, _ = QuarterlyFill.objects.get_or_create(
             user=user,
             quarter=quarter,
@@ -6277,7 +7112,7 @@ def _create_or_update_quarterly_fill(user, details, quarter, year, period_start=
                 'period_end': period_end
             }
         )
-       
+
         for key in NUMERIC_KEYS:
             value = details.get(key)
             try:
@@ -6286,7 +7121,7 @@ def _create_or_update_quarterly_fill(user, details, quarter, year, period_start=
                 value = None
             if hasattr(fill, key):
                 setattr(fill, key, value)
-       
+
         fill.save()
         logger.info(f"Quarterly Fill created for user {user.id} for quarter {quarter} year {year}")
         return fill, ""
@@ -6294,14 +7129,14 @@ def _create_or_update_quarterly_fill(user, details, quarter, year, period_start=
         logger.exception("Failed to create QuarterlyFill")
         return None, "An error occurred while creating the quarterly fill. Please try again."
 
-def _get_missing_days_in_range(user, start_date, end_date):  
+def _get_missing_days_in_range(user, start_date, end_date):
     all_dates = []
     current = start_date
     while current <= end_date:
         if current.weekday() != 6:
             all_dates.append(current)
         current += timedelta(days=1)
-   
+
     submitted_dates = set(
         QPRRecord.objects.filter(
             user=user,
@@ -6310,7 +7145,7 @@ def _get_missing_days_in_range(user, start_date, end_date):
             period_start__in=all_dates
         ).values_list('period_start', flat=True)
     )
-   
+
     return [d for d in all_dates if d not in submitted_dates]
 
 
@@ -6329,7 +7164,7 @@ def _sum_daily_in_range(user, start_date, end_date):
             period_start__gte=start_date,
             period_start__lte=end_date
         ).values_list('id')
-       
+
         for (record_id,) in daily_records:
             record = QPRRecord.objects.get(id=record_id)
             data = _extract_details_from_record(record)
@@ -6443,7 +7278,7 @@ def _get_or_create_weekly_snapshot_with_sum(user, period_start, period_end, quar
     else:
         normalized_start = period_start
         normalized_end = period_end
-   
+
     snapshot, created = WeeklySnapshot.objects.get_or_create(
         user=user,
         period_start=normalized_start,
@@ -6452,16 +7287,16 @@ def _get_or_create_weekly_snapshot_with_sum(user, period_start, period_end, quar
         year=year,
         defaults={'is_overwritten': False}
     )
-   
+
     if created:
         daily_sum = _sum_daily_in_range(user, normalized_start, normalized_end)
         fill_sum = _sum_weekly_fill_in_range(user, normalized_start, normalized_end)
-       
+
         for k in NUMERIC_KEYS:
             val = (daily_sum.get(k, 0) or 0) + (fill_sum.get(k, 0) or 0)
             setattr(snapshot, k, val)
         snapshot.save()
-        logger.info(f"WeeklySnapshot created for user={user.id}: {normalized_start} to {normalized_end}")    
+        logger.info(f"WeeklySnapshot created for user={user.id}: {normalized_start} to {normalized_end}")
     return snapshot, created
 
 
@@ -6475,10 +7310,10 @@ def _get_or_create_monthly_snapshot_with_sum(user, period_start, period_end, qua
         year=year,
         defaults={'is_overwritten': False}
     )
-   
+
     if created:
         weekly_sum = _sum_weekly_snapshots_in_month(user, period_start, period_end, quarter, year)
-       
+
         monthly_fill = MonthlyFill.objects.filter(
             user=user,
             period_start=period_start,
@@ -6486,18 +7321,18 @@ def _get_or_create_monthly_snapshot_with_sum(user, period_start, period_end, qua
             quarter=quarter,
             year=year
         ).first()
-       
+
         fill_sum = {}
         if monthly_fill:
             fill_sum = {k: (getattr(monthly_fill, k, 0) or 0) for k in NUMERIC_KEYS}
         else:
             fill_sum = {k: 0 for k in NUMERIC_KEYS}
-       
+
         for k in NUMERIC_KEYS:
             val = (weekly_sum.get(k, 0) or 0) + (fill_sum.get(k, 0) or 0)
             setattr(snapshot, k, val)
         snapshot.save()
-        logger.info(f"MonthlySnapshot created for user={user.id}: {period_start} to {period_end}")    
+        logger.info(f"MonthlySnapshot created for user={user.id}: {period_start} to {period_end}")
     return snapshot, created
 
 
@@ -6513,27 +7348,27 @@ def _get_or_create_quarterly_snapshot_with_sum(user, quarter, year, period_start
             'is_overwritten': False
         }
     )
-   
+
     if created:
         monthly_sum = _sum_monthly_snapshots_in_quarter(user, quarter, year)
-       
+
         quarterly_fill = QuarterlyFill.objects.filter(
             user=user,
             quarter=quarter,
             year=year
         ).first()
-       
+
         fill_sum = {}
         if quarterly_fill:
             fill_sum = {k: (getattr(quarterly_fill, k, 0) or 0) for k in NUMERIC_KEYS}
         else:
             fill_sum = {k: 0 for k in NUMERIC_KEYS}
-       
+
         for k in NUMERIC_KEYS:
             val = (monthly_sum.get(k, 0) or 0) + (fill_sum.get(k, 0) or 0)
             setattr(snapshot, k, val)
         snapshot.save()
-        logger.info(f"QuarterlySnapshot created for user={user.id} for quarter={quarter} year={year}")    
+        logger.info(f"QuarterlySnapshot created for user={user.id} for quarter={quarter} year={year}")
     return snapshot, created
 
 
@@ -6553,14 +7388,14 @@ def _rebuild_weekly_snapshot_from_source(user, period_start, period_end, quarter
         else:
             normalized_start = period_start
             normalized_end = period_end
-       
+
         daily_sum = _sum_daily_in_range(user, normalized_start, normalized_end)
         fill_sum = _sum_weekly_fill_in_range(user, normalized_start, normalized_end)
-       
+
         total = {}
         for k in NUMERIC_KEYS:
             total[k] = (daily_sum.get(k, 0) or 0) + (fill_sum.get(k, 0) or 0)
-       
+
         snapshot, created = WeeklySnapshot.objects.get_or_create(
             user=user,
             period_start=normalized_start,
@@ -6572,7 +7407,7 @@ def _rebuild_weekly_snapshot_from_source(user, period_start, period_end, quarter
 
         if not created and getattr(snapshot, 'is_overwritten', False):
             return snapshot, False
-       
+
         was_updated = False
         for k in NUMERIC_KEYS:
             new_val = total.get(k, 0) or 0
@@ -6580,13 +7415,13 @@ def _rebuild_weekly_snapshot_from_source(user, period_start, period_end, quarter
             if new_val != old_val:
                 setattr(snapshot, k, new_val)
                 was_updated = True
-       
+
         if was_updated:
             snapshot.save()
             logger.debug("WeeklySnapshot recalculated for user %s", user.id)
-       
+
         return snapshot, was_updated
-       
+
     except Exception:
         logger.exception("Failed to rebuild weekly snapshot")
         return None, False
@@ -6639,7 +7474,7 @@ def _rebuild_monthly_snapshot_from_source(user, period_start, period_end, quarte
                 )
 
         weekly_sum = _sum_weekly_snapshots_in_month(user, period_start, period_end, quarter, year)
-       
+
         monthly_fill = MonthlyFill.objects.filter(
             user=user,
             period_start=period_start,
@@ -6647,13 +7482,13 @@ def _rebuild_monthly_snapshot_from_source(user, period_start, period_end, quarte
             quarter=quarter,
             year=year
         ).first()
-       
+
         fill_sum = {k: (getattr(monthly_fill, k, 0) or 0) for k in NUMERIC_KEYS} if monthly_fill else {k: 0 for k in NUMERIC_KEYS}
-       
+
         total = {}
         for k in NUMERIC_KEYS:
             total[k] = (weekly_sum.get(k, 0) or 0) + (fill_sum.get(k, 0) or 0)
-       
+
         snapshot, created = MonthlySnapshot.objects.get_or_create(
             user=user,
             period_start=period_start,
@@ -6665,7 +7500,7 @@ def _rebuild_monthly_snapshot_from_source(user, period_start, period_end, quarte
 
         if not created and getattr(snapshot, 'is_overwritten', False):
             return snapshot, False
-       
+
         was_updated = False
         for k in NUMERIC_KEYS:
             new_val = total.get(k, 0) or 0
@@ -6673,13 +7508,13 @@ def _rebuild_monthly_snapshot_from_source(user, period_start, period_end, quarte
             if new_val != old_val:
                 setattr(snapshot, k, new_val)
                 was_updated = True
-       
+
         if was_updated:
             snapshot.save()
             logger.debug("MonthlySnapshot recalculated for user %s", user.id)
-       
+
         return snapshot, was_updated
-       
+
     except Exception:
         logger.exception("Failed to rebuild monthly snapshot")
         return None, False
@@ -6704,29 +7539,29 @@ def _rebuild_quarterly_snapshot_from_source(user, quarter, year):
             logger.exception("Failed to refresh monthly snapshots before quarterly rebuild")
 
         monthly_sum = _sum_monthly_snapshots_in_quarter(user, quarter, year)
-       
+
         quarterly_fill = QuarterlyFill.objects.filter(
             user=user,
             quarter=quarter,
             year=year
         ).first()
-       
+
         fill_sum = {k: (getattr(quarterly_fill, k, 0) or 0) for k in NUMERIC_KEYS} if quarterly_fill else {k: 0 for k in NUMERIC_KEYS}
-       
+
         total = {}
         for k in NUMERIC_KEYS:
             total[k] = (monthly_sum.get(k, 0) or 0) + (fill_sum.get(k, 0) or 0)
-       
+
         snapshot = QuarterlySnapshot.objects.filter(
             user=user, quarter=quarter, year=year
         ).first()
-       
+
         if not snapshot:
             try:
                 period_start, period_end = _quarter_label_to_daterange(quarter, year)
             except:
                 period_start, period_end = None, None
-           
+
             snapshot = QuarterlySnapshot.objects.create(
                 user=user,
                 quarter=quarter,
@@ -6737,7 +7572,7 @@ def _rebuild_quarterly_snapshot_from_source(user, quarter, year):
             )
         elif getattr(snapshot, 'is_overwritten', False):
             return snapshot, False
-       
+
         was_updated = False
         for k in NUMERIC_KEYS:
             new_val = total.get(k, 0) or 0
@@ -6745,11 +7580,11 @@ def _rebuild_quarterly_snapshot_from_source(user, quarter, year):
             if new_val != old_val:
                 setattr(snapshot, k, new_val)
                 was_updated = True
-       
+
         if was_updated:
             snapshot.save()
             logging.debug(f"QuarterlySnapshot recalculated for user {user.id}: Q{quarter} {year}")
-       
+
         return snapshot, was_updated
     except Exception:
         logging.exception("Error rebuilding quarterly snapshot from source")
@@ -6759,7 +7594,7 @@ def _rebuild_quarterly_snapshot_from_source(user, quarter, year):
 def _detect_event_type(qpr_record):
     if not qpr_record or not qpr_record.id:
         return 'insert'
-   
+
     try:
         existing = QPRRecord.objects.filter(id=qpr_record.id).exists()
         return 'edit' if existing else 'insert'
@@ -6770,118 +7605,118 @@ def _detect_event_type(qpr_record):
 def _trigger_aggregation_chain_optimized(qpr_record, event_type=None, old_values=None):
     if not qpr_record or not qpr_record.is_submitted:
         return {'success': False, 'error': 'Invalid or unsubmitted QPR record'}
-   
+
     frequency = (qpr_record.frequency or '').lower()
     user = qpr_record.user
     result = {'success': True, 'errors': [], 'fills_created': []}
-   
+
     try:
         if not event_type:
             event_type = _detect_event_type(qpr_record)
-       
+
         try:
             new_values = _extract_details_from_record(qpr_record)
         except Exception:
             logger.exception("Failed to extract details from record")
             new_values = {k: 0 for k in NUMERIC_KEYS}
             result['errors'].append("Unable to extract record details")
-       
+
         if frequency == 'daily':
             ps, pe = qpr_record.period_start, qpr_record.period_end
-           
+
             if event_type == 'insert':
                 weekly_snapshot, weekly_created = _get_or_create_weekly_snapshot_with_sum(
                     user, ps, pe, qpr_record.quarter, qpr_record.year
                 )
                 if not weekly_created:
                     _increment_snapshot_by_delta(weekly_snapshot, new_values)
-               
+
                 monthly_ps, monthly_pe = compute_period('monthly', selected_date=ps)
                 monthly_snapshot, monthly_created = _get_or_create_monthly_snapshot_with_sum(
                     user, monthly_ps, monthly_pe, qpr_record.quarter, qpr_record.year
                 )
                 if not monthly_created:
                     _increment_snapshot_by_delta(monthly_snapshot, new_values)
-               
+
                 quarterly_snapshot, quarterly_created = _get_or_create_quarterly_snapshot_with_sum(
                     user, qpr_record.quarter, qpr_record.year,
                     qpr_record.period_start or monthly_ps, qpr_record.period_end or monthly_pe
                 )
                 if not quarterly_created:
                     _increment_snapshot_by_delta(quarterly_snapshot, new_values)
-               
+
                 logger.debug("Daily insert processed for user %s", user.id)
-           
+
             else:
                 if old_values is None:
                     old_values = {k: 0 for k in NUMERIC_KEYS}
                 if new_values is None:
                     new_values = {k: 0 for k in NUMERIC_KEYS}
-               
+
                 actual_delta = {k: (new_values.get(k, 0) or 0) - (old_values.get(k, 0) or 0)
                                for k in NUMERIC_KEYS}
-               
+
                 weekly_snapshot, weekly_created = _get_or_create_weekly_snapshot_with_sum(
                     user, ps, pe, qpr_record.quarter, qpr_record.year
                 )
                 if not weekly_created:
                     _increment_snapshot_by_delta(weekly_snapshot, actual_delta)
-               
+
                 monthly_ps, monthly_pe = compute_period('monthly', selected_date=ps)
                 monthly_snapshot, monthly_created = _get_or_create_monthly_snapshot_with_sum(
                     user, monthly_ps, monthly_pe, qpr_record.quarter, qpr_record.year
                 )
                 if not monthly_created:
                     _increment_snapshot_by_delta(monthly_snapshot, actual_delta)
-               
+
                 quarterly_snapshot, quarterly_created = _get_or_create_quarterly_snapshot_with_sum(
                     user, qpr_record.quarter, qpr_record.year,
                     qpr_record.period_start or monthly_ps, qpr_record.period_end or monthly_pe
                 )
                 if not quarterly_created:
                     _increment_snapshot_by_delta(quarterly_snapshot, actual_delta)
-               
+
                 logger.debug("Daily edit processed for user %s", user.id)
-       
+
         elif frequency == 'weekly':
             ps, pe = qpr_record.period_start, qpr_record.period_end
-           
+
             fill= _create_or_update_weekly_fill(
                 user, ps, pe, new_values, qpr_record.quarter, qpr_record.year
             )
             if fill:
                 result['fills_created'].append('weekly')
-           
+
             weekly_snapshot, weekly_updated = _rebuild_weekly_snapshot_from_source(
                 user, ps, pe, qpr_record.quarter, qpr_record.year
             )
-           
+
             if weekly_updated or fill:
                 monthly_ps, monthly_pe = compute_period('monthly', selected_date=ps)
                 monthly_snapshot, _ = _rebuild_monthly_snapshot_from_source(
                     user, monthly_ps, monthly_pe, qpr_record.quarter, qpr_record.year
                 )
-               
+
                 quarterly_snapshot, _ = _rebuild_quarterly_snapshot_from_source(
                     user, qpr_record.quarter, qpr_record.year
                 )
                 logger.debug("Weekly aggregation: rebuilt chain for user %s", user.id)
             else:
                 logger.debug("Weekly aggregation: no changes for user %s", user.id)
-       
+
         elif frequency == 'monthly':
             ps, pe = qpr_record.period_start, qpr_record.period_end
-           
+
             fill = _create_or_update_monthly_fill(
                 user, ps, pe, new_values, qpr_record.quarter, qpr_record.year
             )
             if fill:
                 result['fills_created'].append('monthly')
-           
+
             monthly_snapshot, monthly_updated = _rebuild_monthly_snapshot_from_source(
                 user, ps, pe, qpr_record.quarter, qpr_record.year
             )
-           
+
             if monthly_updated or fill:
                 quarterly_snapshot, _ = _rebuild_quarterly_snapshot_from_source(
                     user, qpr_record.quarter, qpr_record.year
@@ -6889,7 +7724,7 @@ def _trigger_aggregation_chain_optimized(qpr_record, event_type=None, old_values
                 logger.debug("Monthly aggregation: rebuilt chain for user %s", user.id)
             else:
                 logger.debug("Monthly aggregation: no changes for user %s", user.id)
-       
+
         elif frequency == 'quarterly':
             fill = _create_or_update_quarterly_fill(
                 user, new_values, qpr_record.quarter, qpr_record.year,
@@ -6897,21 +7732,21 @@ def _trigger_aggregation_chain_optimized(qpr_record, event_type=None, old_values
             )
             if fill:
                 result['fills_created'].append('quarterly')
-           
+
             quarterly_snapshot, quarterly_updated = _rebuild_quarterly_snapshot_from_source(
                 user, qpr_record.quarter, qpr_record.year
             )
-           
+
             if quarterly_updated or fill:
                 logger.debug("Quarterly aggregation: updated for user %s", user.id)
             else:
                 logger.debug("Quarterly aggregation: no changes for user %s", user.id)
-       
+
     except Exception:
         logger.exception("Error in optimized aggregation chain")
         result['errors'].append("An error occurred while processing the aggregation chain.")
         result['success'] = False
-   
+
     return result
 
 @login_required
@@ -7088,7 +7923,7 @@ def qpr_save_record(request):
                     "QPR edit approval not found for this submitted record."
                 )
                 return redirect('qpr_report_list')
-                    
+
             old_values = None
             if record.is_submitted:
                 try:
@@ -7125,7 +7960,7 @@ def qpr_save_record(request):
                 data.get('email', '').strip()
                 or (getattr(profile, 'email', '') if profile else '')
             )
-    
+
             # Preserve an existing submitted quarterly report's identity.
             # Resolve its quarter label from its stored period dates so a June
             # report cannot be routed into the December aggregation.
@@ -7198,6 +8033,14 @@ def qpr_save_record(request):
 
             record.period_start = ps
             record.period_end = pe
+
+            if record.is_submitted and not get_office_correspondence(
+                record.officeCode, record.year, record.quarter
+            ):
+                return reject_to_qpr_form(
+                    "Office correspondence has not been entered for this quarter. Please contact your Admin."
+                )
+
             record.save()
 
             if getattr(request.user, 'is_edit_allowed', False):
@@ -7234,8 +8077,13 @@ def qpr_save_record(request):
                 except Exception:
                     pass
 
+            # Draft QPRs use the latest centrally maintained correspondence.
+            # Submitted QPRs retain their saved correspondence snapshot.
+            if not was_submitted:
+                apply_office_correspondence_to_details(record, details)
+
             _save_section_data(record, details)
-           
+
             if record.is_submitted:
                 agg_result = _trigger_aggregation_chain_optimized(record, event_type='edit', old_values=old_values)
                 if agg_result and not agg_result.get('success', True):
@@ -7255,7 +8103,7 @@ def qpr_save_record(request):
 
         else:
             is_submitted = (data.get('status', 'Draft') == 'Submitted')
-            
+
             # TEMPORARY: Quarterly-only testing
             # Daily / Weekly / Monthly frequency handling is retained below for future restoration.
             # Old frequency handling:
@@ -7273,7 +8121,7 @@ def qpr_save_record(request):
             #if frequency in ['daily', 'weekly', 'monthly'] and not selected_date_str:
                 #messages.error(request, "Date is required")
                 #return redirect('qpr_records')
-            
+
             # For testing, only Quarterly QPR is allowed. remove this below as well
             frequency = 'quarterly'
 
@@ -7348,7 +8196,7 @@ def qpr_save_record(request):
 
             if exists.exists():
                 return reject_to_qpr_form("This QPR has already been filled for the selected period.")
-            
+
             # Use employee profile values for protected QPR fields.
             # Disabled HTML inputs are not included in request.POST.
             profile = getattr(request.user, 'profile', None)
@@ -7378,6 +8226,13 @@ def qpr_save_record(request):
                 or (getattr(profile, 'email', '') if profile else '')
             )
 
+            if is_submitted and not get_office_correspondence(
+                office_code, year, quarter
+            ):
+                return reject_to_qpr_form(
+                    "Office correspondence has not been entered for this quarter. Please contact your Admin."
+                )
+
             record = QPRRecord.objects.create(
                 user=request.user,
                 officeName=office_name,
@@ -7395,7 +8250,7 @@ def qpr_save_record(request):
             )
 
             _save_section_data(record, details)
-           
+
             if record.is_submitted:
                 agg_result = _trigger_aggregation_chain_optimized(record, event_type='insert')
                 if agg_result and not agg_result.get('success', True):
@@ -7441,17 +8296,17 @@ def snapshot_edit(request, quarter, year):
     try:
         q_label = str(quarter).strip().upper()
         y_label = str(year).strip()
-       
+
         if not q_label.startswith('Q') or not q_label[1:].isdigit():
             messages.error(request, "Invalid quarter format")
             return redirect('qpr_report_list')
-       
+
         try:
             q_start, q_end = _quarter_label_to_daterange(q_label, y_label)
         except:
             messages.error(request, "Invalid quarter/year")
             return redirect('qpr_report_list')
-       
+
         snapshot, created = QuarterlySnapshot.objects.get_or_create(
             user=request.user,
             quarter=q_label,
@@ -7462,7 +8317,7 @@ def snapshot_edit(request, quarter, year):
                 'is_overwritten': False
             }
         )
-       
+
         if request.method == 'GET':
             context = {
                 'quarter': q_label,
@@ -7472,15 +8327,15 @@ def snapshot_edit(request, quarter, year):
                 'is_overwritten': snapshot.is_overwritten,
                 'overwritten_at': snapshot.overwritten_at
             }
-           
+
             for key in NUMERIC_KEYS:
                 context[key] = getattr(snapshot, key, 0) or 0
-           
+
             return render(request, 'qpr/snapshot_edit.html', context)
-       
+
         elif request.method == 'POST':
             data = request.POST
-           
+
             try:
                 for key in NUMERIC_KEYS:
                     value = data.get(key, '')
@@ -7489,25 +8344,25 @@ def snapshot_edit(request, quarter, year):
                     except (ValueError, TypeError):
                         value = None
                     setattr(snapshot, key, value)
-               
+
                 snapshot.is_overwritten = True
                 snapshot.overwritten_at = now()
                 snapshot.save()
-               
+
                 logger.info("Snapshot edited for user %s", request.user.id)
                 messages.success(request, f"Snapshot for {q_label} {y_label} has been edited and locked from auto-aggregation.")
                 return redirect('qpr_report_list')
-               
+
             except Exception:
                 logger.error("Failed to save snapshot.", exc_info=True)
                 safe_error_msg = "An unexpected error occurred while saving the snapshot. Please try again."
                 messages.error(request, safe_error_msg)
                 return redirect('qpr_report_list')
-       
+
         else:
             messages.error(request, "Invalid request method")
             return redirect('qpr_report_list')
-           
+
     except Exception:
         logger.exception("Error in snapshot_edit view")
         messages.error(request, "An error occurred while editing the snapshot.")
@@ -7519,7 +8374,7 @@ def print_qpr_report(request, record_id):
         record = QPRRecord.objects.get(pk=record_id)
     except QPRRecord.DoesNotExist:
         return redirect('qpr_report_list')
-   
+
     if not (
         record.user == request.user or
         user_has_role(request.user, ['manager', 'admin']) or
@@ -7539,26 +8394,26 @@ def request_edit_api(request):
             request_type = data.get('request_type')
             record_id = data.get('record_id')
             reason = data.get('reason', '')
-           
+
             if not request_type or not record_id:
                 return JsonResponse({'error': 'Missing required fields'}, status=400)
-           
+
             if request_type == 'qpr':
                 try:
                     record = QPRRecord.objects.get(pk=record_id, user=request.user)
                 except QPRRecord.DoesNotExist:
                     return JsonResponse({'error': 'Record not found'}, status=404)
-               
+
                 existing = EditRequest.objects.filter(
                     user=request.user,
                     request_type='qpr',
                     qpr_record_id=record_id,
                     status__in=['pending', 'approved']
                 ).first()
-               
+
                 if existing:
                     return JsonResponse({'error': 'Request already exists with status: ' + existing.status}, status=400)
-               
+
                 edit_req = EditRequest.objects.create(
                     user=request.user,
                     request_type='qpr',
@@ -7566,13 +8421,13 @@ def request_edit_api(request):
                     reason=reason,
                     status='pending'
                 )
-               
+
                 manager_office = record.officeCode
                 managers = UserProfile.objects.filter(
                     office_code=manager_office,
                     roles__name='manager'
                 ).select_related('user')
-               
+
                 for profile in managers:
                     try:
                         msg = f"Employee {request.user.get_full_name() or request.user.username} has requested permission to edit their QPR submission.\n\nReason: {reason}"
@@ -7584,9 +8439,9 @@ def request_edit_api(request):
                         #)
                     except Exception:
                         pass
-               
+
                 return JsonResponse({'success': True, 'message': 'Edit request submitted to manager'})
-           
+
             admin_users = User.objects.filter(profile__roles__name='admin')
             for admin_user in admin_users:
                 ManagerRequest.objects.create(hod=request.user, user=admin_user, request_type=request_type, reason=f"Edit request: {reason}")
@@ -7599,7 +8454,7 @@ def request_edit_api(request):
 @login_required
 def request_profile_edit(request):
     lang = request.session.get('lang', 'en')
-   
+
     if request.method == 'POST':
         try:
             pending_request = EditRequest.objects.filter(
@@ -7607,11 +8462,11 @@ def request_profile_edit(request):
                 request_type='profile',
                 status='pending'
             ).first()
-           
+
             if pending_request:
                 messages.warning(request, translate_text("You already have a pending profile edit request. Please wait for approval.", lang))
                 return redirect('qpr_user_profile')
-           
+
             reason = request.POST.get('reason', '')
             profile_data = {
                 'username': request.POST.get('username', ''),
@@ -7620,7 +8475,7 @@ def request_profile_edit(request):
                 'office_name': request.POST.get('office_name', ''),
                 'office_code': request.POST.get('office_code', ''),
             }
-           
+
             EditRequest.objects.create(
                 user=request.user,
                 request_type='profile',
@@ -7629,17 +8484,17 @@ def request_profile_edit(request):
                 status='pending'
             )
             messages.success(request, translate_text("Profile edit request submitted to admin for approval. You will not be able to submit again until approved or rejected.", lang))
-           
+
             admins = CustomUser.objects.filter(roles__name='admin', is_active=True)
             for admin in admins:
                 msg = f"User {request.user.username} ({request.user.profile.employee_code}) has requested to edit their profile."
                 #send_system_email(admin, request, 'manager_alert', extra_context={'body_text': msg})
-           
+
             return redirect('qpr_user_profile')
         except Exception:
             messages.error(request, translate_text("Error submitting request.", lang))
             return redirect('qpr_user_profile')
-   
+
     context = {'profile': request.user.profile, 'current_lang': lang}
     return render(request, 'qpr/request_profile_edit.html', context)
 
@@ -7676,20 +8531,20 @@ def freeze_employee_qpr(request, record_id):
 @login_required
 def request_qpr_edit(request, record_id):
     lang = request.session.get('lang', 'en')
-   
+
     try:
         qpr_record = QPRRecord.objects.get(id=record_id, user=request.user)
     except QPRRecord.DoesNotExist:
         messages.error(request, translate_text("QPR record not found.", lang))
         return redirect('qpr_report_list')
-   
+
     if qpr_record.is_employee_frozen:
         messages.error(request, translate_text("This QPR is frozen and cannot be edited.", lang))
         return redirect('qpr_report_detail', record_id=record_id)
     if qpr_record.frequency == 'quarterly' and qpr_record.is_quarterly_frozen:
         messages.error(request, translate_text("This quarterly report is frozen and cannot be edited.", lang))
         return redirect('qpr_report_detail', record_id=record_id)
-   
+
     if request.method == 'POST':
         try:
             reason = request.POST.get('reason', '')
@@ -7699,14 +8554,14 @@ def request_qpr_edit(request, record_id):
             if edit_scope and not _snapshot_edit_request_allowed(qpr_record, edit_scope):
                 messages.error(request, translate_text("Edit requests for this QPR can be made only on or after the period end date.", lang))
                 return redirect('qpr_report_detail', record_id=record_id)
-           
+
             pending_request = EditRequest.objects.filter(
                 user=request.user,
                 request_type='qpr',
                 qpr_record_id=record_id,
                 status='pending'
             ).exists()
-           
+
             if pending_request:
                 messages.warning(request, translate_text("You already have a pending QPR edit request for this record.", lang))
             else:
@@ -7723,7 +8578,7 @@ def request_qpr_edit(request, record_id):
                         'period_start': ps.isoformat() if ps else '',
                         'period_end': pe.isoformat() if pe else '',
                     })
-               
+
                 EditRequest.objects.create(
                     user=request.user,
                     request_type='qpr',
@@ -7733,7 +8588,7 @@ def request_qpr_edit(request, record_id):
                     status='pending'
                 )
                 messages.success(request, translate_text("QPR edit request submitted to manager for approval.", lang))
-               
+
                 manager_office = qpr_record.officeCode
                 managers = UserProfile.objects.filter(
                     office_code=manager_office,
@@ -7742,12 +8597,12 @@ def request_qpr_edit(request, record_id):
                 for profile in managers:
                     msg = f"User {request.user.username} ({request.user.profile.employee_code}) has requested to edit QPR for {qpr_record.quarter}."
                     #send_system_email(profile.user, request, 'manager_alert', extra_context={'body_text': msg})
-           
+
             return redirect('qpr_report_detail', record_id=record_id)
         except Exception:
             messages.error(request, translate_text("Error submitting request.", lang))
             return redirect('qpr_report_detail', record_id=record_id)
-   
+
     context = {'qpr_record': qpr_record, 'current_lang': lang}
     return render(request, 'qpr/request_qpr_edit.html', context)
 
@@ -7758,20 +8613,20 @@ def admin_edit_requests(request):
         return redirect('/')
     lang = request.session.get('lang', 'en')
     admin_state = request.user.profile.office_state
-   
+
     status_filter = request.GET.get('status', 'pending')
     request_type_filter = request.GET.get('type', '')
-   
+
     edit_requests = EditRequest.objects.filter(
         user__profile__office_state=admin_state
     ).select_related('user', 'approved_by')
-   
+
     if status_filter:
         edit_requests = edit_requests.filter(status=status_filter)
-   
+
     if request_type_filter:
         edit_requests = edit_requests.filter(request_type=request_type_filter)
-   
+
     context = {
         'edit_requests': edit_requests,
         'status_filter': status_filter,
@@ -7788,17 +8643,17 @@ def approve_edit_request(request, request_id):
     if not user_has_role(request.user, 'manager'):
         return redirect('/')
     lang = request.session.get('lang', 'en')
-   
+
     try:
         edit_request = EditRequest.objects.get(id=request_id)
     except EditRequest.DoesNotExist:
         messages.error(request, translate_text("Request not found.", lang))
         return redirect('manager_dashboard')
-   
+
     if request.method == 'POST':
         try:
             admin_notes = request.POST.get('admin_notes', '')
-           
+
             edit_request.status = 'approved'
             edit_request.approved_by = request.user
             edit_request.approved_at = now()
@@ -7819,14 +8674,14 @@ def approve_edit_request(request, request_id):
             #    'manager_alert',
             #    extra_context={'body_text': msg, 'subject': 'Edit Request Approved'}
             #)
-           
+
             messages.success(request, translate_text("Edit request approved.", lang))
             return redirect('manager_dashboard')
         except Exception:
             logger.exception("Failed to approve edit request")
             messages.error(request, 'Unable to approve request. Please try again.')
             return redirect('manager_dashboard')
-   
+
     context = {'edit_request': edit_request, 'current_lang': lang}
     return render(request, 'qpr/approve_edit_request.html', context)
 
@@ -7836,21 +8691,21 @@ def reject_edit_request(request, request_id):
     if not user_has_role(request.user, 'manager'):
         return redirect('/')
     lang = request.session.get('lang', 'en')
-   
+
     try:
         edit_request = EditRequest.objects.get(id=request_id)
     except EditRequest.DoesNotExist:
         messages.error(request, translate_text("Request not found.", lang))
         return redirect('manager_dashboard')
-   
+
     if request.method == 'POST':
         try:
             admin_notes = request.POST.get('admin_notes', '')
-           
+
             if not admin_notes:
                 messages.error(request, translate_text("Please provide a reason for rejection.", lang))
                 return render(request, 'qpr/reject_edit_request.html', {'edit_request': edit_request})
-           
+
             edit_request.status = 'rejected'
             edit_request.approved_by = request.user
             edit_request.approved_at = now()
@@ -7870,14 +8725,14 @@ def reject_edit_request(request, request_id):
             #    'manager_alert',
             #    extra_context={'body_text': msg, 'subject': 'Edit Request Rejected'}
             #)
-           
+
             messages.success(request, translate_text("Edit request rejected.", lang))
             return redirect('manager_dashboard')
         except Exception:
             logger.exception("Failed to reject edit request")
             messages.error(request, 'Unable to reject request. Please try again.')
             return redirect('manager_dashboard')
-   
+
     context = {'edit_request': edit_request, 'current_lang': lang}
     return render(request, 'qpr/reject_edit_request.html', context)
 
@@ -7886,7 +8741,7 @@ def send_reminder_email(request, user_id):
     user_profile = getattr(request.user, 'profile', None)
     if not user_profile or not user_profile.roles.filter(name='hod').exists():
         return redirect('/')
-       
+
     if request.method == 'POST':
         target_user = get_object_or_404(CustomUser, id=user_id)
         lang = request.session.get('lang', 'en')
@@ -7896,7 +8751,7 @@ def send_reminder_email(request, user_id):
             messages.success(request, translate_text(f"Reminder email sent successfully to {target_user.username}.", lang))
         else:
             messages.error(request, translate_text("Unauthorized action.", lang))
-           
+
     return redirect('qpr_hod_detail_list')
 
 @login_required
@@ -8220,7 +9075,7 @@ def manager_report(request):
                 frozen_count += 1
                 hod_office = getattr(getattr(hod_rec.user, 'profile', None), 'office_code', None)
                 team_ids = list(UserProfile.objects.filter(office_code=hod_office).values_list('user_id', flat=True))
-               
+
                 # Log team diagnostic info
                 logger.debug("HOD office found with team IDs")
 
@@ -8247,7 +9102,7 @@ def manager_report(request):
                     idx = hod_user_map[hid]
                     manager_data[idx]['division_frozen'] = True
                     manager_data[idx]['division_qpr_id'] = hod_rec.id
-       
+
         try:
             mgr_qprs = ManagerQPR.objects.filter(quarter__in=_quarter_query_values(current_quarter), financial_year=current_year, user__profile__office_code=office_code)
             for mq in mgr_qprs:
@@ -8548,7 +9403,7 @@ def manager_report_detail(request, year, quarter):
             profile_name = ''
 
         employee_name = (
-           
+
             (getattr(master_employee, 'name', '') or '').strip()
             or (getattr(emp_obj, 'ename', '') or '').strip()
             or profile_name
@@ -8556,7 +9411,7 @@ def manager_report_detail(request, year, quarter):
         )
         try:
             emp_hname = ''
-           
+
             if emp_obj is not None:
                 emp_hname = getattr(emp_obj, 'hname', '') or ''
         except Exception:
@@ -8582,7 +9437,7 @@ def manager_report_detail(request, year, quarter):
         'total_users': total_users,
         'current_lang': request.session.get('lang', 'en'),
     }
-   
+
     return render(request, 'qpr/manager_report_detail.html', context)
 
 @login_required
@@ -8617,7 +9472,7 @@ def manager_report_detail_by_record(request, record_id):
         rec = QPRRecord.objects.get(pk=record_id)
     except QPRRecord.DoesNotExist:
         return redirect('manager_report')
-   
+
     safe_year = rec.year if rec.year else '2025-2026'
     return manager_report_detail(request, safe_year, rec.quarter)
 
@@ -8800,12 +9655,12 @@ def manager_certificate_delete(request, pk):
 @login_required
 def certificate_part2_list(request):
     lang = request.session.get('lang', 'en')
-   
+
     if not user_has_role(request.user, 'manager'):
         return HttpResponseForbidden('Only managers can access certificates.')
-   
+
     certificates = QPRPartTwo.objects.filter(user=request.user).order_by('-created_at')
-   
+
     context = {
         'certificates': certificates,
         'current_lang': lang
@@ -8816,27 +9671,27 @@ def certificate_part2_list(request):
 @login_required
 def certificate_part2_new(request):
     lang = request.session.get('lang', 'en')
-   
+
     if not user_has_role(request.user, 'manager'):
         return HttpResponseForbidden('Only managers can access certificates.')
-   
+
     if request.method == 'POST':
         quarter = request.POST.get('quarter', '').strip()
         year = request.POST.get('year', '').strip()
-       
+
         if not quarter or not year:
             messages.error(request, 'Quarter and Year are required.')
             return redirect('certificate_part2_list')
-       
+
         existing = QPRPartTwo.objects.filter(
             user=request.user,
             quarter=quarter,
             year=year
         ).first()
-       
+
         if existing:
             return redirect('certificate_part2_edit', pk=existing.id)
-       
+
         certificate = QPRPartTwo.objects.create(
             user=request.user,
             quarter=quarter,
@@ -8851,9 +9706,10 @@ def certificate_part2_new(request):
             knowledge_of_hindi=0,
             not_doing=0,
             doing_upto_25=0,
-            doing_26_to_50=0,
-            doing_51_to_75=0,
-            doing_more_76=0,
+            doing_26_to_54=0,
+            doing_55_to_79=0,
+            doing_80_to_89=0,
+            doing_90_to_99=0,
             doing_cent_percent=0
         )
         OfficersWorkInHindi.objects.create(
@@ -8863,19 +9719,20 @@ def certificate_part2_new(request):
             knowledge_of_hindi=0,
             not_doing=0,
             doing_upto_25=0,
-            doing_26_to_50=0,
-            doing_51_to_75=0,
-            doing_more_76=0,
+            doing_26_to_54=0,
+            doing_55_to_79=0,
+            doing_80_to_89=0,
+            doing_90_to_99=0,
             doing_cent_percent=0
         )
-       
+
         return redirect('certificate_part2_form', pk=certificate.id)
-   
+
     quarters = ['Q1', 'Q2', 'Q3', 'Q4']
     today = timezone.localdate()
     fiscal_year_start = today.year if today.month >= 4 else today.year - 1
     years = [f"{year}-{year + 1}" for year in range(2024, fiscal_year_start + 1)]
-   
+
     context = {
         'quarters': quarters,
         'years': years,
@@ -8920,7 +9777,7 @@ def certificate_part2_form(request, pk):
     lang = request.session.get('lang', 'en')
     # Harden: reject GET requests that attempt to include form submission parameters in the query string
     if request.method == 'GET':
-        forbidden_keys = {'quarter', 'year', 'total_sub_offices', 'is_notified_rule_10_4'}
+        forbidden_keys = {'quarter', 'year', 'is_notified_rule_10_4', 'total_sub_offices_region_a', 'total_sub_offices_region_b', 'total_sub_offices_region_c', 'notified_sub_offices_region_a', 'notified_sub_offices_region_b', 'notified_sub_offices_region_c', 'remaining_sub_offices_details'}
         if any(k in request.GET for k in forbidden_keys):
             return HttpResponseNotAllowed(['POST'], "Form submission parameters are not allowed in a GET query string.")
     try:
@@ -8928,10 +9785,10 @@ def certificate_part2_form(request, pk):
     except QPRPartTwo.DoesNotExist:
         messages.error(request, 'Certificate not found.')
         return redirect('certificate_part2_list')
-   
+
     if certificate.user != request.user:
         return HttpResponseForbidden('You cannot edit this certificate.')
-   
+
     OfficersWorkInHindi.objects.get_or_create(
         report=certificate,
         level='ds_and_above',
@@ -8960,19 +9817,23 @@ def certificate_part2_form(request, pk):
             'doing_cent_percent': 0
         }
     )
-   
+
     if request.method == 'POST':
         action = request.POST.get('action', 'save')
-       
+
         certificate.is_notified_rule_10_4 = request.POST.get('is_notified_rule_10_4') == 'true'
-        certificate.total_sub_offices = int(request.POST.get('total_sub_offices', 0) or 0)
-        certificate.notified_sub_offices = int(request.POST.get('notified_sub_offices', 0) or 0)
-        certificate.computer_training_total_staff = int(request.POST.get('computer_training_total_staff', 0) or 0)
-        certificate.computer_training_trained = int(request.POST.get('computer_training_trained', 0) or 0)
-        certificate.computer_training_working = int(request.POST.get('computer_training_working', 0) or 0)
-        certificate.total_computers = int(request.POST.get('total_computers', 0) or 0)
-        certificate.hindi_enabled_computers = int(request.POST.get('hindi_enabled_computers', 0) or 0)
-        certificate.hindi_work_percentage = float(request.POST.get('hindi_work_percentage', 0) or 0)
+        certificate.total_sub_offices_region_a = int(request.POST.get('total_sub_offices_region_a', 0) or 0)
+        certificate.total_sub_offices_region_b = int(request.POST.get('total_sub_offices_region_b', 0) or 0)
+        certificate.total_sub_offices_region_c = int(request.POST.get('total_sub_offices_region_c', 0) or 0)
+        certificate.notified_sub_offices_region_a = int(request.POST.get('notified_sub_offices_region_a', 0) or 0)
+        certificate.notified_sub_offices_region_b = int(request.POST.get('notified_sub_offices_region_b', 0) or 0)
+        certificate.notified_sub_offices_region_c = int(request.POST.get('notified_sub_offices_region_c', 0) or 0)
+        certificate.remaining_sub_offices_details = request.POST.get('remaining_sub_offices_details', '').strip()
+        certificate.training_calendar_available = request.POST.get('training_calendar_available') == 'true'
+        certificate.trainings_as_per_calendar = int(request.POST.get('trainings_as_per_calendar', 0) or 0)
+        certificate.igot_hindi_trained_staff = int(request.POST.get('igot_hindi_trained_staff', 0) or 0)
+        # Section 5: Computers/Laptops
+        certificate.all_computers_unicode_enabled = request.POST.get('all_computers_unicode_enabled') == 'true'
         certificate.officials_issued_rule_8_4_orders = int(request.POST.get('officials_issued_rule_8_4_orders', 0) or 0)
         certificate.training_total_duration_hours = int(request.POST.get('training_total_duration_hours', 0) or 0)
         certificate.training_imparted_hindi = int(request.POST.get('training_imparted_hindi', 0) or 0)
@@ -8982,32 +9843,33 @@ def certificate_part2_form(request, pk):
         certificate.sec8_inspected_sections = int(request.POST.get('sec8_inspected_sections', 0) or 0)
         certificate.sec8_total_sub_offices = int(request.POST.get('sec8_total_sub_offices', 0) or 0)
         certificate.sec8_inspected_sub_offices = int(request.POST.get('sec8_inspected_sub_offices', 0) or 0)
+        certificate.sec8_hindi_work_sections = int(request.POST.get('sec8_hindi_work_sections', 0) or 0)
         certificate.magazines_total = int(request.POST.get('magazines_total', 0) or 0)
         certificate.magazines_hindi = int(request.POST.get('magazines_hindi', 0) or 0)
         certificate.magazines_english = int(request.POST.get('magazines_english', 0) or 0)
         certificate.expenditure_total_books = float(request.POST.get('expenditure_total_books', 0) or 0)
         certificate.expenditure_hindi_books = float(request.POST.get('expenditure_hindi_books', 0) or 0)
-       
-        hindi_event_start = request.POST.get('hindi_event_start_date')
-        if hindi_event_start:
-            certificate.hindi_event_start_date = hindi_event_start
-        hindi_event_end = request.POST.get('hindi_event_end_date')
-        if hindi_event_end:
-            certificate.hindi_event_end_date = hindi_event_end
-        seminar_date = request.POST.get('seminar_date')
-        if seminar_date:
-            certificate.seminar_date = seminar_date
-       
+
+        # Section 15: Other Outstanding Achievements
+        certificate.hindi_event_start_date = (request.POST.get('hindi_event_start_date') or None)
+        certificate.hindi_event_end_date = (request.POST.get('hindi_event_end_date') or None)
+        certificate.seminar_date = (request.POST.get('seminar_date') or None)
         certificate.seminar_subject = request.POST.get('seminar_subject', '')
-       
-        other_act_date = request.POST.get('other_activities_date')
-        if other_act_date:
-            certificate.other_activities_date = other_act_date
+        certificate.other_activities_date = (request.POST.get('other_activities_date') or None)
         certificate.other_activities_subject = request.POST.get('other_activities_subject', '')
-   
+        certificate.other_activities_subject = request.POST.get('other_activities_subject', '')
+
+        certificate.recreational_activities = request.POST.get('recreational_activities', '').strip()
+
+        # Section 16: NARAKAS Information
+        certificate.narakas_member = (request.POST.get('narakas_member') == 'true')
+        certificate.narakas_last_meeting_date = (request.POST.get('narakas_last_meeting_date') or None)
+        certificate.narakas_meeting_participation = (request.POST.get('narakas_meeting_participation') == 'true')
+
         certificate.chairperson_name = request.POST.get('chairperson_name', '')
         certificate.chairperson_designation = request.POST.get('chairperson_designation', '')
         certificate.chairperson_phone = request.POST.get('chairperson_phone', '')
+        certificate.chairperson_mobile = request.POST.get('chairperson_mobile', '').strip()
         certificate.chairperson_fax = request.POST.get('chairperson_fax', '')
         certificate.chairperson_email = request.POST.get('chairperson_email', '')
 
@@ -9025,13 +9887,29 @@ def certificate_part2_form(request, pk):
             }
         )
 
+        # Section 4(ii): Calculate translation totals on the server
+        translation_total_engaged = (
+            int(request.POST.get('translation_officers_engaged', 0) or 0)
+            + int(request.POST.get('translation_employees_engaged', 0) or 0)
+        )
+
+        translation_total_trained = (
+            int(request.POST.get('translation_officers_trained', 0) or 0)
+            + int(request.POST.get('translation_employees_trained', 0) or 0)
+        )
+
+        translation_total_yet = (
+            int(request.POST.get('translation_officers_yet', 0) or 0)
+            + int(request.POST.get('translation_employees_yet', 0) or 0)
+        )
+
         TranslationKnowledge.objects.update_or_create(
             report=certificate,
             category='engaged',
             defaults={
                 'officers_count': int(request.POST.get('translation_officers_engaged', 0) or 0),
                 'employees_count': int(request.POST.get('translation_employees_engaged', 0) or 0),
-                'total_count': int(request.POST.get('translation_total_engaged', 0) or 0),
+                'total_count': translation_total_engaged,
                 }
             )
 
@@ -9041,7 +9919,7 @@ def certificate_part2_form(request, pk):
             defaults={
                 'officers_count': int(request.POST.get('translation_officers_trained', 0) or 0),
                 'employees_count': int(request.POST.get('translation_employees_trained', 0) or 0),
-                'total_count': int(request.POST.get('translation_total_trained', 0) or 0),
+                'total_count': translation_total_trained,
                 }
             )
 
@@ -9051,17 +9929,76 @@ def certificate_part2_form(request, pk):
             defaults={
             'officers_count': int(request.POST.get('translation_officers_yet', 0) or 0),
             'employees_count': int(request.POST.get('translation_employees_yet', 0) or 0),
-            'total_count': int(request.POST.get('translation_total_yet', 0) or 0),
+            'total_count': translation_total_yet,
                 }
             )
+        # Section 2(i): Calculate totals on the server
+        staff_total_total = (
+            int(request.POST.get('staff_total_officers', 0) or 0)
+            + int(request.POST.get('staff_total_employees', 0) or 0)
+        )
 
+        staff_secretarial_total = (
+            int(request.POST.get('staff_secretarial_officers', 0) or 0)
+            + int(request.POST.get('staff_secretarial_employees', 0) or 0)
+        )
+
+        staff_knowledge_total = sum(
+            int(request.POST.get(field, 0) or 0)
+            for field in [
+                'staff_knowledge_officers_working',
+                'staff_knowledge_officers_proficient',
+                'staff_knowledge_employees_working',
+                'staff_knowledge_employees_proficient'
+            ]
+        )
+
+        staff_trained_total = sum(
+            int(request.POST.get(field, 0) or 0)
+            for field in [
+                'staff_trained_officers_working',
+                'staff_trained_officers_proficient',
+                'staff_trained_employees_working',
+                'staff_trained_employees_proficient'
+            ]
+        )
+
+        regular_total = sum(
+            int(request.POST.get(field, 0) or 0)
+            for field in [
+                'regular_officers_working',
+                'regular_officers_proficient',
+                'regular_employees_working',
+                'regular_employees_proficient'
+            ]
+        )
+
+        other_total = sum(
+            int(request.POST.get(field, 0) or 0)
+            for field in [
+                'other_officers_working',
+                'other_officers_proficient',
+                'other_employees_working',
+                'other_employees_proficient'
+            ]
+        )
+
+        staff_yet_total = sum(
+            int(request.POST.get(field, 0) or 0)
+            for field in [
+                'staff_yet_officers_working',
+                'staff_yet_officers_proficient',
+                'staff_yet_employees_working',
+                'staff_yet_employees_proficient'
+            ]
+        )
         StaffHindiKnowledge.objects.update_or_create(
             report=certificate,
             category='total',
             defaults={
             'officers_total': int(request.POST.get('staff_total_officers', 0) or 0),
             'employees_total': int(request.POST.get('staff_total_employees', 0) or 0),
-            'total_count': int(request.POST.get('staff_total_total', 0) or 0),
+            'total_count':staff_total_total,
             }
         )
 
@@ -9071,7 +10008,7 @@ def certificate_part2_form(request, pk):
             defaults={
                 'officers_total': int(request.POST.get('staff_secretarial_officers', 0) or 0),
                 'employees_total': int(request.POST.get('staff_secretarial_employees', 0) or 0),
-                'total_count': int(request.POST.get('staff_secretarial_total', 0) or 0),
+                'total_count': staff_secretarial_total,
                 }
         )
 
@@ -9083,7 +10020,7 @@ def certificate_part2_form(request, pk):
                 'officers_proficient': int(request.POST.get('staff_knowledge_officers_proficient', 0) or 0),
                 'employees_working': int(request.POST.get('staff_knowledge_employees_working', 0) or 0),
                 'employees_proficient': int(request.POST.get('staff_knowledge_employees_proficient', 0) or 0),
-                'total_count': int(request.POST.get('staff_knowledge_total', 0) or 0),
+                'total_count': staff_knowledge_total,
             }
         )
 
@@ -9091,9 +10028,21 @@ def certificate_part2_form(request, pk):
             report=certificate,
             category='being_trained',
             defaults={
-                'officers_total': int(request.POST.get('staff_trained_officers', 0) or 0),
-                'employees_total': int(request.POST.get('staff_trained_employees', 0) or 0),
-                'total_count': int(request.POST.get('staff_trained_total', 0) or 0),
+                'officers_working': int(request.POST.get('staff_trained_officers_working', 0) or 0),
+                'officers_proficient': int(request.POST.get('staff_trained_officers_proficient', 0) or 0),
+                'employees_working': int(request.POST.get('staff_trained_employees_working', 0) or 0),
+                'employees_proficient': int(request.POST.get('staff_trained_employees_proficient', 0) or 0),
+                'total_count': staff_trained_total,
+                'regular_officers_working': int(request.POST.get('regular_officers_working', 0) or 0),
+                'regular_officers_proficient': int(request.POST.get('regular_officers_proficient', 0) or 0),
+                'regular_employees_working': int(request.POST.get('regular_employees_working', 0) or 0),
+                'regular_employees_proficient': int(request.POST.get('regular_employees_proficient', 0) or 0),
+                'regular_total': regular_total,
+                'other_officers_working': int(request.POST.get('other_officers_working', 0) or 0),
+                'other_officers_proficient': int(request.POST.get('other_officers_proficient', 0) or 0),
+                'other_employees_working': int(request.POST.get('other_employees_working', 0) or 0),
+                'other_employees_proficient': int(request.POST.get('other_employees_proficient', 0) or 0),
+                'other_total': other_total,
             }
         )
 
@@ -9101,12 +10050,13 @@ def certificate_part2_form(request, pk):
             report=certificate,
             category='yet_to_be_trained',
             defaults={
-                'officers_total': int(request.POST.get('staff_yet_officers', 0) or 0),
-                'employees_total': int(request.POST.get('staff_yet_employees', 0) or 0),
-                'total_count': int(request.POST.get('staff_yet_total', 0) or 0),
+                'officers_working': int(request.POST.get('staff_yet_officers_working', 0) or 0),
+                'officers_proficient': int(request.POST.get('staff_yet_officers_proficient', 0) or 0),
+                'employees_working': int(request.POST.get('staff_yet_employees_working', 0) or 0),
+                'employees_proficient': int(request.POST.get('staff_yet_employees_proficient', 0) or 0),
+                'total_count': staff_yet_total,
             }
         )
-
         CodeManualStandardForms.objects.update_or_create(
             report=certificate,
             category='acts_rules',
@@ -9124,6 +10074,9 @@ def certificate_part2_form(request, pk):
             'bilingual_no': int(request.POST.get('codes_bilingual_standard_forms', 0) or 0),
             }
         )
+
+        # Section 13: Action taken to fill Hindi posts
+        certificate.hindi_posts_filling_action = request.POST.get('hindi_posts_filling_action', '').strip()
 
         post_names = request.POST.getlist('section13_post_name')
         hq_sanctioned_list = request.POST.getlist('section13_hq_sanctioned')
@@ -9143,6 +10096,33 @@ def certificate_part2_form(request, pk):
                     sub_vacant=int(sub_vacant_list[i] or 0)
                 )
 
+        # Section 10: Magazine Publications
+        magazine_totals = request.POST.getlist('section10_total_no')
+        magazine_names = request.POST.getlist('section10_publication_name_url')
+        magazine_frequencies = request.POST.getlist('section10_publication_frequency')
+        magazine_hindi = request.POST.getlist('section10_hindi_no')
+        magazine_english = request.POST.getlist('section10_english_no')
+
+        certificate.magazine_publications.all().delete()
+
+        for i in range(len(magazine_names)):
+            total_no = int(magazine_totals[i] or 0)
+            hindi_no = int(magazine_hindi[i] or 0)
+            english_no = int(magazine_english[i] or 0)
+
+            if (magazine_names[i].strip()
+                    or magazine_frequencies[i].strip()
+                    or total_no or hindi_no or english_no):
+
+                MagazinePublication.objects.create(
+                    report=certificate,
+                    total_no=total_no,
+                    publication_name_url=magazine_names[i].strip(),
+                    publication_frequency=magazine_frequencies[i].strip(),
+                    hindi_no=hindi_no,
+                    english_no=english_no
+                )
+
         urls = request.POST.getlist('section14_url')
         website_indexes = request.POST.getlist('section14_index')
 
@@ -9160,7 +10140,9 @@ def certificate_part2_form(request, pk):
                     status=status,
                     has_language_option=option_key in request.POST
                 )
-       
+
+        # Section 12: Work done in Hindi by Officers
+
         OfficersWorkInHindi.objects.update_or_create(
             report=certificate,
             level='ds_and_above',
@@ -9169,9 +10151,10 @@ def certificate_part2_form(request, pk):
                 'knowledge_of_hindi': int(request.POST.get('sec11_knowledge', 0) or 0),
                 'not_doing': int(request.POST.get('sec11_not_doing', 0) or 0),
                 'doing_upto_25': int(request.POST.get('sec11_0_25', 0) or 0),
-                'doing_26_to_50': int(request.POST.get('sec11_26_50', 0) or 0),
-                'doing_51_to_75': int(request.POST.get('sec11_51_75', 0) or 0),
-                'doing_more_76': int(request.POST.get('sec11_76_99', 0) or 0),
+                'doing_26_to_54': int(request.POST.get('sec11_26_54', 0) or 0),
+                'doing_55_to_79': int(request.POST.get('sec11_55_79', 0) or 0),
+                'doing_80_to_89': int(request.POST.get('sec11_80_89', 0) or 0),
+                'doing_90_to_99': int(request.POST.get('sec11_90_99', 0) or 0),
                 'doing_cent_percent': int(request.POST.get('sec11_100', 0) or 0),
             }
         )
@@ -9184,13 +10167,13 @@ def certificate_part2_form(request, pk):
                 'knowledge_of_hindi': int(request.POST.get('sec12_knowledge', 0) or 0),
                 'not_doing': int(request.POST.get('sec12_not_doing', 0) or 0),
                 'doing_upto_25': int(request.POST.get('sec12_0_25', 0) or 0),
-                'doing_26_to_50': int(request.POST.get('sec12_26_50', 0) or 0),
-                'doing_51_to_75': int(request.POST.get('sec12_51_75', 0) or 0),
-                'doing_more_76': int(request.POST.get('sec12_76_99', 0) or 0),
+                'doing_26_to_54': int(request.POST.get('sec12_26_54', 0) or 0),
+                'doing_55_to_79': int(request.POST.get('sec12_55_79', 0) or 0),
+                'doing_80_to_89': int(request.POST.get('sec12_80_89', 0) or 0),
+                'doing_90_to_99': int(request.POST.get('sec12_90_99', 0) or 0),
                 'doing_cent_percent': int(request.POST.get('sec12_100', 0) or 0),
             }
         )
-
         if action == 'submit':
             if not certificate.quarter in ['Q1', 'Q2', 'Q3', 'Q4']:
                 messages.error(request, 'Invalid quarter.')
@@ -9201,7 +10184,7 @@ def certificate_part2_form(request, pk):
                     'current_lang': lang,
                     **_part2_related_context(certificate),
                 })
-           
+
             certificate.is_submitted = True
             certificate.submitted_by = request.user
             certificate.submitted_at = timezone.now()
@@ -9219,7 +10202,7 @@ def certificate_part2_form(request, pk):
             certificate.save()
             messages.success(request, translate_text('Certificate saved as draft.', lang))
             return redirect('certificate_part2_form', pk=certificate.id)
-   
+
     context = {
         'part2': certificate,
         'quarter': certificate.quarter,
@@ -9238,13 +10221,13 @@ def certificate_part2_edit(request, pk):
 @login_required
 def certificate_part2_view(request, pk):
     lang = request.session.get('lang', 'en')
-   
+
     try:
         certificate = QPRPartTwo.objects.get(pk=pk, user=request.user)
     except QPRPartTwo.DoesNotExist:
         messages.error(request, 'Certificate not found.')
         return redirect('certificate_part2_list')
-   
+
     context = {
         'certificate': certificate,
         'part2': certificate,
@@ -9260,20 +10243,38 @@ def certificate_part2_view(request, pk):
 @login_required
 def certificate_part2_print(request, pk):
     lang = request.session.get('lang', 'en')
-   
+
     try:
         certificate = QPRPartTwo.objects.get(pk=pk, user=request.user)
     except QPRPartTwo.DoesNotExist:
         messages.error(request, 'Certificate not found.')
         return redirect('certificate_part2_list')
- 
+
     office_name = ""
+
     try:
         user_profile = request.user.profile
-        office_name = user_profile.office_name if hasattr(user_profile, 'office_name') else ""
-    except:
-        pass
-   
+        office = None
+
+        if user_profile.office_code:
+            office = Office.objects.filter(
+                code=user_profile.office_code
+            ).first()
+
+        if office:
+            hindi_name = (office.name_hindi or "").strip()
+            english_name = (office.name or "").strip()
+
+            office_name = " / ".join(
+                name for name in [hindi_name, english_name] if name
+            )
+
+        if not office_name:
+            office_name = user_profile.office_name or ""
+
+    except Exception as e:
+        print(f"Error fetching office name for QPR print: {e}")
+
     context = {
         'certificate': certificate,
         'office_name': office_name,
@@ -9286,17 +10287,17 @@ def certificate_part2_print(request, pk):
 @login_required
 def certificate_part2_delete(request, pk):
     lang = request.session.get('lang', 'en')
-   
+
     try:
         certificate = QPRPartTwo.objects.get(pk=pk, user=request.user)
     except QPRPartTwo.DoesNotExist:
         messages.error(request, 'Certificate not found.')
         return redirect('certificate_part2_list')
-   
+
     if certificate.is_submitted:
         messages.error(request, 'Submitted certificates cannot be deleted.')
         return redirect('certificate_part2_list')
-   
+
     # At this point request.method is guaranteed to be POST due to @require_POST
     certificate.delete()
     log_audit(
@@ -9306,9 +10307,9 @@ def certificate_part2_delete(request, pk):
         f"{request.user.username} deleted QPR Part II certificate {pk}",
     )
     messages.success(request, translate_text('Certificate deleted.', lang))
-   
+
     return redirect('certificate_part2_list')
-    
+
 @login_required
 @require_POST
 def process_user_approval(request, profile_id, action):
@@ -9335,13 +10336,13 @@ def process_user_approval(request, profile_id, action):
 
     if action == 'approve':
         master_record = Employee.objects.filter(empcode=target_profile.employee_code).first()
-       
+
         if master_record:
             target_profile.name = master_record.ename
             target_user = target_profile.user
             target_user.first_name = master_record.ename
             target_user.save()
-       
+
         target_profile.approval_status = 'approved'
         target_profile.save()
         log_audit(
@@ -9352,7 +10353,7 @@ def process_user_approval(request, profile_id, action):
         )
         #send_system_email(target_profile.user, request, 'accepted_alert')
         messages.success(request, f"User {target_profile.employee_code} approved.")
-       
+
     elif action == 'reject':
         target_profile.approval_status = 'rejected'
         target_profile.save()
@@ -9366,11 +10367,11 @@ def process_user_approval(request, profile_id, action):
         #send_system_email(target_profile.user, request, 'rejected_alert')
         messages.warning(request, f"User {target_profile.employee_code} rejected.")
 
-    return redirect('dashboard') 
+    return redirect('dashboard')
 @login_required
 def backup_user_dashboard(request):
     context = {
-        'role': 'backup_user', 
+        'role': 'backup_user',
         'current_lang': request.session.get('lang', 'en'),
         'user': request.user
     }

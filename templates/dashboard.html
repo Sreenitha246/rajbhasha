@@ -1081,8 +1081,8 @@
  {% if has_manager %}
  <a href="{% url 'manager_qpr_form' %}" class="btn btn-outline-primary me-2"><i class="fas fa-edit"></i> {{ "Fill Manager QPR"|t:current_lang }}</a>
  {% endif %}
- {% if has_admin %}
- <a href="{% url 'admin_qpr_form' %}" class="btn btn-outline-secondary"><i class="fas fa-edit"></i> {{ "Fill Admin QPR"|t:current_lang }}</a>
+ {% if has_admin or has_manager %}
+ <a href="{% url 'admin_qpr_form' %}" class="btn btn-outline-secondary"><i class="fas fa-edit"></i> {{ "Fill HOD/HO QPR"|t:current_lang }}</a>
  {% endif %}
  </div>
  </div>

@@ -705,10 +705,25 @@ class Section4HindiLettersData(models.Model):
 
 class Section5EnglishRepliedHindiData(models.Model):
     qpr_record = models.OneToOneField(QPRRecord, on_delete=models.CASCADE, related_name='section5')
+
+    # Region A
     region_a_english_letters = models.IntegerField(null=True, blank=True)
     region_a_replied_hindi = models.IntegerField(null=True, blank=True)
     region_a_replied_english = models.IntegerField(null=True, blank=True)
     region_a_no_reply = models.IntegerField(null=True, blank=True)
+
+    # Region B
+    region_b_english_letters = models.IntegerField(null=True, blank=True)
+    region_b_replied_hindi = models.IntegerField(null=True, blank=True)
+    region_b_replied_english = models.IntegerField(null=True, blank=True)
+    region_b_no_reply = models.IntegerField(null=True, blank=True)
+
+    # Total
+    total_english_letters = models.IntegerField(null=True, blank=True)
+    total_replied_hindi = models.IntegerField(null=True, blank=True)
+    total_replied_english = models.IntegerField(null=True, blank=True)
+    total_no_reply = models.IntegerField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -947,11 +962,24 @@ class ManagerQPR(models.Model):
     s4_replied_hindi_letters = models.IntegerField(null=True, blank=True)
     s4_replied_english_letters = models.IntegerField(null=True, blank=True)
 
-    # Section 5: English replied in Hindi (region A example fields)
+      # Section 5: English letters received and replies by region
+    # Region A
     s5_region_a_english_letters = models.IntegerField(null=True, blank=True)
     s5_region_a_replied_hindi = models.IntegerField(null=True, blank=True)
     s5_region_a_replied_english = models.IntegerField(null=True, blank=True)
     s5_region_a_no_reply = models.IntegerField(null=True, blank=True)
+
+    # Region B
+    s5_region_b_english_letters = models.IntegerField(null=True, blank=True)
+    s5_region_b_replied_hindi = models.IntegerField(null=True, blank=True)
+    s5_region_b_replied_english = models.IntegerField(null=True, blank=True)
+    s5_region_b_no_reply = models.IntegerField(null=True, blank=True)
+
+    # Total
+    s5_total_english_letters = models.IntegerField(null=True, blank=True)
+    s5_total_replied_hindi = models.IntegerField(null=True, blank=True)
+    s5_total_replied_english = models.IntegerField(null=True, blank=True)
+    s5_total_no_reply = models.IntegerField(null=True, blank=True)
 
     # Section 6: Issued letters (per region totals)
     s6_region_a_hindi_bilingual = models.IntegerField(null=True, blank=True)

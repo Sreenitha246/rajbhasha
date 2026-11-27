@@ -1,0 +1,82 @@
+[
+  {
+    "model": "website.employeemaster",
+    "pk": 1,
+    "fields": {
+      "empcode": 4227,
+      "name": "Ajay Madhukar Joshi",
+      "hindi_name": "श्री अजय मधुकर जोशी",
+      "designation": "Scientist G",
+      "state": "HQ",
+      "mobile": null,
+      "ip_number": null,
+      "division": null,
+      "is_active": true,
+      "transferred_at": null,
+      "remarks": null,
+      "emergency_contact": null,
+      "created_at": "2026-11-27T07:07:03.457043Z",
+      "updated_at": "2026-11-27T07:07:03.457043Z"
+    }
+  },
+  {
+    "model": "website.employeemaster",
+    "pk": 2,
+    "fields": {
+      "empcode": 3247,
+      "name": "Rajendra Kumar Agrawal ",
+      "hindi_name": " श्री राजेंद्र कुमार अग्रवाल",
+      "designation": "Scientist F",
+      "state": "HQ",
+      "mobile": null,
+      "ip_number": null,
+      "division": null,
+      "is_active": true,
+      "transferred_at": null,
+      "remarks": null,
+      "emergency_contact": null,
+      "created_at": "2026-11-27T07:07:03.457043Z",
+      "updated_at": "2026-11-27T07:07:03.457043Z"
+    }
+  },
+  {
+    "model": "website.employeemaster",
+    "pk": 3,
+    "fields": {
+      "empcode": 6750,
+      "name": "Ms. Taruna Sharma",
+      "hindi_name": "सुश्री तरुणा शर्मा",
+      "designation": "Junior Translator",
+      "state": "HQ",
+      "mobile": null,
+      "ip_number": null,
+      "division": null,
+      "is_active": true,
+      "transferred_at": null,
+      "remarks": null,
+      "emergency_contact": null,
+      "created_at": "2026-11-27T07:07:03.457043Z",
+      "updated_at": "2026-11-27T07:07:03.457043Z"
+    }
+  },
+  {
+    "model": "website.employeemaster",
+    "pk": 4,
+    "fields": {
+      "empcode": 8508,
+      "name": " Ms. Manisha Kumari ",
+      "hindi_name": "सुश्री मनीषा कुमारी",
+      "designation": "Junior Translator",
+      "state": "HQ",
+      "mobile": null,
+      "ip_number": null,
+      "division": null,
+      "is_active": true,
+      "transferred_at": null,
+      "remarks": null,
+      "emergency_contact": null,
+      "created_at": "2026-11-27T07:07:03.457043Z",
+      "updated_at": "2026-11-27T07:07:03.457043Z"
+    }
+  }
+]

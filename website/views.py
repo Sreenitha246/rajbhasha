@@ -4381,6 +4381,18 @@ def _can_manage_employee_master(user):
         user_has_role(user, ['manager', 'admin']) or user.is_superuser
     )
 
+def _get_employee_master_queryset(user):
+    employees = EmployeeMaster.objects.all()
+
+    profile = getattr(user, 'profile', None)
+    user_state = (
+        (getattr(profile, 'office_state', '') or '').strip()
+    )
+
+    if not user_state:
+        return employees.none()
+
+    return employees.filter(state__iexact=user_state)
 
 @login_required
 def manager_employee_master_list(request):
@@ -4392,7 +4404,7 @@ def manager_employee_master_list(request):
     state = (request.GET.get('state') or '').strip()
     status_filter = (request.GET.get('status') or 'active').strip().lower()
 
-    employees = EmployeeMaster.objects.all().order_by('empcode')
+    employees = _get_employee_master_queryset(request.user).order_by('empcode')
 
     if query:
         query_filter = (
@@ -4429,11 +4441,9 @@ def manager_employee_master_list(request):
         ).exclude(
             designation__exact=''
         ).values_list('designation', flat=True).distinct().order_by('designation'),
-        'state_options': EmployeeMaster.objects.exclude(
-            state__isnull=True
-        ).exclude(
-            state__exact=''
-        ).values_list('state', flat=True).distinct().order_by('state'),
+        'state_options': employees.order_by().values_list(
+            'state', flat=True
+        ).distinct().order_by('state'),
     }
     return render(request, 'manager_employee_master_list.html', context)
 

@@ -31,7 +31,7 @@ SECURE_HSTS_SECONDS = int(os.getenv("DJANGO_SECURE_HSTS_SECONDS", "31536000")) i
 SECURE_HSTS_INCLUDE_SUBDOMAINS = USE_HTTPS_SECURITY
 SECURE_HSTS_PRELOAD = USE_HTTPS_SECURITY
 
-ALLOWED_HOSTS = ["172.16.8.77","10.160.19.20", "192.168.56.101", "127.0.0.1", "localhost","192.168.1.8","10.64.61.87","10.148.128.88","192.168.29.199","172.20.10.3","10.105.142.87","rajnet.nic.in"]
+ALLOWED_HOSTS = ["172.16.8.77","10.160.19.20", "192.168.56.101", "127.0.0.1", "localhost","192.168.1.8","10.105.142.87","rajnet.nic.in"]
 
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
@@ -90,9 +90,6 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 CSRF_TRUSTED_ORIGINS = [
    "http://10.105.142.87:8000",
-    "http://172.16.8.77:8000",
-   "http://172.20.10.3:8000",
-   "http://10.148.128.88:8000",
   "http://10.64.61.87:8000",
   "http://192.168.1.8:8000",
   "http://127.0.0.1:8000",
@@ -125,7 +122,7 @@ TEMPLATES = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'rbqprmins_db.sqlite3',
         'OPTIONS': {
             'timeout': 20,
         },
@@ -209,7 +206,7 @@ PARICHAY_CODE_CHALLENGE_METHOD = "S256"
 
 
 # Event admin upload access is restricted by client IP in addition to login/role.
-EVENT_ADMIN_ALLOWED_UPLOAD_IPS = ["192.168.29.199"]#o sir's or the testing computer ip
+EVENT_ADMIN_ALLOWED_UPLOAD_IPS = [""]#to sir's or the testing computer ip
 EVENT_ADMIN_TRUST_X_FORWARDED_FOR = True #keep this true when running behind nginx.
 
 

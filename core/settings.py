@@ -148,14 +148,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # MEDIA FILES
@@ -322,7 +315,7 @@ LOGGING = {
 
 # Parichay custom logging
 
-info_handler = logging.FileHandler(BASE_DIR / 'logs' / 'parichaycustom.log')
+info_handler = logging.FileHandler('/var/log/parichaycustom.log')
 
 formatter = logging.Formatter(
     "Time:%(asctime)s, Level:%(levelname)s, File:%(filename)s, Line:%(lineno)d, %(message)s"
@@ -335,25 +328,25 @@ log.setLevel(logging.INFO)
 # Parichay endpoint-specific loggers
 
 parichay_token_log = logging.getLogger('parichay_token')
-parichay_token_handler = logging.FileHandler(BASE_DIR / 'logs' / 'parichay_token.log')
+parichay_token_handler = logging.FileHandler('/var/log/parichay_token.log')
 parichay_token_handler.setFormatter(formatter)
 parichay_token_log.addHandler(parichay_token_handler)
 parichay_token_log.setLevel(logging.INFO)
 
 parichay_userinfo_log = logging.getLogger('parichay_userinfo')
-parichay_userinfo_handler = logging.FileHandler(BASE_DIR / 'logs' / 'parichay_userinfo.log')
+parichay_userinfo_handler = logging.FileHandler('/var/log/parichay_userinfo.log')
 parichay_userinfo_handler.setFormatter(formatter)
 parichay_userinfo_log.addHandler(parichay_userinfo_handler)
 parichay_userinfo_log.setLevel(logging.INFO)
 
 parichay_refresh_log = logging.getLogger('parichay_refresh')
-parichay_refresh_handler = logging.FileHandler(BASE_DIR / 'logs' / 'parichay_refresh.log')
+parichay_refresh_handler = logging.FileHandler('/var/log/parichay_refresh.log')
 parichay_refresh_handler.setFormatter(formatter)
 parichay_refresh_log.addHandler(parichay_refresh_handler)
 parichay_refresh_log.setLevel(logging.INFO)
 
 parichay_revoke_log = logging.getLogger('parichay_revoke')
-parichay_revoke_handler = logging.FileHandler(BASE_DIR / 'logs' / 'parichay_revoke.log')
+parichay_revoke_handler = logging.FileHandler('/var/log/parichay_revoke.log')
 parichay_revoke_handler.setFormatter(formatter)
 parichay_revoke_log.addHandler(parichay_revoke_handler)
 parichay_revoke_log.setLevel(logging.INFO)

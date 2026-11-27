@@ -172,7 +172,7 @@ HINDI_TRANSLATIONS = {
     "View History": "इतिहास देखें",
     "Role-Based QPR": "भूमिका-आधारित QPR",
     "Fill Manager QPR": "मैनेजर QPR भरें",
-    "Fill HOD/HO QPR": "HOD/HO QPR भरें",
+    "Fill Admin QPR": "एडमिन QPR भरें",
 
     "Coming Soon": "जल्द आ रहा है",
 
